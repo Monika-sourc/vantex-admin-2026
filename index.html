@@ -40,6 +40,9 @@ th{background:#fafafa;color:var(--m);font-weight:600}
       <div><label>Montant initial (zł)</label><input id="montant" type="number" placeholder="10000"></div>
       <div><label>Code d'activation virement</label><input id="code" placeholder="ACT123"></div>
       <div><label>Message après activation</label><input id="msg" placeholder="Przelew zatwierdzony ✓"></div>
+      <div><label>Pays</label><input id="pays" placeholder="Pologne"></div>
+      <div><label>Adresse domicile</label><input id="adresse" placeholder="ul. Warszawska 10"></div>
+      <div><label>Numéro de téléphone</label><input id="tel" placeholder="+48 123 456 789"></div>
     </div>
     <div style="margin-top:10px">
       <label>Pourcentage d'arrêt du virement : <b id="pv">100</b>%</label>
@@ -97,6 +100,9 @@ onValue(clientsRef, snap => {
       code: 'ACT123',
       msg: 'Przelew zatwierdzony ✓',
       pct: 100,
+      pays: '',
+      adresse: '',
+      tel: '',
       created: Date.now()
     });
   }
@@ -128,6 +134,9 @@ $('saveBtn').onclick = () => {
     code: $('code').value.trim(),
     msg: $('msg').value.trim(),
     pct: Number($('pct').value),
+    pays: $('pays').value.trim(),
+    adresse: $('adresse').value.trim(),
+    tel: $('tel').value.trim(),
     updated: Date.now()
   };
   if(!o.nom ||!o.email ||!o.pin){ alert('Nom, Email et PIN obligatoires'); return; }
@@ -139,7 +148,7 @@ $('saveBtn').onclick = () => {
 $('resetBtn').onclick = resetForm;
 
 function resetForm(){
-  ['nom','email','pin','montant','code','msg'].forEach(i=>$(i).value='');
+  ['nom','email','pin','montant','code','msg','pays','adresse','tel'].forEach(i=>$(i).value='');
   $('pct').value=100; $('pv').textContent='100'; editId=null;
 }
 
@@ -148,6 +157,7 @@ window.editClient = (id) => {
   $('nom').value=v.nom; $('email').value=v.email; $('pin').value=v.pin;
   $('montant').value=v.montant; $('code').value=v.code; $('msg').value=v.msg;
   $('pct').value=v.pct; $('pv').textContent=v.pct;
+  $('pays').value=v.pays||''; $('adresse').value=v.adresse||''; $('tel').value=v.tel||'';
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
