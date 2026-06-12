@@ -194,24 +194,28 @@ function refreshLists(){
 const _render = render;
 render = function(){ _render(); refreshLists(); };
 
+// CORRECTION 1 : Bloquer vraiment le compte
 $('blockBtn').onclick = ()=>{
   const id = $('clientAccess').value;
   if(!id) return alert('Sélectionnez un client');
-  update(ref(db,'clients/'+id), {blocked:true, updated:Date.now()});
-  alert('Accès bloqué');
+  update(ref(db,'clients/'+id), {blocked:true, active:false, status:'bloqué', updated:Date.now()});
+  alert('Accès bloqué - le compte ne pourra plus se connecter');
 };
+// CORRECTION 1 : Débloquer
 $('unblockBtn').onclick = ()=>{
   const id = $('clientAccess').value;
   if(!id) return alert('Sélectionnez un client');
-  update(ref(db,'clients/'+id), {blocked:false, updated:Date.now()});
+  update(ref(db,'clients/'+id), {blocked:false, active:true, status:'actif', updated:Date.now()});
   alert('Accès débloqué');
 };
+
+// CORRECTION 2 : Remettre à 0
 $('resetHistoryBtn').onclick = ()=>{
   const id = $('clientAction').value;
   if(!id) return alert('Sélectionnez un client');
   remove(ref(db,'virements/'+id));
-  update(ref(db,'clients/'+id), {historyReset:Date.now()});
-  alert('Historique réinitialisé');
+  update(ref(db,'clients/'+id), {montant:0, historyReset:Date.now(), updated:Date.now()});
+  alert('Historique réinitialisé et solde remis à 0,00 zł - vous pouvez maintenant ajouter un nouveau montant');
 };
 </script>
 </body>
