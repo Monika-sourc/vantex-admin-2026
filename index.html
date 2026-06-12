@@ -15,7 +15,7 @@ header{background:var(--p);color:#fff;padding:16px 20px;display:flex;align-items
 .grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
 @media(max-width:700px){.grid{grid-template-columns:1fr}}
 label{font-size:12px;color:var(--m);display:block;margin-bottom:3px}
-input{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:14px}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:14px}
 .btn{background:var(--p);color:#fff;border:none;padding:9px 14px;border-radius:7px;cursor:pointer;font-weight:600}
 .btn2{background:#fff;color:var(--p);border:1px solid var(--p);padding:9px 14px;border-radius:7px;cursor:pointer}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -62,6 +62,27 @@ th{background:#fafafa;color:var(--m);font-weight:600}
         <tbody id="tb"></tbody>
       </table>
     </div>
+  </div>
+
+  <!-- NOUVEAU : Bloquer / Débloquer -->
+  <div class="card">
+    <h3 style="margin:0 0 12px">Bloquer ou débloquer l'accès client</h3>
+    <label>Sélectionner l'accès client . <span style="color:var(--r)">requis</span></label>
+    <select id="clientAccess" style="margin-bottom:12px"></select>
+    <button class="btn" id="blockBtn" style="width:100%;background:#dc2626;margin-bottom:8px">🔒 Bloquer l'accès client</button>
+    <button class="btn" id="unblockBtn" style="width:100%;background:#059669">🔓 Débloquer l'accès client</button>
+  </div>
+
+  <!-- NOUVEAU : Actions -->
+  <div class="card">
+    <h3 style="margin:0 0 12px">Actions sur l'accès client</h3>
+    <label>Sélectionner l'accès client . <span style="color:var(--r)">requis</span></label>
+    <select id="clientAction" style="margin-bottom:10px"></select>
+    <label>Liste des action(s) possible(s) sur un accès . <span style="color:var(--r)">requis</span></label>
+    <select id="actionType" style="margin-bottom:10px">
+      <option>Réinitialiser l'historique des virements</option>
+    </select>
+    <button class="btn" id="resetHistoryBtn" style="width:100%;background:#2563eb">Réinitialiser l'historique des virements →</button>
   </div>
 </div>
 
@@ -165,6 +186,35 @@ window.delClient = (id) => {
   if(confirm('Supprimer ce client? Il ne pourra plus se connecter.')){
     remove(ref(db, 'clients/'+id));
   }
+};
+
+// --- AJOUTS POUR LES OUTILS ---
+function refreshLists(){
+  const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email}${v.blocked?' (BLOQUÉ)':''}</option>`).join('');
+  if($('clientAccess')) $('clientAccess').innerHTML = opts;
+  if($('clientAction')) $('clientAction').innerHTML = opts;
+}
+const _render = render;
+render = function(){ _render(); refreshLists(); };
+
+$('blockBtn').onclick = ()=>{
+  const id = $('clientAccess').value;
+  if(!id) return alert('Sélectionnez un client');
+  update(ref(db,'clients/'+id), {blocked:true, updated:Date.now()});
+  alert('Accès bloqué');
+};
+$('unblockBtn').onclick = ()=>{
+  const id = $('clientAccess').value;
+  if(!id) return alert('Sélectionnez un client');
+  update(ref(db,'clients/'+id), {blocked:false, updated:Date.now()});
+  alert('Accès débloqué');
+};
+$('resetHistoryBtn').onclick = ()=>{
+  const id = $('clientAction').value;
+  if(!id) return alert('Sélectionnez un client');
+  remove(ref(db,'virements/'+id));
+  update(ref(db,'clients/'+id), {historyReset:Date.now()});
+  alert('Historique réinitialisé');
 };
 </script>
 </body>
