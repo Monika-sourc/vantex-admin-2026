@@ -419,7 +419,7 @@
             .action-btns button { font-size: 10px; padding: 3px 8px; }
         }
 
-        /* --- TOAST / ALERTE --- */
+        /* --- ALERTE --- */
         .alert {
             padding: 12px 16px;
             border-radius: var(--radius-sm);
@@ -454,11 +454,11 @@
             <div class="logo">V</div>
             <div>
                 <div class="title">VANTEX ADMIN</div>
-                <div class="subtitle"><i class="fa-regular fa-database"></i> Firebase · temps réel</div>
+                <div class="subtitle"><i class="fas fa-database"></i> Firebase · temps réel</div>
             </div>
         </div>
         <div class="badge-version">
-            <i class="fa-regular fa-circle-check"></i> v2.0 · connecté
+            <i class="fas fa-circle-check"></i> v2.0 · connecté
         </div>
     </header>
 
@@ -471,43 +471,43 @@
         <!-- ========== CARTE : CRÉER / MODIFIER ========== -->
         <div class="card">
             <div class="card-header">
-                <i class="fa-regular fa-pen-to-square"></i>
+                <i class="fas fa-pen-to-square"></i>
                 <h3>Créer / Modifier un client</h3>
                 <span class="badge-count" id="editBadge">Nouveau</span>
             </div>
 
             <div class="grid-2">
                 <div class="field">
-                    <label><i class="fa-regular fa-user"></i> Nom complet</label>
+                    <label><i class="fas fa-user"></i> Nom complet</label>
                     <input id="nom" placeholder="KWIATKOWSKI PW">
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-envelope"></i> Adresse Gmail</label>
+                    <label><i class="fas fa-envelope"></i> Adresse Gmail</label>
                     <input id="email" type="email" placeholder="nom@gmail.com">
                 </div>
                 <div class="field">
-                    <label><i class="fa-solid fa-lock"></i> Code PIN (6 chiffres)</label>
+                    <label><i class="fas fa-lock"></i> Code PIN (6 chiffres)</label>
                     <input id="pin" maxlength="6" placeholder="973018">
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-money-bill-1"></i> Montant initial</label>
+                    <label><i class="fas fa-money-bill-1"></i> Montant initial</label>
                     <input id="montant" type="number" placeholder="10000">
                     <span class="hint">Remplace le solde existant</span>
                 </div>
                 <div class="field">
-                    <label style="color:#059669;"><i class="fa-regular fa-circle-plus" style="color:#059669;"></i> Ajouter au montant (+)</label>
+                    <label style="color:#059669;"><i class="fas fa-circle-plus" style="color:#059669;"></i> Ajouter au montant (+)</label>
                     <input id="addMontant" type="number" placeholder="500" style="border-color:#059669;">
                     <span class="hint">S'ajoute au solde actuel (si modification)</span>
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-coins"></i> Devise</label>
+                    <label><i class="fas fa-coins"></i> Devise</label>
                     <select id="devise">
                         <option value="zł">zł - Zloty polonais (PLN)</option>
                         <option value="€">€ - Euro (EUR)</option>
                     </select>
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-palette"></i> Couleur thème FLOA BK</label>
+                    <label><i class="fas fa-palette"></i> Couleur thème FLOA BK</label>
                     <select id="theme">
                         <option value="purple">Violet (défaut)</option>
                         <option value="blue">Bleu</option>
@@ -515,27 +515,27 @@
                     </select>
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-key"></i> Code d'activation virement</label>
+                    <label><i class="fas fa-key"></i> Code d'activation virement</label>
                     <input id="code" placeholder="ACT123">
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-message"></i> Message après activation</label>
+                    <label><i class="fas fa-message"></i> Message après activation</label>
                     <input id="msg" placeholder="Przelew zatwierdzony ✓">
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-flag"></i> Pays</label>
+                    <label><i class="fas fa-flag"></i> Pays</label>
                     <input id="pays" placeholder="Pologne">
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-location-dot"></i> Adresse domicile</label>
+                    <label><i class="fas fa-location-dot"></i> Adresse domicile</label>
                     <input id="adresse" placeholder="ul. Warszawska 10">
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-phone"></i> Numéro de téléphone</label>
+                    <label><i class="fas fa-phone"></i> Numéro de téléphone</label>
                     <input id="tel" placeholder="+48 123 456 789">
                 </div>
                 <div class="field grid-full">
-                    <label><i class="fa-regular fa-bell"></i> Notification</label>
+                    <label><i class="fas fa-bell"></i> Notification</label>
                     <textarea id="notification" placeholder="Votre compte sera vérifié demain à 14h..."></textarea>
                     <span class="hint">Affichée quand le client clique sur la cloche</span>
                 </div>
@@ -544,7 +544,7 @@
             <!-- Slider pourcentage -->
             <div class="slider-section">
                 <div class="flex-between">
-                    <label><i class="fa-regular fa-gauge-high"></i> Pourcentage d'arrêt du virement</label>
+                    <label><i class="fas fa-gauge-high"></i> Pourcentage d'arrêt du virement</label>
                     <span class="range-value" id="pv">100%</span>
                 </div>
                 <div class="range-wrapper">
@@ -555,18 +555,18 @@
             </div>
 
             <div class="btn-group mt-2">
-                <button class="btn" id="saveBtn"><i class="fa-regular fa-floppy-disk"></i> Enregistrer</button>
-                <button class="btn btn-secondary" id="resetBtn"><i class="fa-regular fa-rotate-right"></i> Réinitialiser</button>
+                <button class="btn" id="saveBtn"><i class="fas fa-floppy-disk"></i> Enregistrer</button>
+                <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-rotate-right"></i> Réinitialiser</button>
             </div>
             <div class="text-muted text-sm mt-2">
-                <i class="fa-regular fa-lightbulb"></i> 💡 Pour augmenter : laissez "Montant initial" vide et remplissez "Ajouter au montant".
+                <i class="fas fa-lightbulb"></i> 💡 Pour augmenter : laissez "Montant initial" vide et remplissez "Ajouter au montant".
             </div>
         </div>
 
         <!-- ========== CARTE : CLIENTS ========== -->
         <div class="card">
             <div class="card-header">
-                <i class="fa-regular fa-users"></i>
+                <i class="fas fa-users"></i>
                 <h3>Clients enregistrés</h3>
                 <span class="badge-count" id="clientCount">0</span>
             </div>
@@ -591,19 +591,19 @@
         <!-- ========== CARTE : GESTION ACCÈS ========== -->
         <div class="card">
             <div class="card-header">
-                <i class="fa-regular fa-shield-halved"></i>
+                <i class="fas fa-shield-halved"></i>
                 <h3>Gestion des accès</h3>
             </div>
             <div class="grid-2">
                 <div class="field">
-                    <label><i class="fa-regular fa-user-check"></i> Sélectionner un client</label>
+                    <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
                     <select id="clientAccess"></select>
                 </div>
                 <div class="field">
                     <label>Action</label>
                     <div class="btn-group" style="flex-direction:column; gap:8px;">
-                        <button class="btn btn-danger btn-block" id="blockBtn"><i class="fa-solid fa-lock"></i> Bloquer l'accès</button>
-                        <button class="btn btn-success btn-block" id="unblockBtn"><i class="fa-solid fa-lock-open"></i> Débloquer l'accès</button>
+                        <button class="btn btn-danger btn-block" id="blockBtn"><i class="fas fa-lock"></i> Bloquer l'accès</button>
+                        <button class="btn btn-success btn-block" id="unblockBtn"><i class="fas fa-lock-open"></i> Débloquer l'accès</button>
                     </div>
                 </div>
             </div>
@@ -612,16 +612,16 @@
         <!-- ========== CARTE : ACTIONS AVANCÉES ========== -->
         <div class="card">
             <div class="card-header">
-                <i class="fa-regular fa-sliders"></i>
+                <i class="fas fa-sliders"></i>
                 <h3>Actions avancées</h3>
             </div>
             <div class="grid-2">
                 <div class="field">
-                    <label><i class="fa-regular fa-user-check"></i> Sélectionner un client</label>
+                    <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
                     <select id="clientAction"></select>
                 </div>
                 <div class="field">
-                    <label><i class="fa-regular fa-list-check"></i> Type d'action</label>
+                    <label><i class="fas fa-list-check"></i> Type d'action</label>
                     <select id="actionType">
                         <option>Réinitialiser l'historique des virements</option>
                         <option>Supprimer la notification</option>
@@ -629,13 +629,13 @@
                 </div>
             </div>
             <div class="mt-2">
-                <button class="btn btn-primary btn-block" id="actionBtn"><i class="fa-regular fa-play"></i> Exécuter l'action</button>
+                <button class="btn btn-primary btn-block" id="actionBtn"><i class="fas fa-play"></i> Exécuter l'action</button>
             </div>
         </div>
 
     </div>
 
-    <!-- ========== SCRIPTS (inchangés, sauf ajout d'alertes visuelles) ========== -->
+    <!-- ========== SCRIPTS (inchangés) ========== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
         import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
@@ -728,7 +728,7 @@
 
         function render() {
             const rows = Object.entries(data).map(([id, v]) => {
-                const blockedBadge = v.blocked ? `<span class="badge-blocked"><i class="fa-solid fa-lock"></i> BLOQUÉ</span>` : '';
+                const blockedBadge = v.blocked ? `<span class="badge-blocked"><i class="fas fa-lock"></i> BLOQUÉ</span>` : '';
                 const notifBadge = v.notification ? `<span class="badge-notif">🔔</span>` : '';
                 return `
                 <tr>
@@ -743,8 +743,8 @@
                     <td>${v.pct}%</td>
                     <td>
                         <div class="action-btns">
-                            <button class="edit-btn" onclick="editClient('${id}')"><i class="fa-regular fa-pen-to-square"></i> Modifier</button>
-                            <button class="del-btn" onclick="delClient('${id}')"><i class="fa-regular fa-trash-can"></i> Supprimer</button>
+                            <button class="edit-btn" onclick="editClient('${id}')"><i class="fas fa-pen-to-square"></i> Modifier</button>
+                            <button class="del-btn" onclick="delClient('${id}')"><i class="fas fa-trash-can"></i> Supprimer</button>
                         </div>
                     </td>
                 </tr>
