@@ -635,7 +635,7 @@
 
     </div>
 
-    <!-- ========== SCRIPTS (inchangés) ========== -->
+    <!-- ========== SCRIPTS ========== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
         import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
@@ -877,8 +877,21 @@
             if (!id) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
 
             if (action === 'Réinitialiser l\'historique des virements') {
-                update(ref(db, 'clients/' + id), { historyReset: Date.now() });
-                showAlert('🔄 Historique des virements réinitialisé.', 'success');
+                // 1. Supprimer tout l'historique
+                remove(ref(db, 'clients/' + id + '/history'))
+                    .then(() => {
+                        // 2. Mettre le montant à 0
+                        return update(ref(db, 'clients/' + id), {
+                            montant: 0,
+                            historyReset: Date.now()
+                        });
+                    })
+                    .then(() => {
+                        showAlert('🔄 Historique supprimé et solde remis à 0.', 'success');
+                    })
+                    .catch(err => {
+                        showAlert('❌ Erreur lors de la réinitialisation : ' + err.message, 'error');
+                    });
             } else if (action === 'Supprimer la notification') {
                 update(ref(db, 'clients/' + id), { notification: '', updated: Date.now() });
                 showAlert('🗑️ Notification supprimée.', 'success');
