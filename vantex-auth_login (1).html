@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Connexion - Vantex Admin</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0f1115;color:#e8e8e8;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0;padding:20px}
+.card{background:#181b22;border:1px solid #2a2d36;border-radius:16px;padding:28px;max-width:380px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+h1{font-size:20px;margin:0 0 8px}
+p{color:#9aa0aa;font-size:14px;margin:0 0 18px}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#0f1115;color:#fff;font-size:15px;box-sizing:border-box}
+button{width:100%;padding:12px;border:0;border-radius:10px;background:#4f7cff;color:white;font-weight:600;font-size:15px;margin-top:12px;cursor:pointer}
+button:disabled{opacity:.6}
+small{color:#7a808a;font-size:12px}
+#msg{margin-top:12px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Vantex Admin</h1>
+  <p>Connecte-toi avec ton email autorisé. Tu recevras un lien magique.</p>
+  <input id="email" type="email" placeholder="ton-email@gmail.com" autocomplete="email">
+  <button id="sendBtn">Envoyer le lien de connexion</button>
+  <div id="msg"></div>
+  <small style="display:block;margin-top:16px">Accès réservé. Site non indexé.</small>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, isSignInWithEmailLink, sendSignInLinkToEmail, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCU-KBtj7vx3OouofytlwIN3KPd1McNlEk",
+  authDomain: "vantex-admin-2026.firebaseapp.com",
+  databaseURL: "https://vantex-admin-2026-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "vantex-admin-2026",
+  storageBucket: "vantex-admin-2026.firebasestorage.app",
+  messagingSenderId: "810884502320",
+  appId: "1:810884502320:web:b8ba7c2909ddf4ccf02ef5"
+};
+
+const ALLOWED_EMAILS = ["avogodans61@gmail.com"];
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const emailInput = document.getElementById('email');
+const sendBtn = document.getElementById('sendBtn');
+const msg = document.getElementById('msg');
+
+function show(t){ msg.textContent = t; }
+
+if (isSignInWithEmailLink(auth, window.location.href)) {
+  let email = window.localStorage.getItem('emailForSignIn');
+  if (!email) email = window.prompt('Confirme ton email pour finaliser la connexion');
+  show('Vérification en cours...');
+  signInWithEmailLink(auth, email, window.location.href)
+    .then((result) => {
+      if (!ALLOWED_EMAILS.includes(result.user.email.toLowerCase())) {
+        show('Email non autorisé.');
+        return auth.signOut();
+      }
+      window.localStorage.removeItem('emailForSignIn');
+      window.location.href = './index.html';
+    })
+    .catch(e => show('Lien invalide ou expiré. ' + e.message));
+}
+
+sendBtn.onclick = async () => {
+  const email = emailInput.value.trim().toLowerCase();
+  if (!email) return show('Entre ton email.');
+  if (!ALLOWED_EMAILS.includes(email)) return show('Cet email n'est pas autorisé.');
+  
+  const actionCodeSettings = {
+    url: window.location.href.split('?')[0],
+    handleCodeInApp: true
+  };
+  sendBtn.disabled = true;
+  try {
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    window.localStorage.setItem('emailForSignIn', email);
+    show('Lien envoyé ! Ouvre ta boîte Gmail et clique sur le lien.');
+  } catch(e) {
+    show('Erreur: ' + e.message);
+    sendBtn.disabled = false;
+  }
+};
+</script>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;var a=target.closest?target.closest("a[href]"):null;if(!a||!a.href||!/^https?:\/\//.test(a.href))return;if(a.href.replace(/#.*$/,"")===loc)return;var productId=extractProductId(target)||extractProductId(a);if(!productId)return;e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*")},true)})();</script></body>
+</html>
