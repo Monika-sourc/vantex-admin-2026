@@ -125,8 +125,8 @@
        .admin-header.brand.title { font-weight: 700; font-size: 20px; letter-spacing: -0.3px; }
        .admin-header.brand.subtitle { font-size: 12px; opacity: 0.7; font-weight: 400; }
        .admin-header.badge-version { background: rgba(255,255,0.15); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,0.1); display: flex; align-items: center; gap: 8px; }
-       .admin-header.btn-logout { background: rgba(255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; transition: var(--transition); font-family: inherit; }
-       .admin-header.btn-logout:hover { background: rgba(255,255,0.3); }
+       .admin-header.btn-logout { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; transition: var(--transition); font-family: inherit; }
+       .admin-header.btn-logout:hover { background: rgba(255,255,255,0.3); }
 
        .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 40px; }
        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; margin-bottom: 20px; box-shadow: var(--shadow); transition: var(--transition); }
@@ -150,8 +150,8 @@
        .btn:active { transform: scale(0.98); }
        .btn-secondary { background: transparent; color: var(--p); border: 1.5px solid var(--p); box-shadow: none; }
        .btn-secondary:hover { background: var(--p-light); box-shadow: none; }
-       .btn-danger { background: #DC2626; box-shadow: 0 2px 8px rgba(220,38,38,0.2); }
-       .btn-danger:hover { box-shadow: 0 4px 16px rgba(220,38,38,0.3); }
+       .btn-danger { background: #DC2626; box-shadow: 0 2px 8px rgba(220,38,0.2); }
+       .btn-danger:hover { box-shadow: 0 4px 16px rgba(220,38,0.3); }
        .btn-success { background: #059669; box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
        .btn-success:hover { box-shadow: 0 4px 16px rgba(5,150,105,0.3); }
        .btn-primary { background: #2563EB; box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
@@ -237,7 +237,7 @@
             <p>Veuillez saisir le mot de passe administrateur</p>
             <div class="field">
                 <label for="passwordInput">Mot de passe</label>
-                <input id="passwordInput" type="password" placeholder="••••" autofocus>
+                <input id="passwordInput" type="password" placeholder="••••••••" autofocus>
             </div>
             <button id="loginBtn" class="btn"><i class="fas fa-arrow-right-to-bracket"></i> Se connecter</button>
             <div id="loginError" class="login-error">Mot de passe incorrect. Réessayez.</div>
@@ -522,14 +522,14 @@
             import("https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js")
                .then(async ({ initializeApp }) => {
                     const firebaseConfig = {
-                        apiKey: "AIzaSyCU-KBtj7vx3OouofytlwIN3KPd1McNLEk",
-                        authDomain: "vantex-admin-2026.firebaseapp.com",
-                        databaseURL: "https://vantex-admin-2026-default-rtdb.europe-west1.firebasedatabase.app",
-                        projectId: "vantex-admin-2026",
-                        storageBucket: "vantex-admin-2026.firebasestorage.app",
-                        messagingSenderId: "810884502320",
-                        appId: "1:810884502320:web:b5ba7c2909ddf4ccf02ef5"
-                    };
+  apiKey: "AIzaSyCU-KBtj7vx3OouofytlwIN3KPd1McNlEk",
+  authDomain: "vantex-admin-2026.firebaseapp.com",
+  databaseURL: "https://vantex-admin-2026-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "vantex-admin-2026",
+  storageBucket: "vantex-admin-2026.firebasestorage.app",
+  messagingSenderId: "810884502320",
+  appId: "1:810884502320:web:b8ba7c2909ddf4ccf02ef5"
+};
                     const app = initializeApp(firebaseConfig);
                     // --- SÉCURITÉ : connexion anonyme Firebase ---
                     const { getAuth, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
