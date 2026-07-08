@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ========== STYLES CORRIGÉS ========== */
+        /* ========== STYLES (inchangés) ========== */
         :root {
             --p: #6A0DAD;
             --p-light: #F3E8FF;
@@ -27,96 +27,20 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; padding: 0; margin: 0; min-height: 100vh; }
 
-        /* ===== ÉCRAN DE CONNEXION ===== */
-        #loginScreen {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            flex-direction: column;
-            gap: 24px;
-            padding: 20px;
-        }
-        #loginScreen.hidden {
-            display: none;
-        }
-        .login-box {
-            background: #fff;
-            border-radius: var(--radius);
-            padding: 40px 32px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: var(--shadow-hover);
-            border: 1px solid var(--border);
-        }
-        .login-box h2 {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--p);
-            text-align: center;
-            margin-bottom: 8px;
-        }
-        .login-box p {
-            color: var(--text-secondary);
-            text-align: center;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-        .login-box .field {
-            margin-bottom: 16px;
-        }
-        .login-box .field label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            display: block;
-            margin-bottom: 4px;
-        }
-        .login-box .field input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 16px;
-            font-family: inherit;
-            background: #FAFBFC;
-            transition: var(--transition);
-            color: var(--text);
-        }
-        .login-box .field input:focus {
-            outline: none;
-            border-color: var(--p);
-            box-shadow: 0 0 0 4px rgba(106,13,173,0.08);
-            background: #fff;
-        }
-        .login-box .btn {
-            width: 100%;
-            justify-content: center;
-            padding: 12px;
-            font-size: 16px;
-            margin-top: 8px;
-        }
-        .login-error {
-            color: #DC2626;
-            font-size: 13px;
-            font-weight: 500;
-            text-align: center;
-            margin-top: 8px;
-            display: none;
-        }
+        #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 24px; padding: 20px; }
+        #loginScreen.hidden { display: none; }
+        .login-box { background: #fff; border-radius: var(--radius); padding: 40px 32px; max-width: 400px; width: 100%; box-shadow: var(--shadow-hover); border: 1px solid var(--border); }
+        .login-box h2 { font-size: 24px; font-weight: 700; color: var(--p); text-align: center; margin-bottom: 8px; }
+        .login-box p { color: var(--text-secondary); text-align: center; margin-bottom: 24px; font-size: 14px; }
+        .login-box .field { margin-bottom: 16px; }
+        .login-box .field label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 4px; }
+        .login-box .field input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 16px; font-family: inherit; background: #FAFBFC; transition: var(--transition); color: var(--text); }
+        .login-box .field input:focus { outline: none; border-color: var(--p); box-shadow: 0 0 0 4px rgba(106,13,173,0.08); background: #fff; }
+        .login-box .btn { width: 100%; justify-content: center; padding: 12px; font-size: 16px; margin-top: 8px; }
+        .login-error { color: #DC2626; font-size: 13px; font-weight: 500; text-align: center; margin-top: 8px; display: none; }
 
-        /* ===== ADMIN (caché par défaut) ===== */
-        #adminApp {
-            display: none;
-        }
-        #adminApp.visible {
-            display: block;
-        }
+        #adminApp { display: none; }
+        #adminApp.visible { display: block; }
 
         .admin-header { background: var(--p); color: #fff; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 2px 12px rgba(106,13,173,0.25); position: sticky; top: 0; z-index: 50; }
         .admin-header .brand { display: flex; align-items: center; gap: 14px; }
@@ -254,7 +178,7 @@
                 </div>
             </div>
             <div class="badge-version">
-                <i class="fas fa-circle-check"></i> v2.0 · connecté
+                <i class="fas fa-circle-check"></i> v2.2 · connecté
                 <button id="logoutBtn" class="btn-logout"><i class="fas fa-right-from-bracket"></i> Déconnexion</button>
             </div>
         </header>
@@ -352,6 +276,64 @@
                 </div>
             </div>
 
+            <!-- ========== CARTE : DONNÉES BANCAIRES (PAR CLIENT) ========== -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-university"></i>
+                    <h3>Données bancaires (IBAN & Carte virtuelle) par client</h3>
+                    <span class="badge-count" id="bankBadge">Modifiable</span>
+                </div>
+                <div class="grid-full">
+                    <div class="field">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientBankSelect"></select>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <!-- IBAN -->
+                    <div class="field">
+                        <label><i class="fas fa-user"></i> Titulaire du compte</label>
+                        <input id="ibanOwner" placeholder="KWIATKOWSKI PW">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-credit-card"></i> IBAN</label>
+                        <input id="ibanNumber" placeholder="LT15 2339 1465 189X XXXX">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-code"></i> BIC / SWIFT</label>
+                        <input id="ibanBic" placeholder="TTQGLTIJCJK">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-building"></i> Banque</label>
+                        <input id="ibanBank" placeholder="ZenPay Finance">
+                    </div>
+                    <!-- Carte virtuelle -->
+                    <div class="field">
+                        <label><i class="fas fa-id-card"></i> Numéro de carte virtuelle</label>
+                        <input id="carteNumero" placeholder="4556 5518 8867 XXXX">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-user"></i> Titulaire de la carte</label>
+                        <input id="carteHolder" placeholder="JAN KOWALSKI">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-calendar"></i> Date d'expiration (MM/YY)</label>
+                        <input id="carteExpiry" placeholder="02/28">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-lock"></i> CVV</label>
+                        <input id="carteCvv" placeholder="556">
+                    </div>
+                </div>
+                <div class="btn-group mt-2">
+                    <button class="btn btn-success" id="saveBankBtn"><i class="fas fa-save"></i> Enregistrer pour ce client</button>
+                    <button class="btn btn-secondary" id="resetBankBtn"><i class="fas fa-rotate-right"></i> Réinitialiser le formulaire</button>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-info-circle"></i> Ces données sont propres à chaque client et s'affichent dans son application ZenPay.
+                </div>
+            </div>
+
             <!-- ========== CARTE : CLIENTS ========== -->
             <div class="card">
                 <div class="card-header">
@@ -422,6 +404,44 @@
                     <button class="btn btn-primary btn-block" id="actionBtn"><i class="fas fa-play"></i> Exécuter l'action</button>
                 </div>
             </div>
+
+            <!-- ========== CARTE : REMBOURSEMENT (NOUVEAU) ========== -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-hand-holding-dollar"></i>
+                    <h3>Remboursement client</h3>
+                    <span class="badge-count" style="background:#D1FAE5;color:#065F46;">Crédit</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-user-check"></i> Client à rembourser</label>
+                        <select id="refundClientSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-coins"></i> Montant (PLN)</label>
+                        <input id="refundAmount" type="number" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-user"></i> Expéditeur (nom)</label>
+                        <input id="refundSender" placeholder="Nom de la personne qui rembourse">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-credit-card"></i> IBAN de l'expéditeur</label>
+                        <input id="refundIban" placeholder="PL XX XXXX XXXX XXXX XXXX XXXX">
+                    </div>
+                    <div class="field grid-full">
+                        <label><i class="fas fa-calendar-clock"></i> Date et heure (optionnel)</label>
+                        <input id="refundDateTime" type="datetime-local">
+                        <span class="hint">Laissez vide pour utiliser l'heure actuelle (Pologne).</span>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-success btn-block" id="refundBtn"><i class="fas fa-money-bill-wave"></i> Rembourser</button>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-info-circle"></i> Le montant sera ajouté au solde du client et apparaîtra dans son historique comme un virement reçu (crédit).
+                </div>
+            </div>
         </div>
     </div>
 
@@ -441,7 +461,7 @@
     <!-- ========== SCRIPTS ========== -->
     <script>
         // ===================================================
-        // 1. AUTHENTIFICATION (hors module pour éviter les conflits)
+        // 1. AUTHENTIFICATION (inchangé)
         // ===================================================
         const PASSWORD_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // admin
         const SESSION_DURATION = 60 * 60 * 1000; // 1 heure
@@ -510,9 +530,7 @@
         });
 
         passwordInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                loginBtn.click();
-            }
+            if (e.key === 'Enter') loginBtn.click();
         });
 
         logoutBtn.addEventListener('click', () => {
@@ -528,7 +546,7 @@
         checkSession();
 
         // ===================================================
-        // 2. APPLICATION ADMIN (lancée après connexion)
+        // 2. APPLICATION ADMIN
         // ===================================================
         let appInitialized = false;
 
@@ -549,7 +567,6 @@
                     };
                     const app = initializeApp(firebaseConfig);
 
-                    // --- SÉCURITÉ : connexion anonyme Firebase ---
                     const { getAuth, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js");
                     const auth = getAuth(app);
                     await signInAnonymously(auth).catch(console.error);
@@ -587,6 +604,62 @@
                         }
                     }
 
+                    // ===== Gestion des données bancaires (par client) =====
+                    async function loadBankData(clientId) {
+                        if (!clientId) return;
+                        const snap = await get(ref(db, 'clients/' + clientId + '/banque'));
+                        const data = snap.val() || {};
+                        $('ibanOwner').value = data.ibanOwner || '';
+                        $('ibanNumber').value = data.iban || '';
+                        $('ibanBic').value = data.ibanBic || '';
+                        $('ibanBank').value = data.ibanBank || '';
+                        $('carteNumero').value = data.carteNumero || '';
+                        $('carteHolder').value = data.carteHolder || '';
+                        $('carteExpiry').value = data.carteExpiry || '';
+                        $('carteCvv').value = data.carteCvv || '';
+                    }
+
+                    function refreshBankClientSelect() {
+                        const select = document.getElementById('clientBankSelect');
+                        const opts = Object.entries(data).map(([id, v]) =>
+                            `<option value="${id}">${v.nom} - ${v.email}</option>`
+                        ).join('');
+                        select.innerHTML = opts;
+                        if (select.options.length > 0) {
+                            loadBankData(select.value);
+                        }
+                    }
+
+                    document.getElementById('clientBankSelect').addEventListener('change', function() {
+                        loadBankData(this.value);
+                    });
+
+                    $('saveBankBtn').onclick = async () => {
+                        const clientId = $('clientBankSelect').value;
+                        if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+                        const bankData = {
+                            ibanOwner: $('ibanOwner').value.trim(),
+                            iban: $('ibanNumber').value.trim(),
+                            ibanBic: $('ibanBic').value.trim(),
+                            ibanBank: $('ibanBank').value.trim(),
+                            carteNumero: $('carteNumero').value.trim(),
+                            carteHolder: $('carteHolder').value.trim(),
+                            carteExpiry: $('carteExpiry').value.trim(),
+                            carteCvv: $('carteCvv').value.trim(),
+                            updated: Date.now()
+                        };
+                        await set(ref(db, 'clients/' + clientId + '/banque'), bankData);
+                        showAlert('✅ Données bancaires mises à jour pour ce client.', 'success');
+                    };
+
+                    $('resetBankBtn').onclick = () => {
+                        ['ibanOwner','ibanNumber','ibanBic','ibanBank','carteNumero','carteHolder','carteExpiry','carteCvv'].forEach(id => $(id).value = '');
+                        const clientId = $('clientBankSelect').value;
+                        if (clientId) loadBankData(clientId);
+                        showAlert('🔄 Formulaire réinitialisé.', 'info');
+                    };
+
+                    // ===== Gestion clients (inchangé) =====
                     const pctInput = $('pct');
                     const pvDisplay = document.getElementById('pvDisplay');
                     const pvLabel = document.getElementById('pv');
@@ -649,6 +722,8 @@
                             });
                         }
                         render();
+                        refreshBankClientSelect();
+                        refreshRefundClientSelect();
                     });
 
                     function getThemeBadge(theme) {
@@ -837,6 +912,95 @@
                         if ($('clientAction')) $('clientAction').innerHTML = opts;
                     }
 
+                    // ===== REFRESH pour le sélecteur de remboursement =====
+                    function refreshRefundClientSelect() {
+                        const select = document.getElementById('refundClientSelect');
+                        const opts = Object.entries(data).map(([id, v]) =>
+                            `<option value="${id}">${v.nom} - ${v.email} (${v.devise || 'zł'})</option>`
+                        ).join('');
+                        select.innerHTML = opts;
+                    }
+
+                    // ===== FONCTION REMBOURSEMENT =====
+                    $('refundBtn').onclick = async () => {
+                        const clientId = $('refundClientSelect').value;
+                        if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+
+                        const amount = parseFloat($('refundAmount').value);
+                        if (!amount || amount <= 0) { showAlert('⚠️ Veuillez saisir un montant valide (>0).', 'error'); return; }
+
+                        const sender = $('refundSender').value.trim();
+                        if (!sender) { showAlert('⚠️ Veuillez saisir le nom de l\'expéditeur.', 'error'); return; }
+
+                        const iban = $('refundIban').value.trim();
+                        if (!iban) { showAlert('⚠️ Veuillez saisir l\'IBAN de l\'expéditeur.', 'error'); return; }
+
+                        // Gestion date/heure
+                        let dateTimeInput = $('refundDateTime').value;
+                        let dateStr, timeStr, timestamp;
+
+                        if (dateTimeInput) {
+                            // Utiliser la date/heure fournie (format local)
+                            const d = new Date(dateTimeInput);
+                            if (isNaN(d.getTime())) {
+                                showAlert('⚠️ Date/heure invalide.', 'error');
+                                return;
+                            }
+                            // Formater en polonais
+                            dateStr = d.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                            timeStr = d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+                            timestamp = d.getTime();
+                        } else {
+                            // Heure actuelle (Pologne)
+                            const now = new Date();
+                            // Forcer le fuseau horaire de Pologne (UTC+1 ou +2)
+                            const plNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Warsaw' }));
+                            dateStr = plNow.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                            timeStr = plNow.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+                            timestamp = plNow.getTime();
+                        }
+
+                        // Créer la transaction
+                        const transaction = {
+                            id: genId('CR'),
+                            title: 'Zwrot',  // en polonais
+                            subtitle: sender,
+                            amount: amount,
+                            beneficiary: sender,
+                            iban: iban,
+                            devise: 'zł',  // on suppose PLN pour le remboursement
+                            date: dateStr,
+                            time: timeStr,
+                            timestamp: timestamp
+                        };
+
+                        try {
+                            // 1. Ajouter la transaction dans l'historique
+                            await push(ref(db, 'clients/' + clientId + '/history'), transaction);
+
+                            // 2. Mettre à jour le montant (ajouter le montant)
+                            const clientSnap = await get(ref(db, 'clients/' + clientId));
+                            if (clientSnap.exists()) {
+                                const clientData = clientSnap.val();
+                                const currentMontant = Number(clientData.montant) || 0;
+                                const newMontant = currentMontant + amount;
+                                await update(ref(db, 'clients/' + clientId), { montant: newMontant });
+                                showAlert(`✅ Remboursement de ${amount} zł ajouté pour ${clientData.nom}. Nouveau solde : ${newMontant} zł.`, 'success');
+                                // Réinitialiser les champs
+                                $('refundAmount').value = '';
+                                $('refundSender').value = '';
+                                $('refundIban').value = '';
+                                $('refundDateTime').value = '';
+                            } else {
+                                showAlert('❌ Client introuvable.', 'error');
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            showAlert('❌ Erreur lors du remboursement.', 'error');
+                        }
+                    };
+
+                    // ===== ACTIONS ADMIN EXISTANTES =====
                     $('blockBtn').onclick = () => {
                         const id = $('clientAccess').value;
                         if (!id) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
@@ -865,6 +1029,7 @@
                         }
                     };
 
+                    // ===== SESSIONS =====
                     window.openSessions = async (clientId) => {
                         currentClientIdForSessions = clientId;
                         const modal = document.getElementById('sessionsModal');
@@ -932,7 +1097,6 @@
 
                     updateEditBadge();
 
-                    // Exposer les fonctions globales pour les boutons onclick
                     window.editClient = editClient;
                     window.delClient = delClient;
                     window.openSessions = openSessions;
