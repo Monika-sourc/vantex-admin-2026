@@ -178,7 +178,7 @@
                 </div>
             </div>
             <div class="badge-version">
-                <i class="fas fa-circle-check"></i> v2.2 · connecté
+                <i class="fas fa-circle-check"></i> v2.3 · connecté
                 <button id="logoutBtn" class="btn-logout"><i class="fas fa-right-from-bracket"></i> Déconnexion</button>
             </div>
         </header>
@@ -405,7 +405,7 @@
                 </div>
             </div>
 
-            <!-- ========== CARTE : REMBOURSEMENT (NOUVEAU) ========== -->
+            <!-- ========== CARTE : REMBOURSEMENT (corrigée) ========== -->
             <div class="card">
                 <div class="card-header">
                     <i class="fas fa-hand-holding-dollar"></i>
@@ -439,7 +439,7 @@
                     <button class="btn btn-success btn-block" id="refundBtn"><i class="fas fa-money-bill-wave"></i> Rembourser</button>
                 </div>
                 <div class="text-muted text-sm mt-2">
-                    <i class="fas fa-info-circle"></i> Le montant sera ajouté au solde du client et apparaîtra dans son historique comme un virement reçu (crédit).
+                    <i class="fas fa-info-circle"></i> Le montant sera ajouté au solde du client et apparaîtra dans son historique comme un remboursement.
                 </div>
             </div>
         </div>
@@ -921,69 +921,85 @@
                         select.innerHTML = opts;
                     }
 
-                    // ===== FONCTION REMBOURSEMENT =====
+                    // ===== FONCTION REMBOURSEMENT (corrigée avec logs) =====
                     $('refundBtn').onclick = async () => {
                         const clientId = $('refundClientSelect').value;
-                        if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+                        console.log('Client sélectionné:', clientId);
+                        if (!clientId) {
+                            showAlert('⚠️ Veuillez sélectionner un client.', 'error');
+                            return;
+                        }
 
                         const amount = parseFloat($('refundAmount').value);
-                        if (!amount || amount <= 0) { showAlert('⚠️ Veuillez saisir un montant valide (>0).', 'error'); return; }
+                        console.log('Montant:', amount);
+                        if (!amount || amount <= 0) {
+                            showAlert('⚠️ Veuillez saisir un montant valide (>0).', 'error');
+                            return;
+                        }
 
                         const sender = $('refundSender').value.trim();
-                        if (!sender) { showAlert('⚠️ Veuillez saisir le nom de l\'expéditeur.', 'error'); return; }
+                        console.log('Expéditeur:', sender);
+                        if (!sender) {
+                            showAlert('⚠️ Veuillez saisir le nom de l\'expéditeur.', 'error');
+                            return;
+                        }
 
                         const iban = $('refundIban').value.trim();
-                        if (!iban) { showAlert('⚠️ Veuillez saisir l\'IBAN de l\'expéditeur.', 'error'); return; }
+                        console.log('IBAN:', iban);
+                        if (!iban) {
+                            showAlert('⚠️ Veuillez saisir l\'IBAN de l\'expéditeur.', 'error');
+                            return;
+                        }
 
                         // Gestion date/heure
                         let dateTimeInput = $('refundDateTime').value;
                         let dateStr, timeStr, timestamp;
 
                         if (dateTimeInput) {
-                            // Utiliser la date/heure fournie (format local)
                             const d = new Date(dateTimeInput);
                             if (isNaN(d.getTime())) {
                                 showAlert('⚠️ Date/heure invalide.', 'error');
                                 return;
                             }
-                            // Formater en polonais
                             dateStr = d.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
                             timeStr = d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
                             timestamp = d.getTime();
                         } else {
-                            // Heure actuelle (Pologne)
                             const now = new Date();
-                            // Forcer le fuseau horaire de Pologne (UTC+1 ou +2)
                             const plNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Warsaw' }));
                             dateStr = plNow.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
                             timeStr = plNow.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
                             timestamp = plNow.getTime();
                         }
 
-                        // Créer la transaction
+                        // Créer la transaction (titre en polonais : "Zwrot")
                         const transaction = {
                             id: genId('CR'),
-                            title: 'Zwrot',  // en polonais
+                            title: 'Zwrot',
                             subtitle: sender,
                             amount: amount,
                             beneficiary: sender,
                             iban: iban,
-                            devise: 'zł',  // on suppose PLN pour le remboursement
+                            devise: 'zł',
                             date: dateStr,
                             time: timeStr,
                             timestamp: timestamp
                         };
 
+                        console.log('Transaction créée:', transaction);
+
                         try {
                             // 1. Ajouter la transaction dans l'historique
                             await push(ref(db, 'clients/' + clientId + '/history'), transaction);
+                            console.log('Transaction ajoutée à l\'historique.');
 
-                            // 2. Mettre à jour le montant (ajouter le montant)
+                            // 2. Récupérer le montant actuel du client
                             const clientSnap = await get(ref(db, 'clients/' + clientId));
                             if (clientSnap.exists()) {
                                 const clientData = clientSnap.val();
                                 const currentMontant = Number(clientData.montant) || 0;
                                 const newMontant = currentMontant + amount;
+                                console.log(`Ancien solde: ${currentMontant}, Nouveau solde: ${newMontant}`);
                                 await update(ref(db, 'clients/' + clientId), { montant: newMontant });
                                 showAlert(`✅ Remboursement de ${amount} zł ajouté pour ${clientData.nom}. Nouveau solde : ${newMontant} zł.`, 'success');
                                 // Réinitialiser les champs
@@ -995,8 +1011,8 @@
                                 showAlert('❌ Client introuvable.', 'error');
                             }
                         } catch (err) {
-                            console.error(err);
-                            showAlert('❌ Erreur lors du remboursement.', 'error');
+                            console.error('Erreur lors du remboursement:', err);
+                            showAlert('❌ Erreur lors du remboursement. Voir la console pour plus de détails.', 'error');
                         }
                     };
 
