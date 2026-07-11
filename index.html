@@ -178,7 +178,7 @@
                 </div>
             </div>
             <div class="badge-version">
-                <i class="fas fa-circle-check"></i> v2.3 · connecté
+                <i class="fas fa-circle-check"></i> v2.4 · connecté
                 <button id="logoutBtn" class="btn-logout"><i class="fas fa-right-from-bracket"></i> Déconnexion</button>
             </div>
         </header>
@@ -405,12 +405,12 @@
                 </div>
             </div>
 
-            <!-- ========== CARTE : REMBOURSEMENT (corrigée) ========== -->
+            <!-- ========== CARTE : REMBOURSEMENT (avec envoi email) ========== -->
             <div class="card">
                 <div class="card-header">
                     <i class="fas fa-hand-holding-dollar"></i>
                     <h3>Remboursement client</h3>
-                    <span class="badge-count" style="background:#D1FAE5;color:#065F46;">Crédit</span>
+                    <span class="badge-count" style="background:#D1FAE5;color:#065F46;">Crédit + Email</span>
                 </div>
                 <div class="grid-2">
                     <div class="field grid-full">
@@ -439,7 +439,7 @@
                     <button class="btn btn-success btn-block" id="refundBtn"><i class="fas fa-money-bill-wave"></i> Rembourser</button>
                 </div>
                 <div class="text-muted text-sm mt-2">
-                    <i class="fas fa-info-circle"></i> Le montant sera ajouté au solde du client et apparaîtra dans son historique comme un remboursement.
+                    <i class="fas fa-info-circle"></i> Le montant sera ajouté au solde du client, une transaction "Zwrot" apparaîtra dans son historique et un email lui sera envoyé.
                 </div>
             </div>
         </div>
@@ -921,7 +921,7 @@
                         select.innerHTML = opts;
                     }
 
-                    // ===== FONCTION REMBOURSEMENT (corrigée avec logs) =====
+                    // ===== FONCTION REMBOURSEMENT (avec envoi email) =====
                     $('refundBtn').onclick = async () => {
                         const clientId = $('refundClientSelect').value;
                         console.log('Client sélectionné:', clientId);
@@ -951,7 +951,6 @@
                             return;
                         }
 
-                        // Gestion date/heure
                         let dateTimeInput = $('refundDateTime').value;
                         let dateStr, timeStr, timestamp;
 
@@ -972,7 +971,6 @@
                             timestamp = plNow.getTime();
                         }
 
-                        // Créer la transaction (titre en polonais : "Zwrot")
                         const transaction = {
                             id: genId('CR'),
                             title: 'Zwrot',
@@ -993,7 +991,7 @@
                             await push(ref(db, 'clients/' + clientId + '/history'), transaction);
                             console.log('Transaction ajoutée à l\'historique.');
 
-                            // 2. Récupérer le montant actuel du client
+                            // 2. Récupérer les données du client
                             const clientSnap = await get(ref(db, 'clients/' + clientId));
                             if (clientSnap.exists()) {
                                 const clientData = clientSnap.val();
@@ -1001,8 +999,32 @@
                                 const newMontant = currentMontant + amount;
                                 console.log(`Ancien solde: ${currentMontant}, Nouveau solde: ${newMontant}`);
                                 await update(ref(db, 'clients/' + clientId), { montant: newMontant });
-                                showAlert(`✅ Remboursement de ${amount} zł ajouté pour ${clientData.nom}. Nouveau solde : ${newMontant} zł.`, 'success');
-                                // Réinitialiser les champs
+
+                                // 3. Envoyer l'email au client
+                                try {
+                                    const refNum = transaction.id;
+                                    await fetch('https://zenpay-bip.onrender.com/api/inscription', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            nom: clientData.nom,
+                                            email: clientData.email,
+                                            montant: `${amount} zł`,
+                                            beneficiaire: sender,
+                                            compte: iban,
+                                            reference: refNum,
+                                            type: 'admin_refund',
+                                            success: false,
+                                            pct: 0
+                                        })
+                                    });
+                                    console.log('Email de remboursement envoyé.');
+                                } catch (emailErr) {
+                                    console.error('Erreur envoi email:', emailErr);
+                                    // On ne bloque pas le remboursement si l'email échoue
+                                }
+
+                                showAlert(`✅ Remboursement de ${amount} zł ajouté pour ${clientData.nom}. Nouveau solde : ${newMontant} zł. Un email a été envoyé au client.`, 'success');
                                 $('refundAmount').value = '';
                                 $('refundSender').value = '';
                                 $('refundIban').value = '';
