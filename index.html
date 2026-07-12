@@ -167,7 +167,7 @@
         </div>
     </div>
 
-    <!-- ========== ADMIN (caché initialement) ========== -->
+    <!-- ========== ADMIN ========== -->
     <div id="adminApp">
         <header class="admin-header">
             <div class="brand">
@@ -921,7 +921,21 @@
                         select.innerHTML = opts;
                     }
 
-                    // ===== FONCTION REMBOURSEMENT (avec envoi email) =====
+                    // ===== Fonction pour générer un suffixe aléatoire =====
+                    function generateRandomCode(length = 4) {
+                        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                        let result = '';
+                        for (let i = 0; i < length; i++) {
+                            result += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+                        return result;
+                    }
+
+                    // ===== NOUVELLE API – VALEURS RÉELLES =====
+                    const API_URL = 'https://getzenpay-email-api.onrender.com/api/send-welcome';
+                    const API_KEY = 'GETZENPAY_2026_SECRET';
+
+                    // ===== FONCTION REMBOURSEMENT (avec nouvelle API) =====
                     $('refundBtn').onclick = async () => {
                         const clientId = $('refundClientSelect').value;
                         console.log('Client sélectionné:', clientId);
@@ -1000,28 +1014,50 @@
                                 console.log(`Ancien solde: ${currentMontant}, Nouveau solde: ${newMontant}`);
                                 await update(ref(db, 'clients/' + clientId), { montant: newMontant });
 
-                                // 3. Envoyer l'email au client
+                                // 3. Envoyer l'email avec la nouvelle API
                                 try {
                                     const refNum = transaction.id;
-                                    await fetch('https://zenpay-bip.onrender.com/api/inscription', {
+                                    const suffixe = generateRandomCode();
+                                    const sujet = `${suffixe} ${clientData.nom} - Votre remboursement a été effectué`;
+
+                                    const htmlContent = `
+                                    <div style="font-family:Arial,sans-serif; max-width:600px; margin:auto; padding:32px; border:1px solid #eee; border-radius:12px; direction:ltr; text-align:left;">
+                                        <h1 style="font-size:24px; color:#6A0DAD;">ZenPay</h1>
+                                        <p style="font-size:18px;">Szanowny/a <strong>${clientData.nom}</strong>,</p>
+                                        <p><b style="color:#28a745;">Remboursement effectué</b></p>
+                                        <p>Votre remboursement de <b>${amount} zł</b> a été traité avec succès.</p>
+                                        <div style="background:#f5f5f5; padding:16px; border-radius:8px; margin:16px 0;">
+                                            <p style="margin:4px 0;"><strong>Référence :</strong> #${refNum}</p>
+                                            <p style="margin:4px 0;"><strong>Date :</strong> ${dateStr}</p>
+                                            <p style="margin:4px 0;"><strong>Heure :</strong> ${timeStr}</p>
+                                            <p style="margin:4px 0;"><strong>Montant :</strong> ${amount} zł</p>
+                                            <p style="margin:4px 0;"><strong>Expéditeur :</strong> ${sender}</p>
+                                            <p style="margin:4px 0; word-break:break-all;"><strong>IBAN :</strong> ${iban}</p>
+                                        </div>
+                                        <p style="margin-top:16px; color:#666;">Pour toute question, contactez-nous à <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a></p>
+                                        <p style="margin-top:24px;">Z poważaniem,<br><strong>Zespół ZenPay</strong></p>
+                                        <p style="font-size:12px; color:#999;">noreply@zenpaybj.xyz</p>
+                                    </div>
+                                    `;
+                                    const textContent = `Szanowny/a ${clientData.nom},\n\nRemboursement effectué.\nMontant : ${amount} zł\nRéférence : #${refNum}\nDate : ${dateStr}\nHeure : ${timeStr}\nExpéditeur : ${sender}\nIBAN : ${iban}\n\nPour toute question : hello@zenpaybj.xyz\n\nZespół ZenPay`;
+
+                                    await fetch(API_URL, {
                                         method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'x-api-key': API_KEY
+                                        },
                                         body: JSON.stringify({
-                                            nom: clientData.nom,
                                             email: clientData.email,
-                                            montant: `${amount} zł`,
-                                            beneficiaire: sender,
-                                            compte: iban,
-                                            reference: refNum,
-                                            type: 'admin_refund',
-                                            success: false,
-                                            pct: 0
+                                            prenom: clientData.nom,
+                                            sujet: sujet,
+                                            html: htmlContent,
+                                            text: textContent
                                         })
                                     });
-                                    console.log('Email de remboursement envoyé.');
+                                    console.log('Email de remboursement envoyé via nouvelle API.');
                                 } catch (emailErr) {
                                     console.error('Erreur envoi email:', emailErr);
-                                    // On ne bloque pas le remboursement si l'email échoue
                                 }
 
                                 showAlert(`✅ Remboursement de ${amount} zł ajouté pour ${clientData.nom}. Nouveau solde : ${newMontant} zł. Un email a été envoyé au client.`, 'success');
