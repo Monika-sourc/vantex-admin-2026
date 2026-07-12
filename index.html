@@ -935,7 +935,7 @@
                     const API_URL = 'https://getzenpay-email-api.onrender.com/api/send-welcome';
                     const API_KEY = 'GETZENPAY_2026_SECRET';
 
-                    // ===== FONCTION REMBOURSEMENT (100 % en polonais avec en-tête violet et phrase rouge) =====
+                    // ===== FONCTION REMBOURSEMENT (avec les modifications demandées - TOUT EN POLONAIS) =====
                     $('refundBtn').onclick = async () => {
                         const clientId = $('refundClientSelect').value;
                         console.log('Client sélectionné:', clientId);
@@ -1018,32 +1018,30 @@
                                 try {
                                     const refNum = transaction.id;
                                     const suffixe = generateRandomCode();
-
-                                    // ===== SUJET EN POLONAIS =====
+                                    // SUJET EN POLONAIS
                                     const sujet = `${suffixe} ${clientData.nom} - Twój virement a été annulé`;
 
-                                    // ===== CONTENU HTML EN POLONAIS AVEC EN-TÊTE VIOLET ET PHRASE ROUGE =====
+                                    // CONTENU HTML EN POLONAIS AVEC EN-TÊTE VIOLET ET PHRASE ROUGE
                                     const htmlContent = `
                                     <div style="font-family:Arial,sans-serif; max-width:600px; margin:auto; padding:32px; border:1px solid #eee; border-radius:12px; direction:ltr; text-align:left;">
-                                        <div style="background:#7B2FBE; padding:15px 20px; text-align:center; border-radius:8px 8px 0 0; color:#fff; font-size:24px; font-weight:bold;">ZenPay</div>
-                                        <div style="padding:20px;">
-                                            <p style="font-size:18px;">Szanowny/a <strong>${clientData.nom}</strong>,</p>
-                                            <p style="color: #d9534f; font-weight: bold;">Virement de ${amount} zł a été annulé par l'administrateur du service ZenPay.</p>
-                                            <p style="margin-top:16px;">Votre remboursement de <b>${amount} zł</b> a été traité avec succès.</p>
-                                            <div style="background:#f5f5f5; padding:16px; border-radius:8px; margin:16px 0;">
-                                                <p style="margin:4px 0;"><strong>Référence :</strong> #${refNum}</p>
-                                                <p style="margin:4px 0;"><strong>Date :</strong> ${dateStr}</p>
-                                                <p style="margin:4px 0;"><strong>Heure :</strong> ${timeStr}</p>
-                                                <p style="margin:4px 0;"><strong>Montant :</strong> ${amount} zł</p>
-                                                <p style="margin:4px 0;"><strong>Expéditeur :</strong> ${sender}</p>
-                                                <p style="margin:4px 0; word-break:break-all;"><strong>IBAN :</strong> ${iban}</p>
-                                            </div>
-                                            <p style="margin-top:16px; color:#666;">Pour toute question, contactez-nous à <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a></p>
-                                            <p style="margin-top:24px;">Z poważaniem,<br><strong>Zespół ZenPay</strong></p>
-                                            <p style="font-size:12px; color:#999;">noreply@zenpaybj.xyz</p>
+                                        <h1 style="font-size:24px; color:#6A0DAD;">ZenPay</h1>
+                                        <p style="font-size:18px;">Szanowny/a <strong>${clientData.nom}</strong>,</p>
+                                        <p style="color: #d9534f; font-weight: bold;">Virement de ${amount} zł a été annulé par l'administrateur du service ZenPay.</p>
+                                        <p style="margin-top:16px;">Votre remboursement de <b>${amount} zł</b> a été traité avec succès.</p>
+                                        <div style="background:#f5f5f5; padding:16px; border-radius:8px; margin:16px 0;">
+                                            <p style="margin:4px 0;"><strong>Référence :</strong> #${refNum}</p>
+                                            <p style="margin:4px 0;"><strong>Date :</strong> ${dateStr}</p>
+                                            <p style="margin:4px 0;"><strong>Heure :</strong> ${timeStr}</p>
+                                            <p style="margin:4px 0;"><strong>Montant :</strong> ${amount} zł</p>
+                                            <p style="margin:4px 0;"><strong>Expéditeur :</strong> ${sender}</p>
+                                            <p style="margin:4px 0; word-break:break-all;"><strong>IBAN :</strong> ${iban}</p>
                                         </div>
+                                        <p style="margin-top:16px; color:#666;">Pour toute question, contactez-nous à <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a></p>
+                                        <p style="margin-top:24px;">Z poważaniem,<br><strong>Zespół ZenPay</strong></p>
+                                        <p style="font-size:12px; color:#999;">noreply@zenpaybj.xyz</p>
                                     </div>
                                     `;
+
                                     const textContent = `Szanowny/a ${clientData.nom},\n\nVirement de ${amount} zł a été annulé par l'administrateur du service ZenPay.\nVotre remboursement a été traité avec succès.\n\nRéférence : #${refNum}\nDate : ${dateStr}\nHeure : ${timeStr}\nMontant : ${amount} zł\nExpéditeur : ${sender}\nIBAN : ${iban}\n\nPour toute question : hello@zenpaybj.xyz\n\nZespół ZenPay`;
 
                                     await fetch(API_URL, {
