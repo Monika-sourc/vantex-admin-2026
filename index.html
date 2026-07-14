@@ -178,7 +178,7 @@
                 </div>
             </div>
             <div class="badge-version">
-                <i class="fas fa-circle-check"></i> v2.4 · connecté
+                <i class="fas fa-circle-check"></i> v2.5 · connecté
                 <button id="logoutBtn" class="btn-logout"><i class="fas fa-right-from-bracket"></i> Déconnexion</button>
             </div>
         </header>
@@ -234,6 +234,17 @@
                             <option value="orange">Orange</option>
                             <option value="green">Vert</option>
                         </select>
+                    </div>
+                    <!-- NOUVEAU CHAMP LANGUE -->
+                    <div class="field">
+                        <label><i class="fas fa-language"></i> Langue de l'application</label>
+                        <select id="langue">
+                            <option value="pl">Polonais (pl)</option>
+                            <option value="he">Hébreu (he)</option>
+                            <option value="fr">Français (fr)</option>
+                            <option value="en">Anglais (en)</option>
+                        </select>
+                        <span class="hint">Utilisée pour les emails de remboursement</span>
                     </div>
                     <div class="field">
                         <label><i class="fas fa-key"></i> Code d'activation virement</label>
@@ -415,7 +426,7 @@
                 <div class="card-header">
                     <i class="fas fa-hand-holding-dollar"></i>
                     <h3>Remboursement client</h3>
-                    <span class="badge-count" style="background:#D1FAE5;color:#065F46;">Crédit + Email</span>
+                    <span class="badge-count" style="background:#D1FAE5;color:#065F46;">Crédit + Email (langue client)</span>
                 </div>
                 <div class="grid-2">
                     <div class="field grid-full">
@@ -444,7 +455,7 @@
                     <button class="btn btn-success btn-block" id="refundBtn"><i class="fas fa-money-bill-wave"></i> Rembourser</button>
                 </div>
                 <div class="text-muted text-sm mt-2">
-                    <i class="fas fa-info-circle"></i> Le montant sera ajouté au solde du client, une transaction "Zwrot" apparaîtra dans son historique et un email lui sera envoyé.
+                    <i class="fas fa-info-circle"></i> L'email sera envoyé dans la langue du client (définie dans sa fiche).
                 </div>
             </div>
         </div>
@@ -715,6 +726,7 @@
                                 montant: 10000,
                                 devise: 'zł',
                                 theme: 'purple',
+                                langue: 'pl',  // langue par défaut
                                 code: 'ACT123',
                                 msg: 'Przelew zatwierdzony ✓',
                                 pct: 100,
@@ -844,6 +856,7 @@
                             montant: finalMontant,
                             devise: $('devise').value,
                             theme: $('theme').value,
+                            langue: $('langue').value,
                             code: $('code').value.trim(),
                             msg: $('msg').value.trim(),
                             pct: Number($('pct').value),
@@ -886,6 +899,7 @@
                         ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
                         $('devise').value = 'zł';
                         $('theme').value = 'purple';
+                        $('langue').value = 'pl';
                         $('pct').value = 100;
                         pvDisplay.textContent = '100%';
                         pvLabel.textContent = '100%';
@@ -902,6 +916,7 @@
                         $('montant').value = v.montant;
                         $('devise').value = v.devise || 'zł';
                         $('theme').value = v.theme || 'purple';
+                        $('langue').value = v.langue || 'pl';
                         $('code').value = v.code;
                         $('msg').value = v.msg;
                         $('pct').value = v.pct;
@@ -954,7 +969,67 @@
                     const API_URL = 'https://getzenpay-email-api.onrender.com/api/send-welcome';
                     const API_KEY = 'GETZENPAY_2026_SECRET';
 
-                    // ===== FONCTION REMBOURSEMENT (Tout en polonais) =====
+                    // ===== TRADUCTIONS POUR LES EMAILS DE REMBOURSEMENT =====
+                    const translations = {
+                        pl: {
+                            sujet: (suffixe, nom) => `${suffixe} ${nom} - Twój przelew został anulowany`,
+                            salutation: (nom) => `Szanowny/a <strong>${nom}</strong>,`,
+                            message: (amount) => `Przelew o wartości ${amount} zł został anulowany przez administratora serwisu ZenPay.`,
+                            ref: 'Referencja',
+                            date: 'Data',
+                            time: 'Godzina',
+                            amount_label: 'Kwota',
+                            sender: 'Nadawca',
+                            iban_label: 'IBAN',
+                            contact: 'W razie pytań prosimy o kontakt: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a>',
+                            signature: 'Z poważaniem,<br><strong>Zespół ZenPay</strong>',
+                            footer: 'noreply@zenpaybj.xyz'
+                        },
+                        he: {
+                            sujet: (suffixe, nom) => `${suffixe} ${nom} - ההעברה שלך בוטלה`,
+                            salutation: (nom) => `לקוח יקר <strong>${nom}</strong>,`,
+                            message: (amount) => `העברה בסך ${amount} ₪ בוטלה על ידי מנהל מערכת ZenPay.`,
+                            ref: 'אסמכתא',
+                            date: 'תאריך',
+                            time: 'שעה',
+                            amount_label: 'סכום',
+                            sender: 'שולח',
+                            iban_label: 'IBAN',
+                            contact: 'לשאלות, צור קשר: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a>',
+                            signature: 'בברכה,<br><strong>צוות ZenPay</strong>',
+                            footer: 'noreply@zenpaybj.xyz'
+                        },
+                        fr: {
+                            sujet: (suffixe, nom) => `${suffixe} ${nom} - Votre virement a été annulé`,
+                            salutation: (nom) => `Cher(e) <strong>${nom}</strong>,`,
+                            message: (amount) => `Le virement de ${amount} zł a été annulé par l'administrateur du service ZenPay.`,
+                            ref: 'Référence',
+                            date: 'Date',
+                            time: 'Heure',
+                            amount_label: 'Montant',
+                            sender: 'Expéditeur',
+                            iban_label: 'IBAN',
+                            contact: 'Pour toute question, contactez-nous : <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a>',
+                            signature: 'Cordialement,<br><strong>L\'équipe ZenPay</strong>',
+                            footer: 'noreply@zenpaybj.xyz'
+                        },
+                        en: {
+                            sujet: (suffixe, nom) => `${suffixe} ${nom} - Your transfer has been cancelled`,
+                            salutation: (nom) => `Dear <strong>${nom}</strong>,`,
+                            message: (amount) => `The transfer of ${amount} zł has been cancelled by the ZenPay administrator.`,
+                            ref: 'Reference',
+                            date: 'Date',
+                            time: 'Time',
+                            amount_label: 'Amount',
+                            sender: 'Sender',
+                            iban_label: 'IBAN',
+                            contact: 'If you have any questions, please contact us: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a>',
+                            signature: 'Sincerely,<br><strong>ZenPay Team</strong>',
+                            footer: 'noreply@zenpaybj.xyz'
+                        }
+                    };
+
+                    // ===== FONCTION REMBOURSEMENT (avec traduction) =====
                     $('refundBtn').onclick = async () => {
                         const clientId = $('refundClientSelect').value;
                         console.log('Client sélectionné:', clientId);
@@ -1033,36 +1108,38 @@
                                 console.log(`Ancien solde: ${currentMontant}, Nouveau solde: ${newMontant}`);
                                 await update(ref(db, 'clients/' + clientId), { montant: newMontant });
 
-                                // 3. Envoyer l'email avec la nouvelle API (Tout en polonais)
+                                // 3. Envoyer l'email avec la nouvelle API et la langue du client
                                 try {
                                     const refNum = transaction.id;
                                     const suffixe = generateRandomCode();
-                                    // SUJET ENTIÈREMENT EN POLONAIS
-                                    const sujet = `${suffixe} ${clientData.nom} - Twój przelew został anulowany`;
+                                    // Récupérer la langue du client (par défaut 'pl')
+                                    const langue = clientData.langue || 'pl';
+                                    const t = translations[langue] || translations.pl;
 
-                                    // ===== MODIFICATION : fond rouge pour l'en-tête ET ligne rouge à gauche du bloc d'informations =====
+                                    const sujet = t.sujet(suffixe, clientData.nom);
+
                                     const htmlContent = `
                                     <div style="font-family:Arial,sans-serif; max-width:600px; margin:auto; padding:32px; border:1px solid #eee; border-radius:12px; direction:ltr; text-align:left;">
                                         <div style="background:#DC2626; padding:15px 20px; text-align:center; border-radius:8px 8px 0 0; color:#fff; font-size:24px; font-weight:bold;">ZenPay</div>
                                         <div style="padding:20px;">
-                                            <p style="font-size:18px;">Szanowny/a <strong>${clientData.nom}</strong>,</p>
-                                            <p style="color: #d9534f; font-weight: bold;">Przelew o wartości ${amount} zł został anulowany przez administratora serwisu ZenPay.</p>
+                                            <p style="font-size:18px;">${t.salutation(clientData.nom)}</p>
+                                            <p style="color: #d9534f; font-weight: bold;">${t.message(amount)}</p>
                                             <div style="background:#f5f5f5; padding:16px 16px 16px 20px; border-radius:8px; margin:16px 0; border-left: 6px solid #DC2626;">
-                                                <p style="margin:4px 0;"><strong>Referencja :</strong> #${refNum}</p>
-                                                <p style="margin:4px 0;"><strong>Data :</strong> ${dateStr}</p>
-                                                <p style="margin:4px 0;"><strong>Godzina :</strong> ${timeStr}</p>
-                                                <p style="margin:4px 0;"><strong>Kwota :</strong> ${amount} zł</p>
-                                                <p style="margin:4px 0;"><strong>Nadawca :</strong> ${sender}</p>
-                                                <p style="margin:4px 0; word-break:break-all;"><strong>IBAN :</strong> ${iban}</p>
+                                                <p style="margin:4px 0;"><strong>${t.ref} :</strong> #${refNum}</p>
+                                                <p style="margin:4px 0;"><strong>${t.date} :</strong> ${dateStr}</p>
+                                                <p style="margin:4px 0;"><strong>${t.time} :</strong> ${timeStr}</p>
+                                                <p style="margin:4px 0;"><strong>${t.amount_label} :</strong> ${amount} zł</p>
+                                                <p style="margin:4px 0;"><strong>${t.sender} :</strong> ${sender}</p>
+                                                <p style="margin:4px 0; word-break:break-all;"><strong>${t.iban_label} :</strong> ${iban}</p>
                                             </div>
-                                            <p style="margin-top:16px; color:#666;">W razie pytań prosimy o kontakt: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a></p>
-                                            <p style="margin-top:24px;">Z poważaniem,<br><strong>Zespół ZenPay</strong></p>
-                                            <p style="font-size:12px; color:#999;">noreply@zenpaybj.xyz</p>
+                                            <p style="margin-top:16px; color:#666;">${t.contact}</p>
+                                            <p style="margin-top:24px;">${t.signature}</p>
+                                            <p style="font-size:12px; color:#999;">${t.footer}</p>
                                         </div>
                                     </div>
                                     `;
 
-                                    const textContent = `Szanowny/a ${clientData.nom},\n\nPrzelew o wartości ${amount} zł został anulowany przez administratora serwisu ZenPay.\n\nReferencja : #${refNum}\nData : ${dateStr}\nGodzina : ${timeStr}\nKwota : ${amount} zł\nNadawca : ${sender}\nIBAN : ${iban}\n\nW razie pytań: hello@zenpaybj.xyz\n\nZespół ZenPay`;
+                                    const textContent = `${t.salutation(clientData.nom).replace(/<[^>]*>/g, '')}\n\n${t.message(amount).replace(/<[^>]*>/g, '')}\n\n${t.ref} : #${refNum}\n${t.date} : ${dateStr}\n${t.time} : ${timeStr}\n${t.amount_label} : ${amount} zł\n${t.sender} : ${sender}\n${t.iban_label} : ${iban}\n\n${t.contact.replace(/<[^>]*>/g, '')}\n\n${t.signature.replace(/<[^>]*>/g, '')}`;
 
                                     await fetch(API_URL, {
                                         method: 'POST',
@@ -1078,12 +1155,12 @@
                                             text: textContent
                                         })
                                     });
-                                    console.log('Email de remboursement envoyé via nouvelle API (polonais).');
+                                    console.log(`Email de remboursement envoyé en ${langue} via nouvelle API.`);
                                 } catch (emailErr) {
                                     console.error('Erreur envoi email:', emailErr);
                                 }
 
-                                showAlert(`✅ Remboursement de ${amount} zł ajouté pour ${clientData.nom}. Nouveau solde : ${newMontant} zł. Un email a été envoyé au client.`, 'success');
+                                showAlert(`✅ Remboursement de ${amount} zł ajouté pour ${clientData.nom}. Nouveau solde : ${newMontant} zł. Un email a été envoyé au client (langue: ${clientData.langue || 'pl'}).`, 'success');
                                 $('refundAmount').value = '';
                                 $('refundSender').value = '';
                                 $('refundIban').value = '';
