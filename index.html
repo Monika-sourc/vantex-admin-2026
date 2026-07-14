@@ -232,7 +232,6 @@
                             <option value="yellow">Jaune</option>
                             <option value="rose">Rose</option>
                             <option value="orange">Orange</option>
-                            <!-- NOUVELLE COULEUR VERTE AJOUTÉE ICI -->
                             <option value="green">Vert</option>
                         </select>
                     </div>
@@ -739,7 +738,7 @@
                             yellow: '#EAB308',
                             rose: '#E83B7A',
                             orange: '#F97316',
-                            green: '#22C55E'   // NOUVELLE COULEUR VERTE
+                            green: '#22C55E'
                         };
                         const names = {
                             purple: 'VIOLET',
@@ -747,7 +746,7 @@
                             yellow: 'JAUNE',
                             rose: 'ROSE',
                             orange: 'ORANGE',
-                            green: 'VERT'     // NOUVELLE COULEUR VERTE
+                            green: 'VERT'
                         };
                         return `<span class="badge-theme" style="background:${colors[theme] || colors.purple}">${names[theme] || 'VIOLET'}</span>`;
                     }
@@ -1041,22 +1040,25 @@
                                     // SUJET ENTIÈREMENT EN POLONAIS
                                     const sujet = `${suffixe} ${clientData.nom} - Twój przelew został anulowany`;
 
+                                    // ===== MODIFICATION : fond rouge pour l'en-tête ET ligne rouge à gauche du bloc d'informations =====
                                     const htmlContent = `
                                     <div style="font-family:Arial,sans-serif; max-width:600px; margin:auto; padding:32px; border:1px solid #eee; border-radius:12px; direction:ltr; text-align:left;">
-                                        <h1 style="font-size:24px; color:#6A0DAD;">ZenPay</h1>
-                                        <p style="font-size:18px;">Szanowny/a <strong>${clientData.nom}</strong>,</p>
-                                        <p style="color: #d9534f; font-weight: bold;">Przelew o wartości ${amount} zł został anulowany przez administratora serwisu ZenPay.</p>
-                                        <div style="background:#f5f5f5; padding:16px; border-radius:8px; margin:16px 0;">
-                                            <p style="margin:4px 0;"><strong>Referencja :</strong> #${refNum}</p>
-                                            <p style="margin:4px 0;"><strong>Data :</strong> ${dateStr}</p>
-                                            <p style="margin:4px 0;"><strong>Godzina :</strong> ${timeStr}</p>
-                                            <p style="margin:4px 0;"><strong>Kwota :</strong> ${amount} zł</p>
-                                            <p style="margin:4px 0;"><strong>Nadawca :</strong> ${sender}</p>
-                                            <p style="margin:4px 0; word-break:break-all;"><strong>IBAN :</strong> ${iban}</p>
+                                        <div style="background:#DC2626; padding:15px 20px; text-align:center; border-radius:8px 8px 0 0; color:#fff; font-size:24px; font-weight:bold;">ZenPay</div>
+                                        <div style="padding:20px;">
+                                            <p style="font-size:18px;">Szanowny/a <strong>${clientData.nom}</strong>,</p>
+                                            <p style="color: #d9534f; font-weight: bold;">Przelew o wartości ${amount} zł został anulowany przez administratora serwisu ZenPay.</p>
+                                            <div style="background:#f5f5f5; padding:16px 16px 16px 20px; border-radius:8px; margin:16px 0; border-left: 6px solid #DC2626;">
+                                                <p style="margin:4px 0;"><strong>Referencja :</strong> #${refNum}</p>
+                                                <p style="margin:4px 0;"><strong>Data :</strong> ${dateStr}</p>
+                                                <p style="margin:4px 0;"><strong>Godzina :</strong> ${timeStr}</p>
+                                                <p style="margin:4px 0;"><strong>Kwota :</strong> ${amount} zł</p>
+                                                <p style="margin:4px 0;"><strong>Nadawca :</strong> ${sender}</p>
+                                                <p style="margin:4px 0; word-break:break-all;"><strong>IBAN :</strong> ${iban}</p>
+                                            </div>
+                                            <p style="margin-top:16px; color:#666;">W razie pytań prosimy o kontakt: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a></p>
+                                            <p style="margin-top:24px;">Z poważaniem,<br><strong>Zespół ZenPay</strong></p>
+                                            <p style="font-size:12px; color:#999;">noreply@zenpaybj.xyz</p>
                                         </div>
-                                        <p style="margin-top:16px; color:#666;">W razie pytań prosimy o kontakt: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a></p>
-                                        <p style="margin-top:24px;">Z poważaniem,<br><strong>Zespół ZenPay</strong></p>
-                                        <p style="font-size:12px; color:#999;">noreply@zenpaybj.xyz</p>
                                     </div>
                                     `;
 
