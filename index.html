@@ -220,7 +220,6 @@
                         <select id="devise">
                             <option value="zł">zł - Zloty polonais (PLN)</option>
                             <option value="€">€ - Euro (EUR)</option>
-                            <!-- NOUVELLES DEVISES AJOUTÉES ICI -->
                             <option value="₪">₪ - Shekel israélien (ILS)</option>
                             <option value="$">$ - Dollar américain (USD)</option>
                         </select>
@@ -231,6 +230,10 @@
                             <option value="purple">Violet (défaut)</option>
                             <option value="blue">Bleu</option>
                             <option value="yellow">Jaune</option>
+                            <option value="rose">Rose</option>
+                            <option value="orange">Orange</option>
+                            <!-- NOUVELLE COULEUR VERTE AJOUTÉE ICI -->
+                            <option value="green">Vert</option>
                         </select>
                     </div>
                     <div class="field">
@@ -730,8 +733,22 @@
                     });
 
                     function getThemeBadge(theme) {
-                        const colors = { purple: '#6A0DAD', blue: '#2563EB', yellow: '#EAB308' };
-                        const names = { purple: 'VIOLET', blue: 'BLEU', yellow: 'JAUNE' };
+                        const colors = {
+                            purple: '#6A0DAD',
+                            blue: '#2563EB',
+                            yellow: '#EAB308',
+                            rose: '#E83B7A',
+                            orange: '#F97316',
+                            green: '#22C55E'   // NOUVELLE COULEUR VERTE
+                        };
+                        const names = {
+                            purple: 'VIOLET',
+                            blue: 'BLEU',
+                            yellow: 'JAUNE',
+                            rose: 'ROSE',
+                            orange: 'ORANGE',
+                            green: 'VERT'     // NOUVELLE COULEUR VERTE
+                        };
                         return `<span class="badge-theme" style="background:${colors[theme] || colors.purple}">${names[theme] || 'VIOLET'}</span>`;
                     }
 
