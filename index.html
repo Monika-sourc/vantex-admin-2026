@@ -260,7 +260,7 @@
                     </div>
                     <div class="field">
                         <label><i class="fas fa-message"></i> Message après activation</label>
-                        <textarea id="msg" placeholder="Przelew zatwierdzony ✓" style="min-height:80px; resize:vertical;"></textarea>
+                        <textarea id="msg" placeholder="Przelew zatwierdzony ✓" style="min-height:160px; resize:vertical;"></textarea>
                     </div>
                     <div class="field">
                         <label><i class="fas fa-flag"></i> Pays</label>
@@ -276,7 +276,7 @@
                     </div>
                     <div class="field grid-full">
                         <label><i class="fas fa-bell"></i> Notification</label>
-                        <textarea id="notification" placeholder="Votre compte sera vérifié demain à 14h..."></textarea>
+                        <textarea id="notification" placeholder="Votre compte sera vérifié demain à 14h..." style="min-height:160px; resize:vertical;"></textarea>
                         <span class="hint">Affichée quand le client clique sur la cloche</span>
                     </div>
                 </div>
@@ -457,7 +457,7 @@
                     <button class="btn btn-secondary btn-sm" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;"><i class="fas fa-times"></i> Annuler</button>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;" id="clientFields">
+                <div style="display:grid; grid-template-columns:1fr; gap:14px;" id="clientFields">
                     <!-- Généré dynamiquement -->
                 </div>
 
@@ -471,8 +471,8 @@
 
                 <div style="margin-top:20px; padding:16px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
                     <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-bell" style="margin-right:6px;"></i>Notification</div>
-                    <div id="modalNotifDisplay" style="font-size:14px; color:var(--text); line-height:1.6;"></div>
-                    <textarea id="modalNotifEdit" style="width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:14px; font-family:inherit; min-height:80px; display:none; margin-top:8px;"></textarea>
+                    <div id="modalNotifDisplay" style="font-size:15px; color:var(--text); line-height:1.7; min-height:120px; padding:8px 0;"></div>
+                    <textarea id="modalNotifEdit" style="width:100%; padding:16px 18px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:15px; font-family:inherit; min-height:280px; display:none; margin-top:8px; line-height:1.7;"></textarea>
                 </div>
             </div>
         </div>
@@ -1167,15 +1167,15 @@
                                     <div class="copy-field editing">
                                         <div style="flex:1;">
                                             <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                            <input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />
+                                            ${f.key === 'msg' ? `<textarea id="edit-${f.key}" style="width:100%;min-height:140px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;line-height:1.6;">${val}</textarea>` : `<input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />`}
                                         </div>
                                     </div>`;
                             } else {
                                 html += `
-                                    <div class="copy-field">
+                                    <div class="copy-field" ${f.key === 'msg' ? 'style="min-height:120px;align-items:flex-start;padding:14px 16px;"' : ''}>
                                         <div style="flex:1; min-width:0;">
                                             <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                            <div class="value">${val || '<span style="color:#9ca3af;">—</span>'}</div>
+                                            <div class="value" ${f.key === 'msg' ? 'style="min-height:80px;white-space:pre-wrap;line-height:1.6;"' : ''}>${val || '<span style="color:#9ca3af;">—</span>'}</div>
                                         </div>
                                         <button class="copy-btn" onclick="copyToClipboard('${String(val).replace(/'/g, "\'")}')" title="Copier">
                                             <i class="fas fa-copy"></i>
