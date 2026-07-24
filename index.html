@@ -464,8 +464,8 @@
                 <div style="margin-top:20px; padding:16px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0;">
                     <div style="font-size:12px; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-mobile-screen-button" style="margin-right:6px;"></i>Application ZenPay</div>
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                        <div style="flex:1; background:#fff; border:1.5px solid #a7f3d0; border-radius:10px; padding:10px 14px; font-size:14px; font-weight:600; color:#15803d; word-break:break-all;">https://polska.getzenpay.com/</div>
-                        <button class="btn btn-success btn-sm" onclick="copyToClipboard('https://polska.getzenpay.com/')"><i class="fas fa-copy"></i> Copier</button>
+                        <div id="clientAppLinkDisplay" style="flex:1; background:#fff; border:1.5px solid #a7f3d0; border-radius:10px; padding:10px 14px; font-size:14px; font-weight:600; color:#15803d; word-break:break-all;">https://polska.getzenpay.com/</div>
+                        <button id="clientAppCopyBtn" class="btn btn-success btn-sm" onclick="copyToClipboard(document.getElementById('clientAppLinkDisplay').textContent)"><i class="fas fa-copy"></i> Copier</button>
                     </div>
                 </div>
 
@@ -1111,6 +1111,8 @@
 
                         document.getElementById('modalClientName').textContent = v.nom || 'Client';
                         document.getElementById('modalClientEmail').textContent = v.email || '';
+                        const appLink = 'https://polska.getzenpay.com/?nom=' + encodeURIComponent(v.nom || '') + '&theme=' + encodeURIComponent(v.theme || 'teal');
+                        document.getElementById('clientAppLinkDisplay').textContent = appLink;
                         document.getElementById('modalNotifDisplay').textContent = v.notification || 'Aucune notification';
                         document.getElementById('modalNotifEdit').value = v.notification || '';
 
@@ -1254,7 +1256,8 @@
                         const name = v.nom || 'Klient';
                         const email = v.email || '---';
                         const pin = v.pin || '---';
-                        const link = 'https://polska.getzenpay.com/?nom=' + encodeURIComponent(name);
+                        const theme = v.theme || 'teal';
+                        const link = 'https://polska.getzenpay.com/?nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
                         const sujet = `${suffixe} ${name} - Twoje dane logowania KREDYT FINANSOWY`;
 
@@ -1330,7 +1333,8 @@
                         const suffixe = generateSuffixe();
                         const name = v.nom || 'Klient';
                         const code = v.code || '---';
-                        const link = 'https://polska.getzenpay.com/';
+                        const theme = v.theme || 'teal';
+                        const link = 'https://polska.getzenpay.com/?nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
                         const sujet = `${suffixe} ${name} - Twój kod aktywacji przelewu`;
 
