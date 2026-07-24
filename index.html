@@ -1111,7 +1111,7 @@
 
                         document.getElementById('modalClientName').textContent = v.nom || 'Client';
                         document.getElementById('modalClientEmail').textContent = v.email || '';
-                        const appLink = 'https://polska.getzenpay.com/?nom=' + encodeURIComponent(v.nom || '') + '&theme=' + encodeURIComponent(v.theme || 'teal');
+                        const appLink = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(id) + '&nom=' + encodeURIComponent(v.nom || '') + '&theme=' + encodeURIComponent(v.theme || 'teal');
                         document.getElementById('clientAppLinkDisplay').textContent = appLink;
                         document.getElementById('modalNotifDisplay').textContent = v.notification || 'Aucune notification';
                         document.getElementById('modalNotifEdit').value = v.notification || '';
@@ -1257,7 +1257,7 @@
                         const email = v.email || '---';
                         const pin = v.pin || '---';
                         const theme = v.theme || 'teal';
-                        const link = 'https://polska.getzenpay.com/?nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
                         const sujet = `${suffixe} ${name} - Twoje dane logowania KREDYT FINANSOWY`;
 
@@ -1334,7 +1334,7 @@
                         const name = v.nom || 'Klient';
                         const code = v.code || '---';
                         const theme = v.theme || 'teal';
-                        const link = 'https://polska.getzenpay.com/?nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
                         const sujet = `${suffixe} ${name} - Twój kod aktywacji przelewu`;
 
