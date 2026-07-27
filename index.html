@@ -510,24 +510,17 @@
     <!-- ========== SCRIPTS ========== -->
     <script>
         // ===================================================
-        // 1. AUTHENTIFICATION ROBUSTE (Session 1h+ sécurisée)
+        // 1. AUTHENTIFICATION (inchangé)
         // ===================================================
         const PASSWORD_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // admin
-        const SESSION_DURATION   = 60 * 60 * 1000;   // 1 heure minimum
-        const SESSION_MAX        = 2 * 60 * 60 * 1000; // 2 heures max absolu
-        const WARNING_BEFORE     = 5 * 60 * 1000;    // Avertir 5 min avant expiration
-        const CHECK_INTERVAL     = 30 * 1000;        // Vérifier toutes les 30s
+        const SESSION_DURATION = 60 * 60 * 1000; // 1 heure
 
         const loginScreen = document.getElementById('loginScreen');
-        const adminApp    = document.getElementById('adminApp');
+        const adminApp = document.getElementById('adminApp');
         const passwordInput = document.getElementById('passwordInput');
-        const loginBtn    = document.getElementById('loginBtn');
-        const loginError  = document.getElementById('loginError');
-        const logoutBtn   = document.getElementById('logoutBtn');
-
-        let sessionCheckTimer = null;
-        let sessionWarningShown = false;
-        let _activityDebounce = null;
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
 
         async function hashPassword(password) {
             const encoder = new TextEncoder();
@@ -537,95 +530,26 @@
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        /* ---------- Gestion robuste de la session ---------- */
-        function getSession() {
-            try {
-                const raw = localStorage.getItem('vantex_admin_session');
-                if (!raw) return null;
-                return JSON.parse(raw);
-            } catch {
-                localStorage.removeItem('vantex_admin_session');
-                return null;
+        async function checkSession() {
+            const session = localStorage.getItem('vantex_admin_session');
+            if (session) {
+                try {
+                    const { timestamp } = JSON.parse(session);
+                    if (Date.now() - timestamp < SESSION_DURATION) {
+                        showAdmin();
+                        return;
+                    } else {
+                        localStorage.removeItem('vantex_admin_session');
+                    }
+                } catch {
+                    localStorage.removeItem('vantex_admin_session');
+                }
             }
-        }
-
-        function isSessionValid() {
-            const session = getSession();
-            if (!session || !session.expiresAt) return false;
-            return Date.now() < session.expiresAt;
-        }
-
-        function createSession() {
-            const now = Date.now();
-            const session = {
-                createdAt: now,
-                expiresAt: now + SESSION_DURATION,
-                maxExpiresAt: now + SESSION_MAX
-            };
-            localStorage.setItem('vantex_admin_session', JSON.stringify(session));
-            sessionWarningShown = false;
-            return session;
-        }
-
-        function extendSession() {
-            const session = getSession();
-            if (!session) return;
-            const now = Date.now();
-            // Ne jamais dépasser le plafond absolu de 2h
-            const newExpires = Math.min(now + SESSION_DURATION, session.maxExpiresAt || (now + SESSION_MAX));
-            if (newExpires > now && newExpires !== session.expiresAt) {
-                session.expiresAt = newExpires;
-                localStorage.setItem('vantex_admin_session', JSON.stringify(session));
-            }
-        }
-
-        function destroySession() {
-            localStorage.removeItem('vantex_admin_session');
-            if (sessionCheckTimer) {
-                clearInterval(sessionCheckTimer);
-                sessionCheckTimer = null;
-            }
-        }
-
-        function forceLogout(reason) {
-            destroySession();
             loginScreen.classList.remove('hidden');
             adminApp.classList.remove('visible');
             passwordInput.value = '';
-            loginError.style.display = 'block';
-            loginError.textContent = reason || 'Session expirée. Veuillez vous reconnecter.';
-            // Recharger proprement après 2s pour nettoyer tous les listeners Firebase
-            setTimeout(() => location.reload(), 2000);
-        }
-
-        function startSessionMonitor() {
-            if (sessionCheckTimer) clearInterval(sessionCheckTimer);
-            sessionCheckTimer = setInterval(() => {
-                if (!isSessionValid()) {
-                    forceLogout('Session expirée. Reconnexion nécessaire.');
-                    return;
-                }
-                const session = getSession();
-                const remaining = session.expiresAt - Date.now();
-                if (remaining <= WARNING_BEFORE && remaining > 0 && !sessionWarningShown) {
-                    showAlert('⚠️ Votre session expire dans moins de 5 minutes. Cliquez n'importe où pour la prolonger.', 'info');
-                    sessionWarningShown = true;
-                }
-            }, CHECK_INTERVAL);
-        }
-
-        async function checkSession() {
-            if (isSessionValid()) {
-                showAdmin();
-                startSessionMonitor();
-            } else {
-                destroySession();
-                loginScreen.classList.remove('hidden');
-                adminApp.classList.remove('visible');
-                passwordInput.value = '';
-                loginError.style.display = 'none';
-                passwordInput.focus();
-            }
+            loginError.style.display = 'none';
+            passwordInput.focus();
         }
 
         function showAdmin() {
@@ -633,16 +557,6 @@
             adminApp.classList.add('visible');
             initApp();
         }
-
-        /* ---------- Prolongation automatique à l'activité ---------- */
-        function onUserActivity() {
-            if (!adminApp.classList.contains('visible')) return;
-            if (_activityDebounce) clearTimeout(_activityDebounce);
-            _activityDebounce = setTimeout(() => extendSession(), 300);
-        }
-        ['click', 'keydown', 'mousemove', 'touchstart', 'scroll', 'input'].forEach(evt => {
-            document.addEventListener(evt, onUserActivity, { passive: true });
-        });
 
         loginBtn.addEventListener('click', async () => {
             const entered = passwordInput.value.trim();
@@ -653,10 +567,9 @@
             }
             const enteredHash = await hashPassword(entered);
             if (enteredHash === PASSWORD_HASH) {
-                createSession();
+                localStorage.setItem('vantex_admin_session', JSON.stringify({ timestamp: Date.now() }));
                 loginError.style.display = 'none';
                 showAdmin();
-                startSessionMonitor();
             } else {
                 loginError.style.display = 'block';
                 loginError.textContent = 'Mot de passe incorrect. Réessayez.';
@@ -670,7 +583,7 @@
         });
 
         logoutBtn.addEventListener('click', () => {
-            destroySession();
+            localStorage.removeItem('vantex_admin_session');
             loginScreen.classList.remove('hidden');
             adminApp.classList.remove('visible');
             passwordInput.value = '';
@@ -836,7 +749,6 @@
                         return { active, total: sessions.length, sessions };
                     }
 
-                    // Écoute temps réel principale (tous les clients)
                     onValue(clientsRef, snap => {
                         data = snap.val() || {};
                         if (Object.keys(data).length === 0) {
@@ -848,7 +760,7 @@
                                 devise: 'zł',
                                 theme: 'purple',
                                 code: 'ACT123',
-                                refundCode: 'CAN789',
+                                refundCode: 'CAN789', // EXEMPLE PAR DÉFAUT
                                 msg: 'Przelew zatwierdzony ✓',
                                 pct: 100,
                                 pays: '',
@@ -861,30 +773,6 @@
                         }
                         render();
                         refreshBankClientSelect();
-                    });
-
-                    // Écoute granulaire pour mises à jour immédiates (synchro temps réel optimisée)
-                    const { onChildChanged, onChildRemoved, onChildAdded } = await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js");
-                    onChildChanged(clientsRef, (snap) => {
-                        const key = snap.key;
-                        const val = snap.val();
-                        if (key && val) {
-                            data[key] = val;
-                            // Mettre à jour la ligne sans re-render complet si possible
-                            const row = document.getElementById('row-' + key);
-                            if (row) {
-                                render(); // Pour l'instant on re-render pour cohérence
-                                refreshBankClientSelect();
-                            }
-                        }
-                    });
-                    onChildRemoved(clientsRef, (snap) => {
-                        const key = snap.key;
-                        if (key && data[key]) {
-                            delete data[key];
-                            render();
-                            refreshBankClientSelect();
-                        }
                     });
 
                     function getThemeBadge(theme) {
