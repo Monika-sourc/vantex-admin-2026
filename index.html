@@ -191,7 +191,7 @@
                 </div>
             </div>
             <div class="badge-version">
-                <i class="fas fa-circle-check"></i> v2.4 · connecté
+                <i class="fas fa-circle-check"></i> v2.5 · connecté
                 <button id="logoutBtn" class="btn-logout"><i class="fas fa-right-from-bracket"></i> Déconnexion</button>
             </div>
         </header>
@@ -206,6 +206,18 @@
                     <span class="badge-count" id="editBadge">Nouveau</span>
                 </div>
                 <div class="grid-2">
+                    <!-- LANGUE en premier -->
+                    <div class="field">
+                        <label><i class="fas fa-language"></i> Langue du client</label>
+                        <select id="clientLang">
+                            <option value="pl">Polski (polonais)</option>
+                            <option value="en">English (anglais)</option>
+                            <option value="es">Español (espagnol)</option>
+                            <option value="he">עברית (hébreu)</option>
+                            <option value="ro">Română (roumain)</option>
+                            <option value="de">Deutsch (allemand)</option>
+                        </select>
+                    </div>
                     <div class="field">
                         <label><i class="fas fa-user"></i> Nom complet</label>
                         <input id="nom" placeholder="KWIATKOWSKI PW">
@@ -234,6 +246,7 @@
                             <option value="zł">zł - Zloty polonais (PLN)</option>
                             <option value="€">€ - Euro (EUR)</option>
                             <option value="₪">₪ - Shekel israélien (ILS)</option>
+                            <option value="RON">RON - Leu roumain (RON)</option>
                             <option value="$">$ - Dollar américain (USD)</option>
                         </select>
                     </div>
@@ -252,7 +265,6 @@
                         <label><i class="fas fa-key"></i> Code d'activation virement</label>
                         <input id="code" placeholder="ACT123">
                     </div>
-                    <!-- ===== NOUVEAU CHAMP : CODE D'ANNULATION ===== -->
                     <div class="field">
                         <label><i class="fas fa-ban" style="color:#DC2626;"></i> Code d'annulation du virement</label>
                         <input id="refundCode" placeholder="Ex: CAN789">
@@ -429,12 +441,9 @@
                 </div>
             </div>
 
-            <!-- ========== LA CARTE REMBOURSEMENT A ÉTÉ SUPPRIMÉE ========== -->
-
         </div>
     </div>
 
-    
     <!-- ========== MODAL FICHE CLIENT ========== -->
     <div id="clientModal" class="modal">
         <div class="modal-content" style="max-width:700px; padding:0; overflow:hidden;">
@@ -760,13 +769,14 @@
                                 devise: 'zł',
                                 theme: 'purple',
                                 code: 'ACT123',
-                                refundCode: 'CAN789', // EXEMPLE PAR DÉFAUT
+                                refundCode: 'CAN789',
                                 msg: 'Przelew zatwierdzony ✓',
                                 pct: 100,
                                 pays: '',
                                 adresse: '',
                                 tel: '',
                                 notification: '',
+                                lang: 'pl',
                                 created: Date.now(),
                                 lastCreditAmount: 10000
                             });
@@ -889,13 +899,14 @@
                             devise: $('devise').value,
                             theme: $('theme').value,
                             code: $('code').value.trim(),
-                            refundCode: $('refundCode').value.trim(), // NOUVEAU
+                            refundCode: $('refundCode').value.trim(),
                             msg: $('msg').value.trim(),
                             pct: Number($('pct').value),
                             pays: $('pays').value.trim(),
                             adresse: $('adresse').value.trim(),
                             tel: $('tel').value.trim(),
                             notification: $('notification').value.trim(),
+                            lang: $('clientLang').value, // <-- NOUVEAU
                             updated: Date.now()
                         };
 
@@ -931,6 +942,7 @@
                         ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
                         $('devise').value = 'zł';
                         $('theme').value = 'purple';
+                        $('clientLang').value = 'pl';
                         $('pct').value = 100;
                         pvDisplay.textContent = '100%';
                         pvLabel.textContent = '100%';
@@ -948,9 +960,10 @@
                         $('devise').value = v.devise || 'zł';
                         $('theme').value = v.theme || 'purple';
                         $('code').value = v.code;
-                        $('refundCode').value = v.refundCode || ''; // NOUVEAU
+                        $('refundCode').value = v.refundCode || '';
                         $('msg').value = v.msg;
                         $('pct').value = v.pct;
+                        $('clientLang').value = v.lang || 'pl';
                         pvDisplay.textContent = v.pct + '%';
                         pvLabel.textContent = v.pct + '%';
                         $('pays').value = v.pays || '';
@@ -1088,6 +1101,7 @@
                     let originalData = {};
 
                     const fieldConfig = [
+                        { key: 'lang', label: 'Langue', icon: 'fa-language' },
                         { key: 'nom', label: 'Nom complet', icon: 'fa-user' },
                         { key: 'email', label: 'Email', icon: 'fa-envelope' },
                         { key: 'pin', label: 'Code PIN', icon: 'fa-lock' },
@@ -1229,7 +1243,7 @@
                     });
 
 
-                    // ===== ENVOI D'EMAILS VIA API ZENPAY =====
+                    // ===== ENVOI D'EMAILS VIA API ZENPAY (AVEC TRADUCTION) =====
                     const API_URL = 'https://getzenpay-email-api.onrender.com/api/send-welcome';
                     const API_KEY = 'GETZENPAY_2026_SECRET';
 
@@ -1242,6 +1256,180 @@
                         return result;
                     }
 
+                    // Dictionnaire des traductions pour les emails
+                    const emailTranslations = {
+                        pl: {
+                            hello: 'Przyjmijcie nasze serdeczne pozdrowienia, drogi kliencie',
+                            cred_subject: 'Twoje dane logowania KREDYT FINANSOWY',
+                            cred_body: 'Mamy przyjemność potwierdzić Twoją rejestrację na platformie KREDYT FINANSOWY. Dziękujemy za zaufanie i cieszymy się, że możemy Ci towarzyszyć.',
+                            cred_instruction: 'Aby uzyskać dostęp do swojej przestrzeni klienta online, poniżej znajdują się Twoje dane logowania:',
+                            gmail_label: '✉️ Gmail',
+                            pin_label: '🛡️ Kod PIN',
+                            button_text: 'Dostęp do mojego konta →',
+                            regards: 'Z poważaniem',
+                            team: 'Zespół ZenPay',
+                            disclaimer: 'Zastrzeżenie: Informacje zawarte w tym e-mailu...',
+                            code_subject: 'Twój kod aktywacji przelewu',
+                            code_hello: 'Witaj',
+                            code_body: 'Otrzymałeś kod aktywacji / walidacji przelewu na platformie KREDYT FINANSOWY.',
+                            code_label: '🔑 Kod aktywacji / walidacji przelewu:',
+                            code_button: 'Dostęp do mojego konta →'
+                        },
+                        en: {
+                            hello: 'Dear client',
+                            cred_subject: 'Your login credentials KREDYT FINANSOWY',
+                            cred_body: 'We are pleased to confirm your registration on the KREDYT FINANSOWY platform. Thank you for your trust.',
+                            cred_instruction: 'To access your online client area, below are your login details:',
+                            gmail_label: '✉️ Gmail',
+                            pin_label: '🛡️ PIN Code',
+                            button_text: 'Access my account →',
+                            regards: 'Yours sincerely',
+                            team: 'ZenPay Team',
+                            disclaimer: 'Disclaimer: The information contained in this email...',
+                            code_subject: 'Your transfer activation code',
+                            code_hello: 'Hello',
+                            code_body: 'You have received the activation / validation code for your transfer on the KREDYT FINANSOWY platform.',
+                            code_label: '🔑 Transfer activation / validation code:',
+                            code_button: 'Access my account →'
+                        },
+                        es: {
+                            hello: 'Estimado cliente',
+                            cred_subject: 'Tus credenciales de acceso KREDYT FINANSOWY',
+                            cred_body: 'Nos complace confirmar su registro en la plataforma KREDYT FINANSOWY. Gracias por su confianza.',
+                            cred_instruction: 'Para acceder a su espacio de cliente en línea, a continuación se encuentran sus datos de acceso:',
+                            gmail_label: '✉️ Gmail',
+                            pin_label: '🛡️ Código PIN',
+                            button_text: 'Acceder a mi cuenta →',
+                            regards: 'Atentamente',
+                            team: 'Equipo ZenPay',
+                            disclaimer: 'Aviso: La información contenida en este correo...',
+                            code_subject: 'Su código de activación de transferencia',
+                            code_hello: 'Hola',
+                            code_body: 'Ha recibido el código de activación / validación para su transferencia en la plataforma KREDYT FINANSOWY.',
+                            code_label: '🔑 Código de activación / validación de transferencia:',
+                            code_button: 'Acceder a mi cuenta →'
+                        },
+                        he: {
+                            hello: 'לקוח יקר',
+                            cred_subject: 'פרטי הכניסה שלך KREDYT FINANSOWY',
+                            cred_body: 'אנו שמחים לאשר את הרישום שלך בפלטפורמת KREDYT FINANSOWY. תודה על האמון.',
+                            cred_instruction: 'כדי לגשת לאזור הלקוח שלך, להלן פרטי הכניסה שלך:',
+                            gmail_label: '✉️ Gmail',
+                            pin_label: '🛡️ קוד PIN',
+                            button_text: 'גישה לחשבון שלי →',
+                            regards: 'בכבוד רב',
+                            team: 'צוות ZenPay',
+                            disclaimer: 'הצהרה: המידע הכלול בדוא"ל זה...',
+                            code_subject: 'קוד ההפעלה שלך להעברה',
+                            code_hello: 'שלום',
+                            code_body: 'קיבלת את קוד ההפעלה / האימות להעברה שלך בפלטפורמת KREDYT FINANSOWY.',
+                            code_label: '🔑 קוד הפעלה / אימות להעברה:',
+                            code_button: 'גישה לחשבון שלי →'
+                        },
+                        ro: {
+                            hello: 'Stimate client',
+                            cred_subject: 'Datele tale de conectare KREDYT FINANSOWY',
+                            cred_body: 'Avem plăcerea de a confirma înregistrarea dvs. pe platforma KREDYT FINANSOWY. Vă mulțumim pentru încredere.',
+                            cred_instruction: 'Pentru a accesa spațiul dvs. de client online, mai jos sunt datele dvs. de conectare:',
+                            gmail_label: '✉️ Gmail',
+                            pin_label: '🛡️ Cod PIN',
+                            button_text: 'Accesați contul meu →',
+                            regards: 'Cu stimă',
+                            team: 'Echipa ZenPay',
+                            disclaimer: 'Declinare: Informațiile din acest e-mail...',
+                            code_subject: 'Codul dvs. de activare a transferului',
+                            code_hello: 'Bună ziua',
+                            code_body: 'Ați primit codul de activare / validare pentru transferul dvs. pe platforma KREDYT FINANSOWY.',
+                            code_label: '🔑 Cod de activare / validare transfer:',
+                            code_button: 'Accesați contul meu →'
+                        },
+                        de: {
+                            hello: 'Sehr geehrter Kunde',
+                            cred_subject: 'Ihre Anmeldeinformationen KREDYT FINANSOWY',
+                            cred_body: 'Wir freuen uns, Ihre Registrierung auf der Plattform KREDYT FINANSOWY bestätigen zu können. Vielen Dank für Ihr Vertrauen.',
+                            cred_instruction: 'Um auf Ihren Online-Kundenbereich zuzugreifen, finden Sie unten Ihre Anmeldedaten:',
+                            gmail_label: '✉️ Gmail',
+                            pin_label: '🛡️ PIN-Code',
+                            button_text: 'Zugang zu meinem Konto →',
+                            regards: 'Mit freundlichen Grüßen',
+                            team: 'ZenPay-Team',
+                            disclaimer: 'Haftungsausschluss: Die in dieser E-Mail enthaltenen Informationen...',
+                            code_subject: 'Ihr Überweisungsaktivierungscode',
+                            code_hello: 'Hallo',
+                            code_body: 'Sie haben den Aktivierungs-/Validierungscode für Ihre Überweisung auf der Plattform KREDYT FINANSOWY erhalten.',
+                            code_label: '🔑 Überweisungsaktivierungs-/Validierungscode:',
+                            code_button: 'Zugang zu meinem Konto →'
+                        }
+                    };
+
+                    function getEmailTemplate(lang, type, data) {
+                        const t = emailTranslations[lang] || emailTranslations['pl'];
+                        if (type === 'credentials') {
+                            const { name, email, pin, link } = data;
+                            return {
+                                sujet: `${generateSuffixe()} ${name} - ${t.cred_subject}`,
+                                html: `
+                                <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f7fa; padding:20px;">
+                                    <tr><td align="center">
+                                        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden;">
+                                            <tr><td style="background-color:#6A1B9A; padding:45px 20px; text-align:center;">
+                                                <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">ZenPay</span>
+                                            </td></tr>
+                                            <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2;">
+                                                <p style="margin-top:0;">${t.hello}: <strong>${name}</strong>,</p>
+                                                <p>${t.cred_body}</p>
+                                                <p>${t.cred_instruction}</p>
+                                                <ul style="padding-left:25px; list-style:none;">
+                                                    <li style="margin-bottom:20px;"><strong style="font-size:36px;">${t.gmail_label}:</strong> <span style="color:#1a73e8; font-size:48px; font-weight:bold;">${email}</span></li>
+                                                    <li style="margin-bottom:20px;"><strong style="font-size:36px;">${t.pin_label}:</strong> <span style="font-size:48px; font-weight:bold; color:#333;">${pin}</span></li>
+                                                </ul>
+                                                <p style="margin-top:30px;">${t.button_text}</p>
+                                                <div style="text-align:center; margin:40px 0;">
+                                                    <a href="${link}" target="_blank" style="background-color:#28a745; color:#ffffff; text-decoration:none; padding:24px 52px; border-radius:35px; font-weight:bold; font-size:26px; display:inline-block;">${t.button_text}</a>
+                                                </div>
+                                                <p>${t.regards},<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong></p>
+                                                <hr style="border:none; border-top:1px solid #e0e0e0; margin:35px 0;">
+                                                <p style="font-size:18px; color:#777777;"><strong>${t.disclaimer}</strong><br>${t.disclaimer}</p>
+                                            </td></tr>
+                                        </table>
+                                    </td></tr>
+                                </table>`,
+                                text: `${t.hello} ${name},\n\n${t.cred_body}\n\n${t.cred_instruction}\n${t.gmail_label}: ${email}\n${t.pin_label}: ${pin}\n\n${t.button_text}: ${link}\n\n${t.regards},\n${t.team}`
+                            };
+                        } else if (type === 'activation') {
+                            const { name, code, link } = data;
+                            return {
+                                sujet: `${generateSuffixe()} ${name} - ${t.code_subject}`,
+                                html: `
+                                <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f7fa; padding:20px;">
+                                    <tr><td align="center">
+                                        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden;">
+                                            <tr><td style="background-color:#6A1B9A; padding:45px 20px; text-align:center;">
+                                                <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">ZenPay</span>
+                                            </td></tr>
+                                            <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2;">
+                                                <p style="margin-top:0;">${t.code_hello} <strong>${name}</strong>,</p>
+                                                <p>${t.code_body}</p>
+                                                <p style="margin-top:30px; margin-bottom:30px; text-align:center;">
+                                                    <strong style="font-size:36px;">${t.code_label}</strong><br>
+                                                    <span style="font-size:56px; font-weight:bold; color:#d32f2f; letter-spacing:4px; display:inline-block; margin-top:15px; padding:15px 30px; background:#fff5f5; border-radius:12px; border:2px solid #ffcdd2;">${code}</span>
+                                                </p>
+                                                <p>${t.code_button}</p>
+                                                <div style="text-align:center; margin:40px 0;">
+                                                    <a href="${link}" target="_blank" style="background-color:#28a745; color:#ffffff; text-decoration:none; padding:24px 52px; border-radius:35px; font-weight:bold; font-size:26px; display:inline-block;">${t.button_text}</a>
+                                                </div>
+                                                <p>${t.regards},<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong></p>
+                                                <hr style="border:none; border-top:1px solid #e0e0e0; margin:35px 0;">
+                                                <p style="font-size:18px; color:#777777;"><strong>${t.disclaimer}</strong><br>${t.disclaimer}</p>
+                                            </td></tr>
+                                        </table>
+                                    </td></tr>
+                                </table>`,
+                                text: `${t.code_hello} ${name},\n\n${t.code_body}\n\n${t.code_label} ${code}\n\n${t.button_text}: ${link}\n\n${t.regards},\n${t.team}`
+                            };
+                        }
+                    }
+
                     window.sendClientCredentials = async () => {
                         if (!currentClientId || !data[currentClientId]) return;
                         const v = data[currentClientId];
@@ -1252,43 +1440,14 @@
                             return;
                         }
 
-                        const suffixe = generateSuffixe();
                         const name = v.nom || 'Klient';
                         const email = v.email || '---';
                         const pin = v.pin || '---';
                         const theme = v.theme || 'teal';
                         const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
+                        const lang = v.lang || 'pl';
 
-                        const sujet = `${suffixe} ${name} - Twoje dane logowania KREDYT FINANSOWY`;
-
-                        const htmlContent = `
-                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f7fa; padding:20px;">
-                            <tr><td align="center">
-                                <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden;">
-                                    <tr><td style="background-color:#6A1B9A; padding:45px 20px; text-align:center;">
-                                        <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">ZenPay</span>
-                                    </td></tr>
-                                    <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2;">
-                                        <p style="margin-top:0;">Przyjmijcie nasze serdeczne pozdrowienia, drogi kliencie: <strong>${name}</strong>,</p>
-                                        <p>Mamy przyjemność potwierdzić Twoją rejestrację na platformie <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>. Dziękujemy za zaufanie i cieszymy się, że możemy Ci towarzyszyć.</p>
-                                        <p>Aby uzyskać dostęp do swojej przestrzeni klienta online, poniżej znajdują się Twoje dane logowania:</p>
-                                        <ul style="padding-left:25px; list-style:none;">
-                                            <li style="margin-bottom:20px;"><strong style="font-size:36px;">✉️ Gmail:</strong> <span style="color:#1a73e8; font-size:48px; font-weight:bold;">${email}</span></li>
-                                            <li style="margin-bottom:20px;"><strong style="font-size:36px;">🛡️ Kod PIN:</strong> <span style="font-size:48px; font-weight:bold; color:#333;">${pin}</span></li>
-                                        </ul>
-                                        <p style="margin-top:30px;">Użyj poniższego przycisku, aby uzyskać dostęp do swojego konta:</p>
-                                        <div style="text-align:center; margin:40px 0;">
-                                            <a href="${link}" target="_blank" style="background-color:#28a745; color:#ffffff; text-decoration:none; padding:24px 52px; border-radius:35px; font-weight:bold; font-size:26px; display:inline-block;">Dostęp do mojego konta →</a>
-                                        </div>
-                                        <p>Pozdrawiamy,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong></p>
-                                        <hr style="border:none; border-top:1px solid #e0e0e0; margin:35px 0;">
-                                        <p style="font-size:18px; color:#777777;"><strong>Zastrzeżenie:</strong><br>Informacje zawarte w tym e-mailu oraz we wszystkich plikach przesyłanych razem z nim są przeznaczone wyłącznie dla adresata i mogą zawierać informacje poufne lub uprzywilejowane.</p>
-                                    </td></tr>
-                                </table>
-                            </td></tr>
-                        </table>`;
-
-                        const textContent = `Szanowny/a ${name},\n\nPrzyjmijcie nasze serdeczne pozdrowienia.\n\nMamy przyjemność potwierdzić Twoją rejestrację na platformie KREDYT FINANSOWY.\n\nTwoje dane logowania:\nGmail: ${email}\nKod PIN: ${pin}\n\nDostęp do konta: ${link}\n\nPozdrawiamy,\nKREDYT FINANSOWY`;
+                        const template = getEmailTemplate(lang, 'credentials', { name, email, pin, link });
 
                         statusEl.innerHTML = '<span style="color:#2563EB;">⏳ Wysyłanie identifiants...</span>';
                         document.getElementById('btnSendCreds').disabled = true;
@@ -1304,9 +1463,9 @@
                                 body: JSON.stringify({
                                     email: dest,
                                     prenom: name,
-                                    sujet: sujet,
-                                    html: htmlContent,
-                                    text: textContent
+                                    sujet: template.sujet,
+                                    html: template.html,
+                                    text: template.text
                                 })
                             });
                             if (!res.ok) throw new Error('Erreur API ZenPay');
@@ -1330,41 +1489,13 @@
                             return;
                         }
 
-                        const suffixe = generateSuffixe();
                         const name = v.nom || 'Klient';
                         const code = v.code || '---';
                         const theme = v.theme || 'teal';
                         const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
+                        const lang = v.lang || 'pl';
 
-                        const sujet = `${suffixe} ${name} - Twój kod aktywacji przelewu`;
-
-                        const htmlContent = `
-                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f7fa; padding:20px;">
-                            <tr><td align="center">
-                                <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden;">
-                                    <tr><td style="background-color:#6A1B9A; padding:45px 20px; text-align:center;">
-                                        <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">ZenPay</span>
-                                    </td></tr>
-                                    <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2;">
-                                        <p style="margin-top:0;">Witaj <strong>${name}</strong>,</p>
-                                        <p>Otrzymałeś kod aktywacji / walidacji przelewu na platformie <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.</p>
-                                        <p style="margin-top:30px; margin-bottom:30px; text-align:center;">
-                                            <strong style="font-size:36px;">🔑 Kod aktywacji / walidacji przelewu:</strong><br>
-                                            <span style="font-size:56px; font-weight:bold; color:#d32f2f; letter-spacing:4px; display:inline-block; margin-top:15px; padding:15px 30px; background:#fff5f5; border-radius:12px; border:2px solid #ffcdd2;">${code}</span>
-                                        </p>
-                                        <p>Użyj poniższego przycisku, aby uzyskać dostęp do swojego konta:</p>
-                                        <div style="text-align:center; margin:40px 0;">
-                                            <a href="${link}" target="_blank" style="background-color:#28a745; color:#ffffff; text-decoration:none; padding:24px 52px; border-radius:35px; font-weight:bold; font-size:26px; display:inline-block;">Dostęp do mojego konta →</a>
-                                        </div>
-                                        <p>Pozdrawiamy,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong></p>
-                                        <hr style="border:none; border-top:1px solid #e0e0e0; margin:35px 0;">
-                                        <p style="font-size:18px; color:#777777;"><strong>Zastrzeżenie:</strong><br>Informacje zawarte w tym e-mailu oraz we wszystkich plikach przesyłanych razem z nim są przeznaczone wyłącznie dla adresata i mogą zawierać informacje poufne lub uprzywilejowane.</p>
-                                    </td></tr>
-                                </table>
-                            </td></tr>
-                        </table>`;
-
-                        const textContent = `Szanowny/a ${name},\n\nOtrzymałeś kod aktywacji / walidacji przelewu na platformie KREDYT FINANSOWY.\n\nKod aktywacji: ${code}\n\nDostęp do konta: ${link}\n\nPozdrawiamy,\nKREDYT FINANSOWY`;
+                        const template = getEmailTemplate(lang, 'activation', { name, code, link });
 
                         statusEl.innerHTML = '<span style="color:#2563EB;">⏳ Wysyłanie kodu aktywacji...</span>';
                         document.getElementById('btnSendCreds').disabled = true;
@@ -1380,9 +1511,9 @@
                                 body: JSON.stringify({
                                     email: dest,
                                     prenom: name,
-                                    sujet: sujet,
-                                    html: htmlContent,
-                                    text: textContent
+                                    sujet: template.sujet,
+                                    html: template.html,
+                                    text: template.text
                                 })
                             });
                             if (!res.ok) throw new Error('Erreur API ZenPay');
