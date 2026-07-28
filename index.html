@@ -206,6 +206,15 @@
                     <span class="badge-count" id="editBadge">Nouveau</span>
                 </div>
                 <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-globe"></i> Langue de l'application</label>
+                        <select id="langue">
+                            <option value="pl">🇵🇱 Polonais</option>
+                            <option value="es">🇪🇸 Espagnol</option>
+                            <option value="he">🇮🇱 Hébreu</option>
+                        </select>
+                        <span class="hint">Détermine la langue affichée dans l'application ZenPay</span>
+                    </div>
                     <div class="field">
                         <label><i class="fas fa-user"></i> Nom complet</label>
                         <input id="nom" placeholder="KWIATKOWSKI PW">
@@ -234,7 +243,7 @@
                             <option value="zł">zł - Zloty polonais (PLN)</option>
                             <option value="€">€ - Euro (EUR)</option>
                             <option value="₪">₪ - Shekel israélien (ILS)</option>
-                            <option value="$">$ - Dollar américain (USD)</option>
+                            <option value="lei">lei - Leu roumain (RON)</option>
                         </select>
                     </div>
                     <div class="field">
@@ -885,6 +894,7 @@
                             nom: $('nom').value.trim(),
                             email: $('email').value.trim().toLowerCase(),
                             pin: $('pin').value.trim(),
+                            langue: $('langue').value,
                             montant: finalMontant,
                             devise: $('devise').value,
                             theme: $('theme').value,
@@ -947,6 +957,7 @@
                         $('montant').value = v.montant;
                         $('devise').value = v.devise || 'zł';
                         $('theme').value = v.theme || 'purple';
+                        $('langue').value = v.langue || 'pl';
                         $('code').value = v.code;
                         $('refundCode').value = v.refundCode || ''; // NOUVEAU
                         $('msg').value = v.msg;
@@ -1088,6 +1099,7 @@
                     let originalData = {};
 
                     const fieldConfig = [
+                        { key: 'langue', label: 'Langue', icon: 'fa-globe' },
                         { key: 'nom', label: 'Nom complet', icon: 'fa-user' },
                         { key: 'email', label: 'Email', icon: 'fa-envelope' },
                         { key: 'pin', label: 'Code PIN', icon: 'fa-lock' },
