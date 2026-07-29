@@ -135,7 +135,11 @@
         .session-item .status.online { color: #10B981; }
         .session-item .status.offline { color: #EF4444; }
         .modal-actions { margin-top: 20px; display: flex; gap: 14px; justify-content: flex-end; }
-        @media (max-width: 768px) {
+        /* Boutons de la fiche client (modal) - agrandis */
+#clientModal .btn-sm { padding: 14px 26px; font-size: 12px; }
+#clientModal .btn { padding: 16px 30px; }
+
+@media (max-width: 768px) {
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .admin-header { flex-direction: column; align-items: flex-start; gap: 8px; }
             .admin-header .badge-version { align-self: flex-start; }
@@ -451,7 +455,7 @@
                 <button onclick="closeClientModal()" style="background:rgba(255,255,255,0.15); border:none; color:#fff; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times"></i></button>
             </div>
             <div style="padding:28px; max-height:70vh; overflow-y:auto;">
-                <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                <div style="display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
                     <button class="btn btn-sm" id="editToggleBtn" onclick="toggleEditMode()"><i class="fas fa-pen"></i> Modifier</button>
                     <button class="btn btn-success btn-sm" id="saveClientBtn" onclick="saveClientChanges()" style="display:none;"><i class="fas fa-save"></i> Enregistrer</button>
                     <button class="btn btn-secondary btn-sm" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;"><i class="fas fa-times"></i> Annuler</button>
@@ -463,7 +467,7 @@
 
                 <div style="margin-top:20px; padding:20px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0;">
                     <div style="font-size:12px; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-mobile-screen-button" style="margin-right:6px;"></i>Application ZenPay</div>
-                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
                         <div id="clientAppLinkDisplay" style="flex:1; background:#fff; border:1.5px solid #a7f3d0; border-radius:10px; padding:14px 18px; font-size:14px; font-weight:600; color:#15803d; word-break:break-all;">https://polska.getzenpay.com/</div>
                         <button id="clientAppCopyBtn" class="btn btn-success btn-sm" onclick="copyToClipboard(document.getElementById('clientAppLinkDisplay').textContent)"><i class="fas fa-copy"></i> Copier</button>
                     </div>
@@ -476,11 +480,11 @@
                 </div>
 
                 <!-- ========== SECTION ENVOI EMAILS ========== -->
-                <div style="margin-top:20px; padding:20px; background:#f5f3ff; border-radius:12px; border:1px solid #ddd6fe;">
+                <div style="margin-top:20px; padding:24px; background:#f5f3ff; border-radius:12px; border:1px solid #ddd6fe;">
                     <div style="font-size:12px; font-weight:700; color:#6A0DAD; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">
                         <i class="fas fa-paper-plane" style="margin-right:6px;"></i>Envoi d'emails au client
                     </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <div style="display:flex; gap:14px; flex-wrap:wrap;">
                         <button class="btn btn-sm" onclick="sendClientCredentials()" id="btnSendCreds">
                             <i class="fas fa-id-card"></i> Envoyer les identifiants
                         </button>
