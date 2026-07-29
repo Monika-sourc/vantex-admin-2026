@@ -29,20 +29,20 @@
 
         #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 24px; padding: 20px; }
         #loginScreen.hidden { display: none; }
-        .login-box { background: #fff; border-radius: var(--radius); padding: 40px 32px; max-width: 400px; width: 100%; box-shadow: var(--shadow-hover); border: 1px solid var(--border); }
+        .login-box { background: #fff; border-radius: var(--radius); padding: 48px 40px; max-width: 400px; width: 100%; box-shadow: var(--shadow-hover); border: 1px solid var(--border); }
         .login-box h2 { font-size: 24px; font-weight: 700; color: var(--p); text-align: center; margin-bottom: 8px; }
         .login-box p { color: var(--text-secondary); text-align: center; margin-bottom: 24px; font-size: 14px; }
         .login-box .field { margin-bottom: 16px; }
         .login-box .field label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 4px; }
-        .login-box .field input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 16px; font-family: inherit; background: #FAFBFC; transition: var(--transition); color: var(--text); }
+        .login-box .field input { width: 100%; padding: 16px 18px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 16px; font-family: inherit; background: #FAFBFC; transition: var(--transition); color: var(--text); }
         .login-box .field input:focus { outline: none; border-color: var(--p); box-shadow: 0 0 0 4px rgba(106,13,173,0.08); background: #fff; }
-        .login-box .btn { width: 100%; justify-content: center; padding: 12px; font-size: 16px; margin-top: 8px; }
+        .login-box .btn { width: 100%; justify-content: center; padding: 16px; font-size: 16px; margin-top: 8px; }
         .login-error { color: #DC2626; font-size: 13px; font-weight: 500; text-align: center; margin-top: 8px; display: none; }
 
         #adminApp { display: none; }
         #adminApp.visible { display: block; }
 
-        .admin-header { background: var(--p); color: #fff; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 2px 12px rgba(106,13,173,0.25); position: sticky; top: 0; z-index: 50; }
+        .admin-header { background: var(--p); color: #fff; padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 2px 12px rgba(106,13,173,0.25); position: sticky; top: 0; z-index: 50; }
         .admin-header .brand { display: flex; align-items: center; gap: 14px; }
         .admin-header .brand .logo { width: 42px; height: 42px; background: #fff; color: var(--p); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .admin-header .brand .title { font-weight: 700; font-size: 20px; letter-spacing: -0.3px; }
@@ -51,8 +51,8 @@
         .admin-header .btn-logout { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; transition: var(--transition); font-family: inherit; }
         .admin-header .btn-logout:hover { background: rgba(255,255,255,0.3); }
 
-        .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 40px; }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; margin-bottom: 20px; box-shadow: var(--shadow); transition: var(--transition); }
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px 40px; }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; margin-bottom: 20px; box-shadow: var(--shadow); transition: var(--transition); }
         .card:hover { box-shadow: var(--shadow-hover); }
         .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
         .card-header i { font-size: 20px; color: var(--p); width: 28px; text-align: center; }
@@ -64,11 +64,11 @@
         .field { display: flex; flex-direction: column; gap: 4px; }
         .field label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; display: flex; align-items: center; gap: 6px; }
         .field label i { font-size: 12px; color: var(--text-muted); }
-        .field input, .field select, .field textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; background: #FAFBFC; transition: var(--transition); color: var(--text); }
+        .field input, .field select, .field textarea { width: 100%; padding: 14px 18px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; background: #FAFBFC; transition: var(--transition); color: var(--text); }
         .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--p); box-shadow: 0 0 0 4px rgba(106,13,173,0.08); background: #fff; }
         .field textarea { resize: vertical; min-height: 60px; }
         .field .hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; background: var(--p); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 14px; cursor: pointer; transition: var(--transition); font-family: inherit; box-shadow: 0 2px 8px rgba(106,13,173,0.2); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 28px; background: var(--p); color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 14px; cursor: pointer; transition: var(--transition); font-family: inherit; box-shadow: 0 2px 8px rgba(106,13,173,0.2); }
         .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(106,13,173,0.3); }
         .btn:active { transform: scale(0.98); }
         .btn-secondary { background: transparent; color: var(--p); border: 1.5px solid var(--p); box-shadow: none; }
@@ -79,13 +79,13 @@
         .btn-success:hover { box-shadow: 0 4px 16px rgba(5,150,105,0.3); }
         .btn-primary { background: #2563EB; box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
         .btn-primary:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.3); }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-sm { padding: 10px 18px; font-size: 12px; }
         .btn-block { width: 100%; justify-content: center; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-group { display: flex; gap: 14px; flex-wrap: wrap; }
         .table-wrap { overflow-x: auto; margin-top: 4px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
-        th { background: #F9FAFB; color: var(--text-secondary); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 14px; text-align: left; border-bottom: 1.5px solid var(--border); }
-        td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background: #F9FAFB; color: var(--text-secondary); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 14px 16px; text-align: left; border-bottom: 1.5px solid var(--border); }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: #FAFBFC; }
         .badge { background: var(--p-light); color: var(--p); padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
@@ -98,14 +98,14 @@
         .status-dot.online { background: #10B981; }
         .status-dot.offline { background: #EF4444; }
         .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-        .action-btns button { padding: 4px 10px; font-size: 11px; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; transition: var(--transition); font-family: inherit; font-weight: 500; }
+        .action-btns button { padding: 8px 14px; font-size: 11px; border-radius: 6px; border: 1px solid var(--border); background: #fff; cursor: pointer; transition: var(--transition); font-family: inherit; font-weight: 500; }
         .action-btns .edit-btn { color: var(--p); border-color: var(--p-light); background: var(--p-light); }
         .action-btns .edit-btn:hover { background: #E0D0F5; }
         .action-btns .del-btn { color: #DC2626; border-color: #FEE2E2; background: #FEF2F2; }
         .action-btns .del-btn:hover { background: #FEE2E2; }
         .action-btns .sessions-btn { color: #2563EB; border-color: #DBEAFE; background: #EFF6FF; }
         .action-btns .sessions-btn:hover { background: #DBEAFE; }
-        .range-wrapper { display: flex; align-items: center; gap: 16px; }
+        .range-wrapper { display: flex; align-items: center; gap: 20px; }
         .range-wrapper input[type="range"] { flex: 1; accent-color: var(--p); height: 4px; cursor: pointer; }
         .range-wrapper .range-value { font-weight: 700; color: var(--p); min-width: 48px; text-align: right; }
         .mt-2 { margin-top: 12px; }
@@ -115,18 +115,18 @@
         .text-muted { color: var(--text-muted); }
         .text-sm { font-size: 13px; }
         .gap-2 { gap: 8px; }
-        .alert { padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-weight: 500; display: none; }
+        .alert { padding: 16px 20px; border-radius: var(--radius-sm); margin-bottom: 16px; font-weight: 500; display: none; }
         .alert.success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; display: block; }
         .alert.error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; display: block; }
         .alert.info { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; display: block; }
-        .slider-section { background: #FAFBFC; padding: 16px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-top: 8px; }
+        .slider-section { background: #FAFBFC; padding: 20px 22px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-top: 8px; }
         .slider-section label { font-weight: 600; font-size: 13px; color: var(--text-secondary); }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal.active { display: flex; }
-        .modal-content { background: #fff; border-radius: var(--radius); max-width: 700px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 24px; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
+        .modal-content { background: #fff; border-radius: var(--radius); max-width: 700px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 32px; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
         .modal-content .close { float: right; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); }
         .modal-content .close:hover { color: var(--text); }
-        .session-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; }
+        .session-item { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); align-items: center; }
         .session-item:last-child { border-bottom: none; }
         .session-item .device { font-weight: 600; }
         .session-item .ip { color: var(--text-secondary); font-size: 13px; }
@@ -134,7 +134,7 @@
         .session-item .status { font-size: 12px; font-weight: 600; }
         .session-item .status.online { color: #10B981; }
         .session-item .status.offline { color: #EF4444; }
-        .modal-actions { margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end; }
+        .modal-actions { margin-top: 20px; display: flex; gap: 14px; justify-content: flex-end; }
         @media (max-width: 768px) {
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .admin-header { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -145,15 +145,15 @@
             .btn { width: 100%; justify-content: center; }
             .range-wrapper { flex-wrap: wrap; }
         }
-        .copy-field { display:flex; align-items:center; gap:8px; background:#f8fafc; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; transition:var(--transition); }
+        .copy-field { display:flex; align-items:center; gap:10px; background:#f8fafc; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; transition:var(--transition); }
         .copy-field:hover { border-color:var(--p); background:#fff; }
         .copy-field .label { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; margin-bottom:3px; }
         .copy-field .value { font-size:14px; font-weight:600; color:var(--text); word-break:break-all; flex:1; }
-        .copy-field .copy-btn { background:none; border:none; color:var(--p); cursor:pointer; padding:4px 8px; border-radius:6px; font-size:13px; transition:var(--transition); flex-shrink:0; }
+        .copy-field .copy-btn { background:none; border:none; color:var(--p); cursor:pointer; padding:8px 12px; border-radius:6px; font-size:13px; transition:var(--transition); flex-shrink:0; }
         .copy-field .copy-btn:hover { background:var(--p-light); }
-        .copy-field input { border:none; background:transparent; padding:0; font-size:14px; font-weight:600; color:var(--text); width:100%; font-family:inherit; }
+        .copy-field input { border:none; background:transparent; padding:4px 0; font-size:14px; font-weight:600; color:var(--text); width:100%; font-family:inherit; }
         .copy-field input:focus { outline:none; box-shadow:none; }
-        .copy-field.editing { background:#fff; border-color:var(--p); box-shadow:0 0 0 3px rgba(106,13,173,0.08); }
+        .copy-field.editing { background:#fff; border-color:var(--p); box-shadow:0 0 0 3px rgba(106,13,173,0.08); padding:14px 16px; }
         .copy-field.editing input { background:#fff; }
         .client-name-link { color:var(--p); cursor:pointer; text-decoration:none; }
         .client-name-link:hover { text-decoration:underline; }
@@ -438,7 +438,7 @@
     <!-- ========== MODAL FICHE CLIENT ========== -->
     <div id="clientModal" class="modal">
         <div class="modal-content" style="max-width:700px; padding:0; overflow:hidden;">
-            <div style="background:var(--p); color:#fff; padding:20px 24px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="background:var(--p); color:#fff; padding:24px 28px; display:flex; align-items:center; justify-content:space-between;">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <div style="width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800;">
                         <i class="fas fa-user" style="color:#fff;"></i>
@@ -450,7 +450,7 @@
                 </div>
                 <button onclick="closeClientModal()" style="background:rgba(255,255,255,0.15); border:none; color:#fff; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times"></i></button>
             </div>
-            <div style="padding:24px; max-height:70vh; overflow-y:auto;">
+            <div style="padding:28px; max-height:70vh; overflow-y:auto;">
                 <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
                     <button class="btn btn-sm" id="editToggleBtn" onclick="toggleEditMode()"><i class="fas fa-pen"></i> Modifier</button>
                     <button class="btn btn-success btn-sm" id="saveClientBtn" onclick="saveClientChanges()" style="display:none;"><i class="fas fa-save"></i> Enregistrer</button>
@@ -461,22 +461,22 @@
                     <!-- Généré dynamiquement -->
                 </div>
 
-                <div style="margin-top:20px; padding:16px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0;">
+                <div style="margin-top:20px; padding:20px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0;">
                     <div style="font-size:12px; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-mobile-screen-button" style="margin-right:6px;"></i>Application ZenPay</div>
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                        <div id="clientAppLinkDisplay" style="flex:1; background:#fff; border:1.5px solid #a7f3d0; border-radius:10px; padding:10px 14px; font-size:14px; font-weight:600; color:#15803d; word-break:break-all;">https://polska.getzenpay.com/</div>
+                        <div id="clientAppLinkDisplay" style="flex:1; background:#fff; border:1.5px solid #a7f3d0; border-radius:10px; padding:14px 18px; font-size:14px; font-weight:600; color:#15803d; word-break:break-all;">https://polska.getzenpay.com/</div>
                         <button id="clientAppCopyBtn" class="btn btn-success btn-sm" onclick="copyToClipboard(document.getElementById('clientAppLinkDisplay').textContent)"><i class="fas fa-copy"></i> Copier</button>
                     </div>
                 </div>
 
-                <div style="margin-top:20px; padding:16px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
+                <div style="margin-top:20px; padding:20px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
                     <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-bell" style="margin-right:6px;"></i>Notification</div>
                     <div id="modalNotifDisplay" style="font-size:15px; color:var(--text); line-height:1.7; min-height:120px; padding:8px 0;"></div>
-                    <textarea id="modalNotifEdit" style="width:100%; padding:16px 18px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:15px; font-family:inherit; min-height:280px; display:none; margin-top:8px; line-height:1.7;"></textarea>
+                    <textarea id="modalNotifEdit" style="width:100%; padding:20px 22px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:15px; font-family:inherit; min-height:280px; display:none; margin-top:8px; line-height:1.7;"></textarea>
                 </div>
 
                 <!-- ========== SECTION ENVOI EMAILS ========== -->
-                <div style="margin-top:20px; padding:16px; background:#f5f3ff; border-radius:12px; border:1px solid #ddd6fe;">
+                <div style="margin-top:20px; padding:20px; background:#f5f3ff; border-radius:12px; border:1px solid #ddd6fe;">
                     <div style="font-size:12px; font-weight:700; color:#6A0DAD; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">
                         <i class="fas fa-paper-plane" style="margin-right:6px;"></i>Envoi d'emails au client
                     </div>
@@ -1185,7 +1185,7 @@
                                     <div class="copy-field editing">
                                         <div style="flex:1;">
                                             <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                            ${f.key === 'msg' ? `<textarea id="edit-${f.key}" style="width:100%;min-height:140px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;line-height:1.6;">${val}</textarea>` : `<input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />`}
+                                            ${f.key === 'msg' ? `<textarea id="edit-${f.key}" style="width:100%;min-height:140px;padding:16px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;line-height:1.6;">${val}</textarea>` : `<input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />`}
                                         </div>
                                     </div>`;
                             } else {
