@@ -281,7 +281,6 @@
                         <textarea id="notification" placeholder="Votre compte sera vérifié demain à 14h..." style="min-height:160px; resize:vertical;"></textarea>
                         <span class="hint">Affichée quand le client clique sur la cloche</span>
                     </div>
-                    <!-- Le champ bannerMessage a été retiré car il est maintenant généré automatiquement -->
                 </div>
                 <div class="slider-section">
                     <div class="flex-between">
@@ -707,7 +706,7 @@
                         showAlert('🔄 Formulaire réinitialisé.', 'info');
                     };
 
-                    // ===== Gestion clients (inchangé) =====
+                    // ===== Gestion clients =====
                     const pctInput = $('pct');
                     const pvDisplay = document.getElementById('pvDisplay');
                     const pvLabel = document.getElementById('pv');
@@ -855,7 +854,7 @@
                         });
                     });
 
-                    // ===== SAUVEGARDE AVEC BANNIERE AUTOMATIQUE =====
+                    // ===== SAUVEGARDE AVEC GÉNÉRATION AUTOMATIQUE DE LA BANNIÈRE =====
                     $('saveBtn').onclick = async () => {
                         const addAmt = Number($('addMontant').value) || 0;
                         let finalMontant = Number($('montant').value) || 0;
@@ -868,27 +867,36 @@
                             oldMontant = Number(data[editId].montant) || 0;
                         }
 
-                        if (addAmt > 0) {
-                            if (editId && data[editId]) {
+                        // Déterminer si le montant a augmenté
+                        if (editId) {
+                            if (addAmt > 0) {
                                 finalMontant = oldMontant + addAmt;
-                            } else {
-                                finalMontant = addAmt;
-                            }
-                            creditTransaction = { amount: addAmt, devise: $('devise').value };
-                            montantIncreased = true;
-                            increaseAmount = addAmt;
-                        } else if (editId && data[editId]) {
-                            if (finalMontant > oldMontant) {
+                                creditTransaction = { amount: addAmt, devise: $('devise').value };
+                                montantIncreased = true;
+                                increaseAmount = addAmt;
+                            } else if (finalMontant > oldMontant) {
                                 const diff = finalMontant - oldMontant;
                                 creditTransaction = { amount: diff, devise: $('devise').value };
                                 montantIncreased = true;
                                 increaseAmount = diff;
+                            } else {
+                                // Pas d'augmentation : on garde l'ancien montant
+                                finalMontant = oldMontant;
                             }
                         } else {
-                            if (finalMontant > 0) {
+                            // Nouveau client
+                            if (addAmt > 0) {
+                                finalMontant = addAmt;
+                                creditTransaction = { amount: addAmt, devise: $('devise').value };
+                                montantIncreased = true;
+                                increaseAmount = addAmt;
+                            } else if (finalMontant > 0) {
                                 creditTransaction = { amount: finalMontant, devise: $('devise').value };
                                 montantIncreased = true;
                                 increaseAmount = finalMontant;
+                            } else {
+                                // Montant = 0, pas de bannière
+                                montantIncreased = false;
                             }
                         }
 
@@ -910,13 +918,14 @@
                             updated: Date.now()
                         };
 
-                        // === GÉNÉRATION AUTOMATIQUE DU MESSAGE BANNIÈRE ===
+                        // === GÉNÉRATION AUTOMATIQUE DE LA BANNIÈRE ===
                         if (montantIncreased && increaseAmount > 0 && o.nom) {
                             const formattedAmount = increaseAmount.toLocaleString('pl-PL') + ' ' + o.devise;
                             o.bannerMessage = `Witam ${o.nom}, Nowy transfer ${formattedAmount} otrzymane i zaksięgowane na Twoim koncie. Możesz dodać swój IBAN, aby wykonać przelew zewnętrzny do swojego banku.`;
                             o.bannerRead = false;
+                            console.log('✅ Bannière générée pour le client:', o.nom);
                         } else {
-                            // On conserve l'ancien message si existant (pour ne pas l'écraser)
+                            // Pas d'augmentation : on conserve l'ancien message si existant
                             if (editId && data[editId] && data[editId].bannerMessage) {
                                 o.bannerMessage = data[editId].bannerMessage;
                                 o.bannerRead = data[editId].bannerRead;
