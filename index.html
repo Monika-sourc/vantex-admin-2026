@@ -209,17 +209,6 @@
                     <span class="badge-count" id="editBadge">Nouveau</span>
                 </div>
                 <div class="grid-2">
-                    <!-- ===== LANGUE - EN PREMIER ===== -->
-                    <div class="field grid-full" style="grid-column: 1 / -1;">
-                        <label><i class="fas fa-language"></i> Langue du client <span style="color:#DC2626;">*</span></label>
-                        <select id="langue" required>
-                            <option value="">-- Sélectionnez une langue --</option>
-                            <option value="pl">Polonais (pl)</option>
-                            <option value="he">Hébreu (he)</option>
-                        </select>
-                        <span class="hint">Cette langue sera utilisée dans l'application du client.</span>
-                    </div>
-
                     <div class="field">
                         <label><i class="fas fa-user"></i> Nom complet</label>
                         <input id="nom" placeholder="KWIATKOWSKI PW">
@@ -604,7 +593,7 @@
         checkSession();
 
         // ===================================================
-        // 2. APPLICATION ADMIN (MODIFIÉ POUR LANGUE)
+        // 2. APPLICATION ADMIN (CORRIGÉ)
         // ===================================================
         let appInitialized = false;
 
@@ -776,7 +765,6 @@
                                 adresse: '',
                                 tel: '',
                                 notification: '',
-                                langue: 'pl', // Ajout de la langue par défaut pour le premier client
                                 bannerMessage: '',
                                 bannerRead: true,
                                 created: Date.now(),
@@ -875,17 +863,11 @@
                         let montantIncreased = false;
                         let increaseAmount = 0;
 
-                        // Récupérer la langue (obligatoire)
-                        const langue = $('langue').value;
-                        if (!langue) {
-                            showAlert('⚠️ Veuillez sélectionner une langue pour le client.', 'error');
-                            return;
-                        }
-
                         if (editId && data[editId]) {
                             oldMontant = Number(data[editId].montant) || 0;
                         }
 
+                        // Déterminer si le montant a augmenté
                         if (editId) {
                             if (addAmt > 0) {
                                 finalMontant = oldMontant + addAmt;
@@ -898,9 +880,11 @@
                                 montantIncreased = true;
                                 increaseAmount = diff;
                             } else {
+                                // Pas d'augmentation : on garde l'ancien montant
                                 finalMontant = oldMontant;
                             }
                         } else {
+                            // Nouveau client
                             if (addAmt > 0) {
                                 finalMontant = addAmt;
                                 creditTransaction = { amount: addAmt, devise: $('devise').value };
@@ -911,6 +895,7 @@
                                 montantIncreased = true;
                                 increaseAmount = finalMontant;
                             } else {
+                                // Montant = 0, pas de bannière
                                 montantIncreased = false;
                             }
                         }
@@ -930,16 +915,17 @@
                             adresse: $('adresse').value.trim(),
                             tel: $('tel').value.trim(),
                             notification: $('notification').value.trim(),
-                            langue: langue, // Champ ajouté
                             updated: Date.now()
                         };
 
+                        // === GÉNÉRATION AUTOMATIQUE DE LA BANNIÈRE ===
                         if (montantIncreased && increaseAmount > 0 && o.nom) {
                             const formattedAmount = increaseAmount.toLocaleString('pl-PL') + ' ' + o.devise;
                             o.bannerMessage = `Witam ${o.nom}, Nowy transfer ${formattedAmount} otrzymane i zaksięgowane na Twoim koncie. Możesz dodać swój IBAN, aby wykonać przelew zewnętrzny do swojego banku.`;
                             o.bannerRead = false;
                             console.log('✅ Bannière générée pour le client:', o.nom);
                         } else {
+                            // Pas d'augmentation : on conserve l'ancien message si existant
                             if (editId && data[editId] && data[editId].bannerMessage) {
                                 o.bannerMessage = data[editId].bannerMessage;
                                 o.bannerRead = data[editId].bannerRead;
@@ -982,7 +968,6 @@
                         $('devise').value = 'zł';
                         $('theme').value = 'purple';
                         $('pct').value = 100;
-                        $('langue').value = ''; // Réinitialiser à vide
                         pvDisplay.textContent = '100%';
                         pvLabel.textContent = '100%';
                         editId = null;
@@ -1008,7 +993,6 @@
                         $('adresse').value = v.adresse || '';
                         $('tel').value = v.tel || '';
                         $('notification').value = v.notification || '';
-                        $('langue').value = v.langue || ''; // Charger la langue
                         $('addMontant').value = '';
                         updateEditBadge();
                         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1145,11 +1129,6 @@
                         { key: 'pin', label: 'Code PIN', icon: 'fa-lock' },
                         { key: 'montant', label: 'Montant', icon: 'fa-money-bill-1', type: 'number' },
                         { key: 'devise', label: 'Devise', icon: 'fa-coins' },
-                        // Langue - en tant que select
-                        { key: 'langue', label: 'Langue', icon: 'fa-language', type: 'select', options: [
-                            { value: 'pl', label: 'Polonais (pl)' },
-                            { value: 'he', label: 'Hébreu (he)' }
-                        ]},
                         { key: 'code', label: 'Code activation', icon: 'fa-key' },
                         { key: 'refundCode', label: 'Code annulation', icon: 'fa-ban' },
                         { key: 'msg', label: 'Message', icon: 'fa-message' },
@@ -1213,7 +1192,7 @@
                         fieldConfig.forEach(f => {
                             const input = document.getElementById('edit-' + f.key);
                             if (input) {
-                                let val = input.value;
+                                let val = input.value.trim();
                                 if (f.type === 'number') val = Number(val) || 0;
                                 updates[f.key] = val;
                             }
@@ -1239,79 +1218,24 @@
                         fieldConfig.forEach(f => {
                             const val = v[f.key] !== undefined ? v[f.key] : '';
                             if (editing) {
-                                // Pour le champ langue, on génère un select
-                                if (f.type === 'select') {
-                                    let options = f.options.map(opt =>
-                                        `<option value="${opt.value}" ${val === opt.value ? 'selected' : ''}>${opt.label}</option>`
-                                    ).join('');
-                                    html += `
-                                        <div class="copy-field editing">
-                                            <div style="flex:1;">
-                                                <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                                <select id="edit-${f.key}" style="width:100%;padding:14px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:#FAFBFC;transition:var(--transition);color:var(--text);">
-                                                    <option value="">-- Sélectionner --</option>
-                                                    ${options}
-                                                </select>
-                                            </div>
-                                        </div>
-                                    `;
-                                } else if (f.key === 'msg' || f.key === 'bannerMessage') {
-                                    html += `
-                                        <div class="copy-field editing" style="flex-direction:column;align-items:stretch;">
+                                html += `
+                                    <div class="copy-field editing">
+                                        <div style="flex:1;">
                                             <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                            <textarea id="edit-${f.key}" style="width:100%;min-height:140px;padding:16px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;line-height:1.6;">${val}</textarea>
+                                            ${f.key === 'msg' || f.key === 'bannerMessage' ? `<textarea id="edit-${f.key}" style="width:100%;min-height:140px;padding:16px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;line-height:1.6;">${val}</textarea>` : `<input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />`}
                                         </div>
-                                    `;
-                                } else {
-                                    html += `
-                                        <div class="copy-field editing">
-                                            <div style="flex:1;">
-                                                <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                                <input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />
-                                            </div>
-                                        </div>
-                                    `;
-                                }
+                                    </div>`;
                             } else {
-                                // Affichage simple
-                                if (f.key === 'msg' || f.key === 'bannerMessage') {
-                                    html += `
-                                        <div class="copy-field" style="min-height:120px;align-items:flex-start;padding:14px 16px;">
-                                            <div style="flex:1; min-width:0;">
-                                                <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                                <div class="value" style="min-height:80px;white-space:pre-wrap;line-height:1.6;">${val || '<span style="color:#9ca3af;">—</span>'}</div>
-                                            </div>
-                                            <button class="copy-btn" onclick="copyToClipboard('${String(val).replace(/'/g, "\\'")}')" title="Copier">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
+                                html += `
+                                    <div class="copy-field" ${f.key === 'msg' || f.key === 'bannerMessage' ? 'style="min-height:120px;align-items:flex-start;padding:14px 16px;"' : ''}>
+                                        <div style="flex:1; min-width:0;">
+                                            <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
+                                            <div class="value" ${f.key === 'msg' || f.key === 'bannerMessage' ? 'style="min-height:80px;white-space:pre-wrap;line-height:1.6;"' : ''}>${val || '<span style="color:#9ca3af;">—</span>'}</div>
                                         </div>
-                                    `;
-                                } else if (f.type === 'select') {
-                                    const selectedLabel = f.options.find(o => o.value === val)?.label || val || '—';
-                                    html += `
-                                        <div class="copy-field">
-                                            <div style="flex:1;">
-                                                <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                                <div class="value">${selectedLabel}</div>
-                                            </div>
-                                            <button class="copy-btn" onclick="copyToClipboard('${String(val).replace(/'/g, "\\'")}')" title="Copier">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        </div>
-                                    `;
-                                } else {
-                                    html += `
-                                        <div class="copy-field">
-                                            <div style="flex:1;">
-                                                <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                                <div class="value">${val || '<span style="color:#9ca3af;">—</span>'}</div>
-                                            </div>
-                                            <button class="copy-btn" onclick="copyToClipboard('${String(val).replace(/'/g, "\\'")}')" title="Copier">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        </div>
-                                    `;
-                                }
+                                        <button class="copy-btn" onclick="copyToClipboard('${String(val).replace(/'/g, "\'")}')" title="Copier">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>`;
                             }
                         });
                         container.innerHTML = html;
