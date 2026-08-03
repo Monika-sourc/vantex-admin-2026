@@ -1335,7 +1335,8 @@
                         const pin = v.pin || '---';
                         const theme = v.theme || 'teal';
                         const lang = v.langue || 'pl';
-                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
+                        const langue = v.langue || 'pl';
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme) + '&langue=' + encodeURIComponent(langue);
 
                         const trad = {
                             pl: { subj: `Twoje dane logowania KREDYT FINANSOWY`, greet: `Przyjmijcie nasze serdeczne pozdrowienia, drogi kliencie`, body1: `Mamy przyjemność potwierdzić Twoją rejestrację na platformie <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, body2: `Aby uzyskać dostęp do swojej przestrzeni klienta online, poniżej znajdują się Twoje dane logowania`, btn: `Dostęp do mojego konta →`, footer: `Pozdrawiamy,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>`, txt: `Mamy przyjemność potwierdzić Twoją rejestrację` },
@@ -1418,7 +1419,8 @@
                         const code = v.code || '---';
                         const theme = v.theme || 'teal';
                         const lang = v.langue || 'pl';
-                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
+                        const langue = v.langue || 'pl';
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme) + '&langue=' + encodeURIComponent(langue);
 
                         const trad2 = {
                             pl: { subj: `Twój kod aktywacji przelewu`, hello: `Witaj <strong>${name}</strong>,`, body: `Otrzymałeś kod aktywacji / walidacji przelewu na platformie <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, label: `🔑 Kod aktywacji / walidacji przelewu:`, btn: `Dostęp do mojego konta →`, bye: `Pozdrawiamy,` },
