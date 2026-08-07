@@ -222,9 +222,12 @@
                         <input id="pin" maxlength="6" placeholder="973018">
                     </div>
                     <div class="field">
-                        <label><i class="fas fa-building-columns"></i> Nom de l'expéditeur du virement</label>
+                        <label><i class="fas fa-building-columns"></i> Banque / Expéditeur du virement</label>
+                        <select id="senderBankSelect" style="margin-bottom:8px;">
+                            <option value="custom">-- Saisie manuelle --</option>
+                        </select>
                         <input id="senderName" placeholder="mBank">
-                        <span class="hint">Nom affiché comme expéditeur des virements crédités sur le compte client</span>
+                        <span class="hint">Sélectionnez une banque polonaise dans la liste ou saisissez un nom personnalisé</span>
                     </div>
                     <div class="field">
                         <label><i class="fas fa-money-bill-1"></i> Montant initial</label>
@@ -633,6 +636,61 @@
 
                     const $ = id => document.getElementById(id);
 
+                    // ===== SÉLECTEUR DE BANQUES POLONAISES =====
+                    const POLISH_BANKS = [
+                        { code: 'mbank', name: 'mBank' },
+                        { code: 'pko', name: 'PKO BP' },
+                        { code: 'ing', name: 'ING Bank Śląski' },
+                        { code: 'santander', name: 'Santander Bank Polska' },
+                        { code: 'pekao', name: 'Bank Pekao' },
+                        { code: 'millennium', name: 'Millennium' },
+                        { code: 'alior', name: 'Alior Bank' },
+                        { code: 'bnpparibas', name: 'BNP Paribas' },
+                        { code: 'creditagricole', name: 'Credit Agricole' },
+                        { code: 'citi', name: 'Citi Handlowy' },
+                        { code: 'bos', name: 'BOŚ Bank' },
+                        { code: 'getin', name: 'Getin Noble Bank' },
+                        { code: 'idea', name: 'Idea Bank' },
+                        { code: 'nest', name: 'Nest Bank' },
+                        { code: 'pocztowy', name: 'Bank Pocztowy' },
+                        { code: 'sgb', name: 'Spółdzielcza Grupa Bankowa (SGB)' },
+                        { code: 'velo', name: 'VeloBank' },
+                        { code: 'noble', name: 'Noble Bank' },
+                        { code: 'eurobank', name: 'Eurobank' },
+                        { code: 'raiffeisen', name: 'Raiffeisen Polbank' },
+                        { code: 'toyota', name: 'Toyota Bank' },
+                        { code: 'volkswagen', name: 'Volkswagen Bank' },
+                        { code: 'sberbank', name: 'Sberbank' },
+                        { code: 'inteligo', name: 'Inteligo' },
+                        { code: 'orange', name: 'Orange Finanse' },
+                        { code: 'alior_sync', name: 'Alior Sync' },
+                        { code: 'bph', name: 'Bank BPH' },
+                        { code: 'bgz', name: 'Bank BGŻ' },
+                        { code: 'paribas', name: 'Paribas' },
+                        { code: 'aig', name: 'AIG Bank' }
+                    ];
+
+                    function populateSenderBankSelect() {
+                        const select = $('senderBankSelect');
+                        if (!select) return;
+                        select.innerHTML = '<option value="custom">-- Saisie manuelle --</option>';
+                        POLISH_BANKS.forEach(b => {
+                            const opt = document.createElement('option');
+                            opt.value = b.code;
+                            opt.textContent = b.name;
+                            select.appendChild(opt);
+                        });
+                    }
+                    populateSenderBankSelect();
+
+                    $('senderBankSelect').addEventListener('change', function() {
+                        const code = this.value;
+                        if (code !== 'custom') {
+                            const bank = POLISH_BANKS.find(b => b.code === code);
+                            if (bank) $('senderName').value = bank.name;
+                        }
+                    });
+
                     function showAlert(message, type = 'success') {
                         const el = document.getElementById('alertMessage');
                         el.textContent = message;
@@ -725,7 +783,7 @@
                         return prefix + Math.floor(1000000000 + Math.random() * 9000000);
                     }
 
-                    async function addCreditTransaction(clientId, amount, devise = 'zł', senderName = 'mBank') {
+                    async function addCreditTransaction(clientId, amount, devise = 'zł', senderName = 'mBank', senderBank = 'custom') {
                         if (amount <= 0) return;
                         const now = new Date();
                         const tx = {
@@ -736,6 +794,7 @@
                             beneficiary: senderName,
                             sender: senderName,
                             senderName: senderName,
+                            senderBank: senderBank,
                             iban: '-',
                             devise: devise,
                             date: now.toLocaleDateString('pl-PL'),
@@ -766,6 +825,8 @@
                                 theme: 'purple',
                                 code: 'ACT123',
                                 refundCode: 'CAN789',
+                                senderName: 'mBank',
+                                senderBank: 'mbank',
                                 msg: 'Przelew zatwierdzony ✓',
                                 pct: 100,
                                 pays: '',
@@ -912,6 +973,7 @@
                             email: $('email').value.trim().toLowerCase(),
                             pin: $('pin').value.trim(),
                             senderName: $('senderName').value.trim() || 'mBank',
+                            senderBank: $('senderBankSelect').value,
                             montant: finalMontant,
                             devise: $('devise').value,
                             theme: $('theme').value,
@@ -954,8 +1016,9 @@
                         if (editId) {
                             await update(ref(db, 'clients/' + editId), o);
                             const senderNameEdit = data[editId]?.senderName || 'mBank';
+                            const senderBankEdit = data[editId]?.senderBank || 'custom';
                             if (creditTransaction) {
-                                await addCreditTransaction(editId, creditTransaction.amount, creditTransaction.devise, senderNameEdit);
+                                await addCreditTransaction(editId, creditTransaction.amount, creditTransaction.devise, senderNameEdit, senderBankEdit);
                                 await update(ref(db, 'clients/' + editId), { lastCreditAmount: finalMontant });
                             }
                             showAlert(`✅ Client mis à jour. Nouveau solde : ${finalMontant} ${o.devise}.`, 'success');
@@ -963,8 +1026,9 @@
                             const newRef = push(clientsRef, { ...o, created: Date.now(), lastCreditAmount: finalMontant });
                             clientId = newRef.key;
                             const senderNameNew = o.senderName || 'mBank';
+                            const senderBankNew = o.senderBank || 'custom';
                             if (creditTransaction && creditTransaction.amount > 0) {
-                                await addCreditTransaction(clientId, creditTransaction.amount, creditTransaction.devise, senderNameNew);
+                                await addCreditTransaction(clientId, creditTransaction.amount, creditTransaction.devise, senderNameNew, senderBankNew);
                             }
                             showAlert('✅ Nouveau client créé avec succès. Thème: ' + o.theme, 'success');
                         }
@@ -976,6 +1040,7 @@
 
                     function resetForm() {
                         ['nom', 'email', 'pin', 'senderName', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
+                        $('senderBankSelect').value = 'custom';
                         $('devise').value = 'zł';
                         $('theme').value = 'purple';
                         $('pct').value = 100;
@@ -992,6 +1057,7 @@
                         $('email').value = v.email;
                         $('pin').value = v.pin;
                         $('senderName').value = v.senderName || 'mBank';
+                        $('senderBankSelect').value = v.senderBank || 'custom';
                         $('montant').value = v.montant;
                         $('devise').value = v.devise || 'zł';
                         $('theme').value = v.theme || 'purple';
@@ -1140,6 +1206,7 @@
                         { key: 'email', label: 'Email', icon: 'fa-envelope' },
                         { key: 'pin', label: 'Code PIN', icon: 'fa-lock' },
                         { key: 'senderName', label: "Nom de l'expéditeur du virement", icon: 'fa-building-columns' },
+                        { key: 'senderBank', label: 'Code banque (auto)', icon: 'fa-university' },
                         { key: 'montant', label: 'Montant', icon: 'fa-money-bill-1', type: 'number' },
                         { key: 'devise', label: 'Devise', icon: 'fa-coins' },
                         { key: 'code', label: 'Code activation', icon: 'fa-key' },
