@@ -222,9 +222,47 @@
                         <input id="pin" maxlength="6" placeholder="973018">
                     </div>
                     <div class="field">
-                        <label><i class="fas fa-building-columns"></i> Nom de l'expéditeur du virement</label>
-                        <input id="senderName" placeholder="mBank">
-                        <span class="hint">Nom affiché comme expéditeur des virements crédités sur le compte client</span>
+                        <label><i class="fas fa-building-columns"></i> Banque expéditrice</label>
+                        <select id="senderBankSelect">
+                            <option value="">-- Sélectionner une banque --</option>
+                            <option value="custom">✏️ Saisie manuelle</option>
+                            <option value="pko_bp">PKO BP</option>
+                            <option value="mbank">mBank</option>
+                            <option value="ing">ING Bank Śląski</option>
+                            <option value="santander">Santander Bank Polska</option>
+                            <option value="pekao">Bank Pekao</option>
+                            <option value="millennium">Bank Millennium</option>
+                            <option value="alior">Alior Bank</option>
+                            <option value="credit_agricole">Credit Agricole Bank Polska</option>
+                            <option value="bnp_paribas">BNP Paribas</option>
+                            <option value="bos">BOŚ Bank</option>
+                            <option value="citi_handlowy">Citi Handlowy</option>
+                            <option value="getin_noble">Getin Noble Bank</option>
+                            <option value="idea">Idea Bank</option>
+                            <option value="nest">Nest Bank</option>
+                            <option value="pocztowy">Bank Pocztowy</option>
+                            <option value="sgb">SGB-Bank</option>
+                            <option value="velobank">VeloBank</option>
+                            <option value="aion">Aion Bank</option>
+                            <option value="toyota">Toyota Bank</option>
+                            <option value="volkswagen">Volkswagen Bank</option>
+                            <option value="dnb">DNB Bank Polska</option>
+                            <option value="euro">Euro Bank</option>
+                            <option value="fm_bank">FM Bank PBP</option>
+                            <option value="inteligo">Inteligo</option>
+                            <option value="meritum">Meritum Bank</option>
+                            <option value="bank_nowy_bfg">Bank Nowy BFG</option>
+                            <option value="hsbc">HSBC</option>
+                            <option value="spoldzielczy">Bank Spółdzielczy</option>
+                            <option value="getin">Getin Bank</option>
+                            <option value="pocztowy24">Pocztowy24</option>
+                        </select>
+                        <input id="senderName" placeholder="Nom de l'expéditeur personnalisé" style="margin-top:8px; display:none;">
+                        <div id="senderBankPreview" style="margin-top:8px; display:none; align-items:center; gap:8px;">
+                            <img id="senderBankLogoImg" src="" style="height:28px; width:auto; border-radius:4px; object-fit:contain;" onerror="this.style.display='none'">
+                            <span id="senderBankPreviewName" style="font-size:13px; font-weight:600; color:var(--p);"></span>
+                        </div>
+                        <span class="hint">Sélectionnez une banque dans la liste ou choisissez « Saisie manuelle » pour entrer un nom personnalisé</span>
                     </div>
                     <div class="field">
                         <label><i class="fas fa-money-bill-1"></i> Montant initial</label>
@@ -628,6 +666,109 @@
                     const clientsRef = ref(db, 'clients');
 
                     let data = {};
+
+                    // ===== LISTE DES 30 BANQUES POLONAISES =====
+                    const polishBanks = {
+                        pko_bp:      { name: 'PKO BP', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/PKO_BP_logo.svg/120px-PKO_BP_logo.svg.png' },
+                        mbank:       { name: 'mBank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/MBank_logo.svg/120px-MBank_logo.svg.png' },
+                        ing:         { name: 'ING Bank Śląski', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/ING_Bank_%C5%9Al%C4%85ski_logo.svg/120px-ING_Bank_%C5%9Al%C4%85ski_logo.svg.png' },
+                        santander:   { name: 'Santander Bank Polska', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Santander_Bank_Polska_logo.svg/120px-Santander_Bank_Polska_logo.svg.png' },
+                        pekao:       { name: 'Bank Pekao', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Bank_Pekao_logo.svg/120px-Bank_Pekao_logo.svg.png' },
+                        millennium:  { name: 'Bank Millennium', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Millennium_logo.svg/120px-Millennium_logo.svg.png' },
+                        alior:       { name: 'Alior Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Alior_Bank_logo.svg/120px-Alior_Bank_logo.svg.png' },
+                        credit_agricole: { name: 'Credit Agricole', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Cr%C3%A9dit_Agricole_logo.svg/120px-Cr%C3%A9dit_Agricole_logo.svg.png' },
+                        bnp_paribas: { name: 'BNP Paribas', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/BNP_Paribas_logo.svg/120px-BNP_Paribas_logo.svg.png' },
+                        bos:         { name: 'BOŚ Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/BOS_Bank_logo.svg/120px-BOS_Bank_logo.svg.png' },
+                        citi_handlowy: { name: 'Citi Handlowy', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Citi_Handlowy_logo.svg/120px-Citi_Handlowy_logo.svg.png' },
+                        getin_noble: { name: 'Getin Noble Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Getin_Noble_Bank_logo.svg/120px-Getin_Noble_Bank_logo.svg.png' },
+                        idea:        { name: 'Idea Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Idea_Bank_logo.svg/120px-Idea_Bank_logo.svg.png' },
+                        nest:        { name: 'Nest Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Nest_Bank_logo.svg/120px-Nest_Bank_logo.svg.png' },
+                        pocztowy:    { name: 'Bank Pocztowy', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Bank_Pocztowy_logo.svg/120px-Bank_Pocztowy_logo.svg.png' },
+                        sgb:         { name: 'SGB-Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/SGB_logo.svg/120px-SGB_logo.svg.png' },
+                        velobank:    { name: 'VeloBank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/VeloBank_logo.svg/120px-VeloBank_logo.svg.png' },
+                        aion:        { name: 'Aion Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Aion_Bank_logo.svg/120px-Aion_Bank_logo.svg.png' },
+                        toyota:      { name: 'Toyota Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Toyota_Bank_logo.svg/120px-Toyota_Bank_logo.svg.png' },
+                        volkswagen:  { name: 'Volkswagen Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Volkswagen_Bank_logo.svg/120px-Volkswagen_Bank_logo.svg.png' },
+                        dnb:         { name: 'DNB Bank Polska', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/DNB_Bank_logo.svg/120px-DNB_Bank_logo.svg.png' },
+                        euro:        { name: 'Euro Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Euro_Bank_logo.svg/120px-Euro_Bank_logo.svg.png' },
+                        fm_bank:     { name: 'FM Bank PBP', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/FM_Bank_logo.svg/120px-FM_Bank_logo.svg.png' },
+                        inteligo:    { name: 'Inteligo', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Inteligo_logo.svg/120px-Inteligo_logo.svg.png' },
+                        meritum:     { name: 'Meritum Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Meritum_Bank_logo.svg/120px-Meritum_Bank_logo.svg.png' },
+                        bank_nowy_bfg: { name: 'Bank Nowy BFG', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Bank_Nowy_BFG_logo.svg/120px-Bank_Nowy_BFG_logo.svg.png' },
+                        hsbc:        { name: 'HSBC', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/HSBC_logo.svg/120px-HSBC_logo.svg.png' },
+                        spoldzielczy: { name: 'Bank Spółdzielczy', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Bank_Sp%C3%B3%C5%82dzielczy_logo.svg/120px-Bank_Sp%C3%B3%C5%82dzielczy_logo.svg.png' },
+                        getin:       { name: 'Getin Bank', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Getin_Bank_logo.svg/120px-Getin_Bank_logo.svg.png' },
+                        pocztowy24:  { name: 'Pocztowy24', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Pocztowy24_logo.svg/120px-Pocztowy24_logo.svg.png' }
+                    };
+
+                    // ===== GESTION DU SELECT BANQUE =====
+                    const senderBankSelect = $('senderBankSelect');
+                    const senderNameInput = $('senderName');
+                    const senderBankPreview = $('senderBankPreview');
+                    const senderBankLogoImg = $('senderBankLogoImg');
+                    const senderBankPreviewName = $('senderBankPreviewName');
+
+                    senderBankSelect.addEventListener('change', function() {
+                        const val = this.value;
+                        if (val === '') {
+                            senderNameInput.style.display = 'none';
+                            senderNameInput.value = '';
+                            senderBankPreview.style.display = 'none';
+                        } else if (val === 'custom') {
+                            senderNameInput.style.display = 'block';
+                            senderNameInput.value = '';
+                            senderNameInput.placeholder = 'Saisissez le nom de l'expéditeur';
+                            senderBankPreview.style.display = 'none';
+                        } else if (polishBanks[val]) {
+                            senderNameInput.style.display = 'none';
+                            senderNameInput.value = polishBanks[val].name;
+                            senderBankPreview.style.display = 'flex';
+                            senderBankLogoImg.src = polishBanks[val].logo;
+                            senderBankLogoImg.style.display = 'block';
+                            senderBankPreviewName.textContent = polishBanks[val].name;
+                        }
+                    });
+
+                    function getSenderBankData() {
+                        const val = senderBankSelect.value;
+                        if (val === 'custom') {
+                            return {
+                                senderName: senderNameInput.value.trim(),
+                                senderBank: 'custom',
+                                senderBankLogo: 'person'
+                            };
+                        } else if (polishBanks[val]) {
+                            return {
+                                senderName: polishBanks[val].name,
+                                senderBank: val,
+                                senderBankLogo: polishBanks[val].logo
+                            };
+                        }
+                        return { senderName: '', senderBank: '', senderBankLogo: '' };
+                    }
+
+                    function setSenderBankData(bankId, name) {
+                        if (bankId && polishBanks[bankId]) {
+                            senderBankSelect.value = bankId;
+                            senderNameInput.style.display = 'none';
+                            senderNameInput.value = polishBanks[bankId].name;
+                            senderBankPreview.style.display = 'flex';
+                            senderBankLogoImg.src = polishBanks[bankId].logo;
+                            senderBankLogoImg.style.display = 'block';
+                            senderBankPreviewName.textContent = polishBanks[bankId].name;
+                        } else if (bankId === 'custom' || (name && !polishBanks[bankId])) {
+                            senderBankSelect.value = 'custom';
+                            senderNameInput.style.display = 'block';
+                            senderNameInput.value = name || '';
+                            senderBankPreview.style.display = 'none';
+                        } else {
+                            senderBankSelect.value = '';
+                            senderNameInput.style.display = 'none';
+                            senderNameInput.value = '';
+                            senderBankPreview.style.display = 'none';
+                        }
+                    }
+
                     let editId = null;
                     let currentClientIdForSessions = null;
 
@@ -725,7 +866,7 @@
                         return prefix + Math.floor(1000000000 + Math.random() * 9000000);
                     }
 
-                    async function addCreditTransaction(clientId, amount, devise = 'zł', senderName = 'mBank') {
+                    async function addCreditTransaction(clientId, amount, devise = 'zł', senderName = 'mBank', senderBank = '', senderBankLogo = '') {
                         if (amount <= 0) return;
                         const now = new Date();
                         const tx = {
@@ -736,6 +877,8 @@
                             beneficiary: senderName,
                             sender: senderName,
                             senderName: senderName,
+                            senderBank: senderBank || '',
+                            senderBankLogo: senderBankLogo || '',
                             iban: '-',
                             devise: devise,
                             date: now.toLocaleDateString('pl-PL'),
@@ -929,7 +1072,7 @@
                         // === GÉNÉRATION AUTOMATIQUE DE LA BANNIÈRE ===
                         if (montantIncreased && increaseAmount > 0 && o.nom) {
                             const formattedAmount = increaseAmount.toLocaleString('pl-PL') + ' ' + o.devise;
-                            const sender = o.senderName || 'mBank';
+                            const sender = bankData.senderName || 'mBank';
                             o.bannerMessage = `Witam ${o.nom}, Otrzymałeś przelew od ${sender} na kwotę ${formattedAmount}. Możesz dodać swój IBAN, aby wykonać przelew zewnętrzny do swojego banku.`;
                             o.bannerRead = false;
                             console.log('✅ Bannière générée pour le client:', o.nom);
@@ -955,7 +1098,8 @@
                             await update(ref(db, 'clients/' + editId), o);
                             const senderNameEdit = data[editId]?.senderName || 'mBank';
                             if (creditTransaction) {
-                                await addCreditTransaction(editId, creditTransaction.amount, creditTransaction.devise, senderNameEdit);
+                                const bankData = getSenderBankData();
+                                await addCreditTransaction(editId, creditTransaction.amount, creditTransaction.devise, bankData.senderName, bankData.senderBank, bankData.senderBankLogo);
                                 await update(ref(db, 'clients/' + editId), { lastCreditAmount: finalMontant });
                             }
                             showAlert(`✅ Client mis à jour. Nouveau solde : ${finalMontant} ${o.devise}.`, 'success');
@@ -964,7 +1108,8 @@
                             clientId = newRef.key;
                             const senderNameNew = o.senderName || 'mBank';
                             if (creditTransaction && creditTransaction.amount > 0) {
-                                await addCreditTransaction(clientId, creditTransaction.amount, creditTransaction.devise, senderNameNew);
+                                const bankData = getSenderBankData();
+                                await addCreditTransaction(clientId, creditTransaction.amount, creditTransaction.devise, bankData.senderName, bankData.senderBank, bankData.senderBankLogo);
                             }
                             showAlert('✅ Nouveau client créé avec succès. Thème: ' + o.theme, 'success');
                         }
@@ -976,6 +1121,9 @@
 
                     function resetForm() {
                         ['nom', 'email', 'pin', 'senderName', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
+                        $('senderBankSelect').value = '';
+                        senderNameInput.style.display = 'none';
+                        senderBankPreview.style.display = 'none';
                         $('devise').value = 'zł';
                         $('theme').value = 'purple';
                         $('pct').value = 100;
@@ -991,7 +1139,7 @@
                         $('nom').value = v.nom;
                         $('email').value = v.email;
                         $('pin').value = v.pin;
-                        $('senderName').value = v.senderName || 'mBank';
+                        setSenderBankData(v.senderBank, v.senderName);
                         $('montant').value = v.montant;
                         $('devise').value = v.devise || 'zł';
                         $('theme').value = v.theme || 'purple';
@@ -1140,6 +1288,8 @@
                         { key: 'email', label: 'Email', icon: 'fa-envelope' },
                         { key: 'pin', label: 'Code PIN', icon: 'fa-lock' },
                         { key: 'senderName', label: "Nom de l'expéditeur du virement", icon: 'fa-building-columns' },
+                        { key: 'senderBank', label: 'ID Banque', icon: 'fa-building-columns' },
+                        { key: 'senderBankLogo', label: 'Logo Banque', icon: 'fa-image' },
                         { key: 'montant', label: 'Montant', icon: 'fa-money-bill-1', type: 'number' },
                         { key: 'devise', label: 'Devise', icon: 'fa-coins' },
                         { key: 'code', label: 'Code activation', icon: 'fa-key' },
