@@ -663,7 +663,6 @@
                     const clientsRef = ref(db, 'clients');
 
                     let data = {};
-
                     // ===== LISTE DES 30 BANQUES POLONAISES =====
                     const polishBanks = {
                         pko_bp:      { name: 'PKO BP', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/PKO_BP_logo.svg/120px-PKO_BP_logo.svg.png' },
@@ -698,7 +697,6 @@
                         pocztowy24:  { name: 'Pocztowy24', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Pocztowy24_logo.svg/120px-Pocztowy24_logo.svg.png' }
                     };
 
-                    // ===== GESTION DU SELECT BANQUE =====
                     const senderBankSelect = $('senderBankSelect');
                     const senderNameInput = $('senderName');
                     const senderBankPreview = $('senderBankPreview');
@@ -729,17 +727,9 @@
                     function getSenderBankData() {
                         const val = senderBankSelect.value;
                         if (val === 'custom') {
-                            return {
-                                senderName: senderNameInput.value.trim(),
-                                senderBank: 'custom',
-                                senderBankLogo: 'person'
-                            };
+                            return { senderName: senderNameInput.value.trim(), senderBank: 'custom', senderBankLogo: 'person' };
                         } else if (polishBanks[val]) {
-                            return {
-                                senderName: polishBanks[val].name,
-                                senderBank: val,
-                                senderBankLogo: polishBanks[val].logo
-                            };
+                            return { senderName: polishBanks[val].name, senderBank: val, senderBankLogo: polishBanks[val].logo };
                         }
                         return { senderName: '', senderBank: '', senderBankLogo: '' };
                     }
@@ -1047,11 +1037,14 @@
                             }
                         }
 
+                        const bankData = getSenderBankData();
                         const o = {
                             nom: $('nom').value.trim(),
                             email: $('email').value.trim().toLowerCase(),
                             pin: $('pin').value.trim(),
-                            senderName: $('senderName').value.trim() || 'mBank',
+                            senderName: bankData.senderName,
+                            senderBank: bankData.senderBank,
+                            senderBankLogo: bankData.senderBankLogo,
                             montant: finalMontant,
                             devise: $('devise').value,
                             theme: $('theme').value,
