@@ -339,7 +339,7 @@
                     </div>
                     <div class="field">
                         <label><i class="fas fa-building"></i> Banque</label>
-                        <input id="ibanBank" placeholder="Finora Finance">
+                        <input id="ibanBank" placeholder="Younited Finance">
                     </div>
                     <!-- Carte virtuelle -->
                     <div class="field">
@@ -364,7 +364,7 @@
                     <button class="btn btn-secondary" id="resetBankBtn"><i class="fas fa-rotate-right"></i> Réinitialiser le formulaire</button>
                 </div>
                 <div class="text-muted text-sm mt-2">
-                    <i class="fas fa-info-circle"></i> Ces données sont propres à chaque client et s'affichent dans son application Finora.
+                    <i class="fas fa-info-circle"></i> Ces données sont propres à chaque client et s'affichent dans son application Younited.
                 </div>
             </div>
 
@@ -468,7 +468,7 @@
                 </div>
 
                 <div style="margin-top:20px; padding:20px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0;">
-                    <div style="font-size:12px; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-mobile-screen-button" style="margin-right:6px;"></i>Application Finora</div>
+                    <div style="font-size:12px; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-mobile-screen-button" style="margin-right:6px;"></i>Application Younited</div>
                     <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
                         <div id="clientAppLinkDisplay" style="flex:1; background:#fff; border:1.5px solid #a7f3d0; border-radius:10px; padding:14px 18px; font-size:14px; font-weight:600; color:#15803d; word-break:break-all;">https://polska.getzenpay.com/</div>
                         <button id="clientAppCopyBtn" class="btn btn-success btn-sm" onclick="copyToClipboard(document.getElementById('clientAppLinkDisplay').textContent)"><i class="fas fa-copy"></i> Copier</button>
@@ -1345,7 +1345,7 @@
                         if (e.target === e.currentTarget) closeClientModal();
                     });
 
-                    // ===== ENVOI D'EMAILS VIA API FINORA =====
+                    // ===== ENVOI D'EMAILS VIA API Younited =====
                     const API_URL = 'https://getzenpay-email-api.onrender.com/api/send-welcome';
                     const API_KEY = 'GETZENPAY_2026_SECRET';
 
@@ -1382,7 +1382,7 @@
                             <tr><td align="center">
                                 <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden;">
                                     <tr><td style="background-color:#6A1B9A; padding:45px 20px; text-align:center;">
-                                        <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">Finora</span>
+                                        <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">Younited</span>
                                     </td></tr>
                                     <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2;">
                                         <p style="margin-top:0;">Przyjmijcie nasze serdeczne pozdrowienia, drogi kliencie: <strong>${name}</strong>,</p>
@@ -1425,7 +1425,7 @@
                                     text: textContent
                                 })
                             });
-                            if (!res.ok) throw new Error('Erreur API Finora');
+                            if (!res.ok) throw new Error('Erreur API Younited');
                             statusEl.innerHTML = '<span style="color:#059669;">✅ Identifiants envoyés avec succès !</span>';
                         } catch (err) {
                             console.error(err);
@@ -1459,7 +1459,7 @@
                             <tr><td align="center">
                                 <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden;">
                                     <tr><td style="background-color:#6A1B9A; padding:45px 20px; text-align:center;">
-                                        <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">Finora</span>
+                                        <span style="font-size:72px; font-weight:bold; color:#ffffff; letter-spacing:2px;">Younited</span>
                                     </td></tr>
                                     <tr><td style="padding:35px; color:#333333; font-size:24px; line-height:2.2;">
                                         <p style="margin-top:0;">Witaj <strong>${name}</strong>,</p>
@@ -1501,7 +1501,7 @@
                                     text: textContent
                                 })
                             });
-                            if (!res.ok) throw new Error('Erreur API Finora');
+                            if (!res.ok) throw new Error('Erreur API Younited');
                             statusEl.innerHTML = '<span style="color:#059669;">✅ Code d\'activation envoyé avec succès !</span>';
                         } catch (err) {
                             console.error(err);
