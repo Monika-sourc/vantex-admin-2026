@@ -257,7 +257,8 @@
                             <option value="rose">Rose</option>
                             <option value="orange">Orange</option>
                             <option value="green">Vert</option>
-                            <option value="black">Noir & Blanc (professionnel)</option>
+                            <option value="black">Noir</option>
+                            <option value="white">Blanc</option>
                         </select>
                     </div>
                     <div class="field">
@@ -863,7 +864,8 @@
                             rose: '#E83B7A',
                             orange: '#F97316',
                             green: '#22C55E',
-                            black: '#111827'
+                            black: '#111827',
+                            white: '#374151'
                         };
                         const names = {
                             purple: 'VIOLET',
@@ -872,7 +874,8 @@
                             rose: 'ROSE',
                             orange: 'ORANGE',
                             green: 'VERT',
-                            black: 'NOIR'
+                            black: 'NOIR',
+                            white: 'BLANC'
                         };
                         return `<span class="badge-theme" style="background:${colors[theme] || colors.purple}">${names[theme] || 'VIOLET'}</span>`;
                     }
