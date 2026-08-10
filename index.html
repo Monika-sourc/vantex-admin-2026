@@ -1142,13 +1142,6 @@
                         showAlert('✅ Couleur d\'arrière-plan appliquée au client.', 'success');
                     };
 
-                    // Appeler refreshBgClientSelect dans refreshLists
-                    const originalRefreshLists = refreshLists;
-                    refreshLists = function() {
-                        originalRefreshLists();
-                        refreshBgClientSelect();
-                    };
-
                     function refreshLists() {
                         const opts = Object.entries(data).map(([id, v]) =>
                             `<option value="${id}">${v.nom} - ${v.email} (${v.devise || 'zł'})${v.blocked ? ' 🔒 BLOQUÉ' : ''}${v.notification ? ' 🔔' : ''}${v.bannerMessage ? ' 📢' : ''}</option>`
