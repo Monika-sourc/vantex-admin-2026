@@ -440,6 +440,34 @@
                     <button class="btn btn-primary btn-block" id="actionBtn"><i class="fas fa-play"></i> Exécuter l'action</button>
                 </div>
             </div>
+            <!-- ========== CARTE : COULEUR D'ARRIÈRE-PLAN ========== -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-palette"></i>
+                    <h3>Couleur d'arrière-plan</h3>
+                    <span class="badge-count" id="bgBadge">Appliqué</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientBgSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-fill-drip"></i> Couleur d'arrière-plan</label>
+                        <select id="bgColorSelect">
+                            <option value="gray">Gris (défaut)</option>
+                            <option value="black">Noir</option>
+                            <option value="brown">Brun orangé foncé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-primary btn-block" id="applyBgBtn"><i class="fas fa-paint-roller"></i> Appliquer la couleur</button>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-info-circle"></i> La couleur sera appliquée immédiatement sur l'application du client sélectionné.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1093,6 +1121,32 @@
                             remove(ref(db, 'clients/' + id));
                             showAlert('🗑️ Client supprimé.', 'info');
                         }
+                    };
+
+                    
+                    // ===== COULEUR D'ARRIÈRE-PLAN =====
+                    function refreshBgClientSelect() {
+                        const select = document.getElementById('clientBgSelect');
+                        if (!select) return;
+                        const opts = Object.entries(data).map(([id, v]) =>
+                            `<option value="${id}">${v.nom} - ${v.email}</option>`
+                        ).join('');
+                        select.innerHTML = opts;
+                    }
+
+                    document.getElementById('applyBgBtn').onclick = async () => {
+                        const clientId = document.getElementById('clientBgSelect').value;
+                        const bgColor = document.getElementById('bgColorSelect').value;
+                        if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+                        await update(ref(db, 'clients/' + clientId), { bgColor: bgColor, updated: Date.now() });
+                        showAlert('✅ Couleur d\'arrière-plan appliquée au client.', 'success');
+                    };
+
+                    // Appeler refreshBgClientSelect dans refreshLists
+                    const originalRefreshLists = refreshLists;
+                    refreshLists = function() {
+                        originalRefreshLists();
+                        refreshBgClientSelect();
                     };
 
                     function refreshLists() {
