@@ -516,6 +516,36 @@
                     <i class="fas fa-circle-info"></i> Ce virement sera débité du solde client et affiché dans son historique comme un transfert envoyé.
                 </div>
             </div>
+
+            <!-- ========== CARTE : REMBOURSEMENT CLIENT ========== -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-rotate-left"></i>
+                    <h3>Remboursement client (crédit)</h3>
+                    <span class="badge-count" id="refundBadge">Admin</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientRefundSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-money-bill-1"></i> Montant à rembourser</label>
+                        <input id="refundAmount" type="number" placeholder="1000">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-message"></i> Motif / Raison</label>
+                        <input id="refundReason" placeholder="Remboursement virement">
+                    </div>
+                </div>
+                <div class="btn-group mt-2">
+                    <button class="btn btn-success" id="execRefundBtn"><i class="fas fa-rotate-left"></i> Effectuer le remboursement</button>
+                    <button class="btn btn-secondary" id="resetRefundBtn"><i class="fas fa-rotate-right"></i> Réinitialiser</button>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-circle-info"></i> Le remboursement sera crédité immédiatement sur le solde client et apparaîtra dans son historique avec le badge de remboursement violet 🔄.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1281,6 +1311,7 @@
                         if ($('clientAccess')) $('clientAccess').innerHTML = opts;
                         if ($('clientAction')) $('clientAction').innerHTML = opts;
                         if ($('clientOutSelect')) $('clientOutSelect').innerHTML = opts;
+                        if ($('clientRefundSelect')) $('clientRefundSelect').innerHTML = opts;
                         refreshBgClientSelect();
                     }
 
@@ -1376,6 +1407,65 @@
                         $('outAmount').value = '';
                         $('outBankName').value = '';
                         $('outReason').value = '';
+                        showAlert('🔄 Formulaire réinitialisé.', 'info');
+                    };
+
+                    // ===== REMBOURSEMENT CLIENT =====
+                    $('execRefundBtn').onclick = async () => {
+                        const clientId = $('clientRefundSelect').value;
+                        if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+
+                        const amount = Number($('refundAmount').value);
+                        if (!amount || amount <= 0) { showAlert('⚠️ Veuillez saisir un montant valide.', 'error'); return; }
+
+                        const reason = $('refundReason').value.trim() || 'Remboursement administrateur';
+                        const clientData = data[clientId];
+                        if (!clientData) { showAlert('⚠️ Client introuvable.', 'error'); return; }
+
+                        const currentBalance = Number(clientData.montant) || 0;
+                        const newBalance = currentBalance + amount;
+                        const now = new Date();
+                        const devise = clientData.devise || 'zł';
+
+                        try {
+                            // 1. Créditer le solde
+                            await update(ref(db, 'clients/' + clientId), { montant: newBalance, updated: Date.now() });
+
+                            // 2. Ajouter la transaction dans l'historique (format compatible app client)
+                            const tx = {
+                                id: genId('RF'),
+                                title: 'Zwrot',
+                                subtitle: reason,
+                                amount: amount,
+                                beneficiary: 'Younited',
+                                iban: 'ZPY916398*********',
+                                devise: devise,
+                                date: now.toLocaleDateString('pl-PL'),
+                                time: now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
+                                timestamp: now.getTime()
+                            };
+                            await push(ref(db, 'clients/' + clientId + '/history'), tx);
+
+                            // 3. Générer la bannière automatique
+                            const formattedAmount = amount.toLocaleString('pl-PL') + ' ' + devise;
+                            const nom = clientData.nom || 'Klient';
+                            const bannerMsg = `Witam ${nom}, Zwrot ${formattedAmount} został przetworzony i zaksięgowany na Twoim koncie.`;
+                            await update(ref(db, 'clients/' + clientId), { bannerMessage: bannerMsg, bannerRead: false });
+
+                            showAlert(`✅ Remboursement de ${amount.toLocaleString('pl-PL')} ${devise} effectué pour ${clientData.nom}. Nouveau solde : ${newBalance.toLocaleString('pl-PL')} ${devise}`, 'success');
+
+                            // Reset formulaire
+                            $('refundAmount').value = '';
+                            $('refundReason').value = '';
+                        } catch (err) {
+                            console.error(err);
+                            showAlert('❌ Erreur lors du remboursement.', 'error');
+                        }
+                    };
+
+                    $('resetRefundBtn').onclick = () => {
+                        $('refundAmount').value = '';
+                        $('refundReason').value = '';
                         showAlert('🔄 Formulaire réinitialisé.', 'info');
                     };
 
