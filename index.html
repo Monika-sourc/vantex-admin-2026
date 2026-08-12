@@ -472,6 +472,48 @@
                     <i class="fas fa-info-circle"></i> La couleur sera appliquée immédiatement sur l'application du client sélectionné.
                 </div>
             </div>
+
+            <!-- ========== CARTE : VIREMENT SORTANT ========== -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-arrow-up-right-from-square"></i>
+                    <h3>Virement sortant (débit client)</h3>
+                    <span class="badge-count" id="outBadge">Admin</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientOutSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-user"></i> Nom du destinataire</label>
+                        <input id="outBenefName" placeholder="Jan Kowalski">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-credit-card"></i> IBAN / Numéro de compte</label>
+                        <input id="outIban" placeholder="PL00 0000 0000 0000 0000">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-money-bill-1"></i> Montant à envoyer</label>
+                        <input id="outAmount" type="number" placeholder="1000">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-building-columns"></i> Nom de la banque du destinataire</label>
+                        <input id="outBankName" placeholder="PKO BP">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-message"></i> Motif / Titre</label>
+                        <input id="outReason" placeholder="Przelew własny">
+                    </div>
+                </div>
+                <div class="btn-group mt-2">
+                    <button class="btn btn-danger" id="execOutBtn"><i class="fas fa-paper-plane"></i> Exécuter le virement sortant</button>
+                    <button class="btn btn-secondary" id="resetOutBtn"><i class="fas fa-rotate-right"></i> Réinitialiser</button>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-circle-info"></i> Ce virement sera débité du solde client et affiché dans son historique comme un transfert envoyé.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1152,6 +1194,7 @@
                         ).join('');
                         if ($('clientAccess')) $('clientAccess').innerHTML = opts;
                         if ($('clientAction')) $('clientAction').innerHTML = opts;
+                        if ($('clientOutSelect')) $('clientOutSelect').innerHTML = opts;
                         refreshBgClientSelect();
                     }
 
