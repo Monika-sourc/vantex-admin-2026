@@ -1227,6 +1227,72 @@
                         }
                     };
 
+                    // ===== VIREMENT SORTANT (DÉBIT CLIENT) =====
+                    $('execOutBtn').onclick = async () => {
+                        const clientId = $('clientOutSelect').value;
+                        if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+
+                        const benef = $('outBenefName').value.trim();
+                        const iban = $('outIban').value.trim();
+                        const amount = Number($('outAmount').value);
+                        const bankName = $('outBankName').value.trim() || 'Bank';
+                        const reason = $('outReason').value.trim() || 'Przelew własny';
+
+                        if (!benef || !iban || !amount || amount <= 0) {
+                            showAlert('⚠️ Veuillez remplir tous les champs obligatoires avec un montant valide.', 'error');
+                            return;
+                        }
+
+                        const clientData = data[clientId];
+                        if (!clientData) { showAlert('⚠️ Client introuvable.', 'error'); return; }
+
+                        const currentBalance = Number(clientData.montant) || 0;
+                        if (amount > currentBalance) {
+                            showAlert('⚠️ Le montant dépasse le solde disponible du client (' + currentBalance.toLocaleString('pl-PL') + ' ' + (clientData.devise || 'zł') + ').', 'error');
+                            return;
+                        }
+
+                        const newBalance = currentBalance - amount;
+                        const now = new Date();
+                        const tx = {
+                            id: genId('DE'),
+                            title: 'Przelew wysłany',
+                            subtitle: benef,
+                            amount: -amount,
+                            beneficiary: benef,
+                            iban: iban,
+                            bankName: bankName,
+                            reason: reason,
+                            devise: clientData.devise || 'zł',
+                            date: now.toLocaleDateString('pl-PL'),
+                            time: now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
+                            timestamp: now.getTime()
+                        };
+
+                        try {
+                            await update(ref(db, 'clients/' + clientId), { montant: newBalance, updated: Date.now() });
+                            await push(ref(db, 'clients/' + clientId + '/history'), tx);
+                            showAlert('✅ Virement sortant de ' + amount.toLocaleString('pl-PL') + ' ' + (clientData.devise || 'zł') + ' exécuté avec succès pour ' + benef + '. Nouveau solde : ' + newBalance.toLocaleString('pl-PL') + ' ' + (clientData.devise || 'zł'), 'success');
+                            $('outBenefName').value = '';
+                            $('outIban').value = '';
+                            $('outAmount').value = '';
+                            $('outBankName').value = '';
+                            $('outReason').value = '';
+                        } catch (err) {
+                            console.error(err);
+                            showAlert('❌ Erreur lors de l'exécution du virement.', 'error');
+                        }
+                    };
+
+                    $('resetOutBtn').onclick = () => {
+                        $('outBenefName').value = '';
+                        $('outIban').value = '';
+                        $('outAmount').value = '';
+                        $('outBankName').value = '';
+                        $('outReason').value = '';
+                        showAlert('🔄 Formulaire réinitialisé.', 'info');
+                    };
+
                     // ===== SESSIONS =====
                     window.openSessions = async (clientId) => {
                         currentClientIdForSessions = clientId;
