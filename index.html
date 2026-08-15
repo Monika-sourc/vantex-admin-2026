@@ -419,6 +419,57 @@
                 </div>
             </div>
 
+            <!-- ========== CARTE : VIREMENTS EN ATTENTE ========== -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-clock"></i>
+                    <h3>Virements en attente d'approbation</h3>
+                    <span class="badge-count" id="pendingBadge">0</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientPendingSelect"></select>
+                    </div>
+                    <div class="field grid-full">
+                        <label><i class="fas fa-toggle-on"></i> Mode virement en attente</label>
+                        <select id="pendingModeSelect">
+                            <option value="off">Désactivé</option>
+                            <option value="on">Activé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-primary btn-block" id="applyPendingBtn"><i class="fas fa-play"></i> Appliquer le mode</button>
+                </div>
+                <div id="pendingListSection" style="display:none; margin-top:20px;">
+                    <div class="card-header" style="margin-bottom:12px; padding:0;">
+                        <i class="fas fa-list"></i>
+                        <h3 style="font-size:15px;">Liste des virements en attente</h3>
+                        <span class="badge-count" id="pendingCountBadge">0</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table style="min-width:600px;">
+                            <thead>
+                                <tr>
+                                    <th>Réf.</th>
+                                    <th>Montant</th>
+                                    <th>Bénéficiaire</th>
+                                    <th>IBAN</th>
+                                    <th>Banque</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-info-circle"></i> Activez le mode pour que les virements du client nécessitent une approbation. Chaque virement doit être approuvé ou annulé individuellement.
+                </div>
+            </div>
+
             <!-- ========== CARTE : ACTIONS AVANCÉES ========== -->
             <div class="card">
                 <div class="card-header">
@@ -544,43 +595,6 @@
                 </div>
                 <div class="text-muted text-sm mt-2">
                     <i class="fas fa-circle-info"></i> Le remboursement sera crédité immédiatement sur le solde client et apparaîtra dans son historique avec le badge de remboursement violet 🔄.
-                </div>
-            </div>
-
-            <!-- ========== CARTE : VIREMENT EN ATTENTE ========== -->
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-clock"></i>
-                    <h3>Virement en attente d'approbation</h3>
-                    <span class="badge-count" id="pendingBadge">Admin</span>
-                </div>
-                <div class="grid-2">
-                    <div class="field grid-full">
-                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
-                        <select id="clientPendingSelect"></select>
-                    </div>
-                    <div class="field grid-full">
-                        <label><i class="fas fa-toggle-on"></i> Mode virement en attente</label>
-                        <select id="pendingModeSelect">
-                            <option value="off">Désactivé</option>
-                            <option value="on">Activé</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <button class="btn btn-primary btn-block" id="applyPendingBtn"><i class="fas fa-play"></i> Appliquer le mode</button>
-                </div>
-                <div id="pendingApprovalSection" style="display:none; margin-top:16px; padding:16px; background:#f8fafc; border-radius:12px; border:1.5px solid #e2e8f0;">
-                    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">
-                        <i class="fas fa-clock" style="margin-right:6px; color:#D97706;"></i>Détails du virement en attente
-                    </div>
-                    <div id="pendingDetails"></div>
-                    <div class="mt-2">
-                        <button class="btn btn-success btn-block" id="approvePendingBtn"><i class="fas fa-check"></i> Approuver le virement</button>
-                    </div>
-                </div>
-                <div class="text-muted text-sm mt-2">
-                    <i class="fas fa-info-circle"></i> Activez ce mode pour que les virements du client nécessitent une approbation administrative.
                 </div>
             </div>
 
@@ -1575,7 +1589,7 @@
                     updateEditBadge();
 
                     
-                    // ===== VIREMENT EN ATTENTE =====
+                    // ===== VIREMENTS EN ATTENTE =====
                     function refreshPendingClientSelect() {
                         const select = $('clientPendingSelect');
                         if (!select) return;
@@ -1584,49 +1598,70 @@
                         ).join('');
                         select.innerHTML = opts;
                         if (select.options.length > 0) {
-                            loadPendingStatus(select.value);
+                            loadPendingData(select.value);
                         } else {
-                            $('pendingApprovalSection').style.display = 'none';
+                            const listSection = $('pendingListSection');
+                            if (listSection) listSection.style.display = 'none';
                         }
                     }
 
                     const clientPendingSelectEl = $('clientPendingSelect');
                     if (clientPendingSelectEl) {
                         clientPendingSelectEl.addEventListener('change', function() {
-                            loadPendingStatus(this.value);
+                            loadPendingData(this.value);
                         });
                     }
 
-                    async function loadPendingStatus(clientId) {
-                        const section = $('pendingApprovalSection');
-                        const details = $('pendingDetails');
+                    async function loadPendingData(clientId) {
                         const modeSelect = $('pendingModeSelect');
+                        const listSection = $('pendingListSection');
+                        const tableBody = $('pendingTableBody');
+                        const countBadge = $('pendingCountBadge');
+                        const pendingBadge = $('pendingBadge');
 
                         if (!clientId) {
-                            section.style.display = 'none';
+                            if (listSection) listSection.style.display = 'none';
                             return;
                         }
 
-                        const snap = await get(ref(db, 'clients/' + clientId + '/pendingTransfer'));
-                        const pt = snap.val();
+                        const configSnap = await get(ref(db, 'clients/' + clientId + '/pendingTransferConfig'));
+                        const config = configSnap.val() || { enabled: false };
+                        if (modeSelect) modeSelect.value = config.enabled ? 'on' : 'off';
 
-                        if (pt && pt.active) {
-                            modeSelect.value = 'on';
-                            if (pt.approved === false && pt.amount > 0) {
-                                section.style.display = 'block';
-                                details.innerHTML = `
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#6b7280;">Montant:</span> <strong>${Number(pt.amount).toLocaleString('pl-PL')} ${data[clientId]?.devise || 'zł'}</strong></div>
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#6b7280;">Bénéficiaire:</span> <strong>${pt.beneficiary || '—'}</strong></div>
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#6b7280;">IBAN:</span> <strong>${pt.iban || '—'}</strong></div>
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#6b7280;">Banque:</span> <strong>${pt.bank || '—'}</strong></div>
-                                    <div style="display:flex; justify-content:space-between;"><span style="color:#6b7280;">Date:</span> <strong>${pt.date || '—'} ${pt.time || ''}</strong></div>
-                                `;
-                            } else {
-                                section.style.display = 'none';
-                            }
-                        } else {
-                            modeSelect.value = 'off';
-                            section.style.display = 'none';
+                        const ptSnap = await get(ref(db, 'clients/' + clientId + '/pendingTransfers'));
+                        const pts = ptSnap.val() || {};
+                        const pendingList = Object.entries(pts).filter(([k, v]) => v.status === 'pending');
+
+                        if (pendingBadge) pendingBadge.textContent = pendingList.length;
+                        if (countBadge) countBadge.textContent = pendingList.length;
+
+                        if (pendingList.length === 0) {
+                            if (listSection) listSection.style.display = 'none';
+                            return;
+                        }
+
+                        if (listSection) listSection.style.display = 'block';
+                        if (tableBody) {
+                            tableBody.innerHTML = pendingList.map(([ptId, pt]) => `
+                                <tr>
+                                    <td><span class="badge">${pt.reference || '—'}</span></td>
+                                    <td><strong>${Number(pt.amount).toLocaleString('pl-PL')} ${data[clientId]?.devise || 'zł'}</strong></td>
+                                    <td>${pt.beneficiary || '—'}</td>
+                                    <td style="font-size:11px; word-break:break-all;">${pt.iban || '—'}</td>
+                                    <td>${pt.bank || '—'}</td>
+                                    <td style="font-size:11px;">${pt.date || '—'} ${pt.time || ''}</td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <button class="edit-btn" onclick="approvePendingTransfer('${clientId}', '${ptId}')" style="background:#D1FAE5; color:#065F46; border-color:#A7F3D0;">
+                                                <i class="fas fa-check"></i> Approuver
+                                            </button>
+                                            <button class="del-btn" onclick="cancelPendingTransfer('${clientId}', '${ptId}')" style="background:#FEF2F2; color:#DC2626; border-color:#FECACA;">
+                                                <i class="fas fa-times"></i> Annuler
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('');
                         }
                     }
 
@@ -1634,31 +1669,31 @@
                         const clientId = $('clientPendingSelect').value;
                         const mode = $('pendingModeSelect').value;
                         if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
-
-                        if (mode === 'on') {
-                            await update(ref(db, 'clients/' + clientId + '/pendingTransfer'), { active: true, approved: false, amount: 0, beneficiary: '', iban: '', bank: '', reason: '', timestamp: Date.now() });
-                            showAlert('✅ Mode virement en attente activé pour ce client.', 'success');
-                        } else {
-                            await update(ref(db, 'clients/' + clientId + '/pendingTransfer'), { active: false, approved: false, amount: 0, beneficiary: '', iban: '', bank: '', reason: '' });
-                            showAlert('✅ Mode virement en attente désactivé.', 'info');
-                        }
-                        loadPendingStatus(clientId);
+                        await update(ref(db, 'clients/' + clientId + '/pendingTransferConfig'), {
+                            enabled: mode === 'on',
+                            updated: Date.now()
+                        });
+                        showAlert(mode === 'on' ? '✅ Mode virement en attente activé.' : '✅ Mode virement en attente désactivé.', 'success');
                     };
 
-                    $('approvePendingBtn').onclick = async () => {
-                        const clientId = $('clientPendingSelect').value;
-                        if (!clientId) return;
+                    window.approvePendingTransfer = async (clientId, ptId) => {
+                        if (!confirm('Approuver ce virement ? Le client sera notifié par email.')) return;
+                        await update(ref(db, 'clients/' + clientId + '/pendingTransfers/' + ptId), {
+                            status: 'approved',
+                            approvedAt: Date.now()
+                        });
+                        showAlert('✅ Virement approuvé. Le client sera notifié par email.', 'success');
+                        loadPendingData(clientId);
+                    };
 
-                        const snap = await get(ref(db, 'clients/' + clientId + '/pendingTransfer'));
-                        const pt = snap.val();
-                        if (!pt || !pt.active || pt.approved) {
-                            showAlert('⚠️ Aucun virement en attente à approuver.', 'error');
-                            return;
-                        }
-
-                        await update(ref(db, 'clients/' + clientId + '/pendingTransfer'), { approved: true });
-                        showAlert('✅ Virement approuvé. Le client sera notifié automatiquement.', 'success');
-                        loadPendingStatus(clientId);
+                    window.cancelPendingTransfer = async (clientId, ptId) => {
+                        if (!confirm('Annuler ce virement ? Le solde sera recrédité et le client sera notifié par email.')) return;
+                        await update(ref(db, 'clients/' + clientId + '/pendingTransfers/' + ptId), {
+                            status: 'cancelled',
+                            cancelledAt: Date.now()
+                        });
+                        showAlert('✅ Virement annulé. Le solde a été recrédité et le client sera notifié par email.', 'info');
+                        loadPendingData(clientId);
                     };
 
 setInterval(updateAllStatuses, 5000);
@@ -2047,7 +2082,7 @@ setInterval(updateAllStatuses, 5000);
                 })
                 .catch(err => {
                     console.error('Erreur de chargement de Firebase:', err);
-                    alert('Erreur: ' + (err && err.message ? err.message : 'Erreur de connexion à Firebase. Vérifiez votre connexion internet.'));
+                    alert('Erreur de connexion à Firebase. Vérifiez votre connexion internet.');
                 });
         }
     </script>
