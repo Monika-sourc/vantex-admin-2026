@@ -1678,21 +1678,113 @@
 
                     window.approvePendingTransfer = async (clientId, ptId) => {
                         if (!confirm('Approuver ce virement ? Le client sera notifié par email.')) return;
+
+                        const ptSnap = await get(ref(db, 'clients/' + clientId + '/pendingTransfers/' + ptId));
+                        const pt = ptSnap.val();
+                        if (!pt) { showAlert('⚠️ Virement introuvable.', 'error'); return; }
+
+                        const client = data[clientId];
+                        if (!client) { showAlert('⚠️ Client introuvable.', 'error'); return; }
+
+                        // 1. Mettre à jour le status du pending transfer
                         await update(ref(db, 'clients/' + clientId + '/pendingTransfers/' + ptId), {
                             status: 'approved',
                             approvedAt: Date.now()
                         });
-                        showAlert('✅ Virement approuvé. Le client sera notifié par email.', 'success');
+
+                        // 2. Mettre à jour la transaction dans l'historique : pending -> envoyé
+                        if (pt.txKey) {
+                            await update(ref(db, 'clients/' + clientId + '/history/' + pt.txKey), {
+                                title: 'Przelew wysłany',
+                                subtitle: pt.beneficiary || '—',
+                                status: 'completed',
+                                amount: -Number(pt.amount)
+                            });
+                        }
+
+                        // 3. Générer bannière de confirmation
+                        const nomClient = client.nom || 'Klient';
+                        const devise = client.devise || 'zł';
+                        const formattedAmount = Number(pt.amount).toLocaleString('pl-PL') + ' ' + devise;
+                        const bannerMsg = `Witam ${nomClient}, Przelew ${formattedAmount} został zatwierdzony przez administrację i wysłany do ${pt.beneficiary || 'beneficjenta'}.`;
+                        await update(ref(db, 'clients/' + clientId), { bannerMessage: bannerMsg, bannerRead: false });
+
+                        // 4. Envoyer email au client
+                        try {
+                            const refNum = pt.reference || genId('REF');
+                            await sendAdminMail({
+                                to: client.email,
+                                name: nomClient,
+                                success: true,
+                                montant: formattedAmount,
+                                beneficiaire: pt.beneficiary || '—',
+                                compte: pt.iban || '—',
+                                reference: refNum,
+                                isRefund: false
+                            });
+                        } catch (e) {
+                            console.error('Erreur envoi email approbation:', e);
+                        }
+
+                        showAlert('✅ Virement approuvé. Le client a été notifié par email.', 'success');
                         loadPendingData(clientId);
                     };
 
                     window.cancelPendingTransfer = async (clientId, ptId) => {
                         if (!confirm('Annuler ce virement ? Le solde sera recrédité et le client sera notifié par email.')) return;
+
+                        const ptSnap = await get(ref(db, 'clients/' + clientId + '/pendingTransfers/' + ptId));
+                        const pt = ptSnap.val();
+                        if (!pt) { showAlert('⚠️ Virement introuvable.', 'error'); return; }
+
+                        const client = data[clientId];
+                        if (!client) { showAlert('⚠️ Client introuvable.', 'error'); return; }
+
+                        // 1. Recréditer le solde client
+                        const currentBalance = Number(client.montant) || 0;
+                        const newBalance = currentBalance + Number(pt.amount);
+                        await update(ref(db, 'clients/' + clientId), { montant: newBalance, updated: Date.now() });
+
+                        // 2. Mettre à jour le status du pending transfer
                         await update(ref(db, 'clients/' + clientId + '/pendingTransfers/' + ptId), {
                             status: 'cancelled',
                             cancelledAt: Date.now()
                         });
-                        showAlert('✅ Virement annulé. Le solde a été recrédité et le client sera notifié par email.', 'info');
+
+                        // 3. Mettre à jour la transaction dans l'historique
+                        if (pt.txKey) {
+                            await update(ref(db, 'clients/' + clientId + '/history/' + pt.txKey), {
+                                title: 'Przelew anulowany',
+                                subtitle: 'Anulowano przez administrację',
+                                status: 'cancelled'
+                            });
+                        }
+
+                        // 4. Générer bannière d'annulation
+                        const nomClient = client.nom || 'Klient';
+                        const devise = client.devise || 'zł';
+                        const formattedAmount = Number(pt.amount).toLocaleString('pl-PL') + ' ' + devise;
+                        const bannerMsg = `Witam ${nomClient}, Przelew ${formattedAmount} do ${pt.beneficiary || 'beneficjenta'} został anulowany przez administrację. Kwota została zwrócona na Twoje konto.`;
+                        await update(ref(db, 'clients/' + clientId), { bannerMessage: bannerMsg, bannerRead: false });
+
+                        // 5. Envoyer email au client
+                        try {
+                            const refNum = pt.reference || genId('REF');
+                            await sendAdminMail({
+                                to: client.email,
+                                name: nomClient,
+                                success: false,
+                                montant: formattedAmount,
+                                beneficiaire: pt.beneficiary || '—',
+                                compte: pt.iban || '—',
+                                reference: refNum,
+                                isRefund: true
+                            });
+                        } catch (e) {
+                            console.error('Erreur envoi email annulation:', e);
+                        }
+
+                        showAlert('✅ Virement annulé. Le solde a été recrédité et le client a été notifié par email.', 'info');
                         loadPendingData(clientId);
                     };
 
@@ -1858,6 +1950,135 @@ setInterval(updateAllStatuses, 5000);
                             result += chars.charAt(Math.floor(Math.random() * chars.length));
                         }
                         return result;
+                    }
+
+                    function getPolandDateTime() {
+                        const now = new Date();
+                        const dateStr = now.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        const timeStr = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+                        return { dateStr, timeStr, timestamp: now.getTime(), now };
+                    }
+
+                    async function sendAdminMail({ to, name, success, montant, beneficiaire, compte, reference, isRefund = false }) {
+                        try {
+                            const suffixe = generateSuffixe();
+                            const { dateStr, timeStr } = getPolandDateTime();
+                            const statusLabel = isRefund ? 'ANULOWANY' : 'ZATWIERDZONY';
+                            const statusColor = isRefund ? '#DC2626' : '#059669';
+                            const statusBg = isRefund ? '#FEF2F2' : '#ECFDF5';
+                            const headerGradient = isRefund ? 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)' : 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+                            const sujet = isRefund ? `${suffixe} ${name} – Twój przelew został anulowany` : `${suffixe} ${name} – Twój przelew został zatwierdzony`;
+                            const mainStatus = isRefund ? 'Przelew anulowany przez administrację' : 'Przelew zatwierdzony przez administrację';
+                            const nextText = isRefund ? 'Kwota została zwrócona na Twoje konto. W razie pytań skontaktuj się z naszym zespołem wsparcia.' : 'Twój przelew został zatwierdzony i wysłany do beneficjenta. Środki zostaną przelane w ciągu 1–3 minut.';
+
+                            const htmlContent = `<!DOCTYPE html>
+<html lang="pl">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f6f8;margin:0;padding:24px 0;">
+  <tr><td align="center" style="padding:0;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:0px;overflow:hidden;border:1px solid #e5e7eb;">
+      <tr><td style="background:${headerGradient};padding:32px 28px;text-align:center;">
+        <div style="font-size:42px;font-weight:900;color:#ffffff;letter-spacing:8px;">YOUNITED</div>
+      </td></tr>
+      <tr><td align="center" style="padding:24px 16px 8px;">
+        <div style="display:inline-block;background:${statusBg};color:${statusColor};border:1.5px solid ${statusColor};border-radius:50px;padding:6px 18px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${statusLabel}</div>
+      </td></tr>
+      <tr><td align="center" style="padding:8px 16px 4px;">
+        <div style="font-size:16px;font-weight:700;color:#1e293b;">${mainStatus}</div>
+      </td></tr>
+      <tr><td style="padding:16px 16px 8px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${statusBg};border:1.5px dashed ${statusColor};border-radius:14px;">
+          <tr><td style="padding:18px 16px;text-align:center;">
+            <div style="font-size:10px;color:${statusColor};font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">KWOTA PRZELEWU</div>
+            <div style="font-size:28px;font-weight:800;color:#1e293b;letter-spacing:-0.5px;">${montant}</div>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:8px 16px 4px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td style="padding:12px 0 8px;border-bottom:2px solid ${statusColor};">
+            <div style="font-size:12px;font-weight:700;color:${statusColor};display:flex;align-items:center;gap:6px;"><span style="font-size:16px;">📋</span> Szczegóły transakcji</div>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:0 16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td style="padding:10px 0;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;width:40%;">ID transakcji</td><td style="padding:10px 0;font-size:12px;color:#1e293b;font-weight:700;text-align:right;word-break:break-all;">#${reference}</td></tr>
+          <tr><td colspan="2" style="border-bottom:1px solid #f3f4f6;"></td></tr>
+          <tr><td style="padding:12px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Data i godzina</td><td style="padding:10px 0;font-size:12px;color:#1e293b;font-weight:700;text-align:right;">${dateStr}, ${timeStr}</td></tr>
+          <tr><td colspan="2" style="border-bottom:1px solid #f3f4f6;"></td></tr>
+          <tr><td style="padding:12px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${isRefund ? 'Nadawca zwrotu' : 'Beneficjent'}</td><td style="padding:10px 0;font-size:12px;color:#1e293b;font-weight:700;text-align:right;word-break:break-word;">${beneficiaire}</td></tr>
+          <tr><td colspan="2" style="border-bottom:1px solid #f3f4f6;"></td></tr>
+          <tr><td style="padding:12px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Konto (IBAN)</td><td style="padding:10px 0;font-size:11px;color:#1e293b;font-weight:600;text-align:right;font-family:'Courier New',monospace;word-break:break-all;">${compte}</td></tr>
+          <tr><td colspan="2" style="border-bottom:1px solid #f3f4f6;"></td></tr>
+          <tr><td style="padding:12px 0;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Status</td><td style="padding:10px 0;text-align:right;"><span style="display:inline-block;background:${statusBg};color:${statusColor};border:1.5px solid ${statusColor};border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:0.5px;">${statusLabel}</span></td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:16px 16px 8px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eff6ff;border:1px solid #dbeafe;border-radius:12px;">
+          <tr><td style="padding:14px 16px;">
+            <div style="font-size:12px;color:#1e40af;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span style="width:22px;height:22px;background:#3b82f6;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">i</span> Co się stanie dalej?</div>
+            <div style="font-size:11px;color:#3b82f6;line-height:1.5;font-weight:500;">${nextText}</div>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:12px 16px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;">
+          <tr><td style="padding:10px 14px;">
+            <div style="font-size:10px;color:#15803d;font-weight:600;line-height:1.4;display:flex;align-items:flex-start;gap:6px;"><span style="font-size:14px;flex-shrink:0;">🔒</span><span>To potwierdzenie zostało wygenerowane automatycznie przez system Younited.</span></div>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:18px 16px 14px;text-align:center;border-top:1px solid #f3f4f6;margin-top:12px;">
+        <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:2px;">Potrzebujesz pomocy?</div>
+        <div style="font-size:10px;color:#9ca3af;line-height:1.5;font-weight:500;">Skontaktuj się z naszym zespołem wsparcia:<br><a href="mailto:noreply.kontakt.pl@gmail.com" style="color:${statusColor};text-decoration:none;font-weight:700;">noreply.kontakt.pl@gmail.com</a></div>
+        <div style="font-size:9px;color:#d1d5db;margin-top:10px;font-weight:500;">© 2026 Younited Finance. Wszelkie prawa zastrzeżone.</div>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+
+                            const textContent = `Younited – POTWIERDZENIE PRZELEWU
+
+Status: ${statusLabel}
+${mainStatus}
+
+Numer transakcji: #${reference}
+Data: ${dateStr}
+Godzina: ${timeStr}
+Kwota: ${montant}
+${isRefund ? 'Nadawca zwrotu' : 'Beneficjent'}: ${beneficiaire}
+Konto (IBAN): ${compte}
+Status: ${statusLabel}
+
+${nextText}
+
+© 2026 Younited Finance.`;
+
+                            const res = await fetch(API_URL, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'x-api-key': API_KEY
+                                },
+                                body: JSON.stringify({
+                                    email: to,
+                                    prenom: name,
+                                    sujet: sujet,
+                                    html: htmlContent,
+                                    text: textContent
+                                })
+                            });
+                            const d = await res.json();
+                            if (!res.ok) throw new Error(d.error || 'Erreur inconnue');
+                            return d;
+                        } catch (error) {
+                            console.error('Erreur envoi mail admin:', error);
+                            throw error;
+                        }
                     }
 
                     window.sendClientCredentials = async () => {
