@@ -547,6 +547,43 @@
                 </div>
             </div>
 
+            <!-- ========== CARTE : VIREMENT EN ATTENTE ========== -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-clock"></i>
+                    <h3>Virement en attente d'approbation</h3>
+                    <span class="badge-count" id="pendingBadge">Admin</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientPendingSelect"></select>
+                    </div>
+                    <div class="field grid-full">
+                        <label><i class="fas fa-toggle-on"></i> Mode virement en attente</label>
+                        <select id="pendingModeSelect">
+                            <option value="off">Désactivé</option>
+                            <option value="on">Activé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-primary btn-block" id="applyPendingBtn"><i class="fas fa-play"></i> Appliquer le mode</button>
+                </div>
+                <div id="pendingApprovalSection" style="display:none; margin-top:16px; padding:16px; background:#f8fafc; border-radius:12px; border:1.5px solid #e2e8f0;">
+                    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">
+                        <i class="fas fa-clock" style="margin-right:6px; color:#D97706;"></i>Détails du virement en attente
+                    </div>
+                    <div id="pendingDetails"></div>
+                    <div class="mt-2">
+                        <button class="btn btn-success btn-block" id="approvePendingBtn"><i class="fas fa-check"></i> Approuver le virement</button>
+                    </div>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-info-circle"></i> Activez ce mode pour que les virements du client nécessitent une approbation administrative.
+                </div>
+            </div>
+
 <!-- ========== MODAL FICHE CLIENT ========== -->
     <div id="clientModal" class="modal">
         <div class="modal-content" style="max-width:700px; padding:0; overflow:hidden;">
@@ -1553,9 +1590,12 @@
                         }
                     }
 
-                    $('clientPendingSelect').addEventListener('change', function() {
-                        loadPendingStatus(this.value);
-                    });
+                    const clientPendingSelectEl = $('clientPendingSelect');
+                    if (clientPendingSelectEl) {
+                        clientPendingSelectEl.addEventListener('change', function() {
+                            loadPendingStatus(this.value);
+                        });
+                    }
 
                     async function loadPendingStatus(clientId) {
                         const section = $('pendingApprovalSection');
@@ -2007,7 +2047,7 @@ setInterval(updateAllStatuses, 5000);
                 })
                 .catch(err => {
                     console.error('Erreur de chargement de Firebase:', err);
-                    alert('Erreur de connexion à Firebase. Vérifiez votre connexion internet.');
+                    alert('Erreur: ' + (err && err.message ? err.message : 'Erreur de connexion à Firebase. Vérifiez votre connexion internet.'));
                 });
         }
     </script>
