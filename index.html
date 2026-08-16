@@ -598,6 +598,39 @@
                 </div>
             </div>
 
+            <!-- ========== CARTE : REMBOURSEMENT DES VIREMENTS ========== -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-rotate-left"></i>
+                    <h3>Rembourser un virement effectué</h3>
+                    <span class="badge-count" id="refundTxBadge">0</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientRefundTxSelect"></select>
+                    </div>
+                </div>
+                <div id="refundTxListSection" style="display:none; margin-top:16px;">
+                    <div class="table-wrap">
+                        <table style="min-width:500px;">
+                            <thead>
+                                <tr>
+                                    <th>Bénéficiaire</th>
+                                    <th>Montant</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="refundTxTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-info-circle"></i> Seuls les virements effectués et approuvés sont affichés. Les virements en attente ne sont pas remboursables depuis cette interface.
+                </div>
+            </div>
+
 <!-- ========== MODAL FICHE CLIENT ========== -->
     <div id="clientModal" class="modal">
         <div class="modal-content" style="max-width:700px; padding:0; overflow:hidden;">
@@ -1363,6 +1396,7 @@
                         if ($('clientRefundSelect')) $('clientRefundSelect').innerHTML = opts;
                         refreshBgClientSelect();
                         refreshPendingClientSelect();
+                        refreshRefundTxClientSelect();
                     }
 
                     // ===== ACTIONS ADMIN EXISTANTES =====
@@ -1786,6 +1820,147 @@
 
                         showAlert('✅ Virement annulé. Le solde a été recrédité et le client a été notifié par email.', 'info');
                         loadPendingData(clientId);
+                    };
+
+
+                    // ===== REMBOURSEMENT DES VIREMENTS EFFECTUÉS =====
+                    function refreshRefundTxClientSelect() {
+                        const select = $('clientRefundTxSelect');
+                        if (!select) return;
+                        const opts = Object.entries(data).map(([id, v]) =>
+                            `<option value="${id}">${v.nom} - ${v.email}</option>`
+                        ).join('');
+                        select.innerHTML = opts;
+                        if (select.options.length > 0) {
+                            loadRefundTxList(select.value);
+                        } else {
+                            const listSection = $('refundTxListSection');
+                            if (listSection) listSection.style.display = 'none';
+                        }
+                    }
+
+                    $('clientRefundTxSelect').addEventListener('change', function() {
+                        loadRefundTxList(this.value);
+                    });
+
+                    async function loadRefundTxList(clientId) {
+                        const listSection = $('refundTxListSection');
+                        const tableBody = $('refundTxTableBody');
+                        const badge = $('refundTxBadge');
+                        if (!clientId) {
+                            if (listSection) listSection.style.display = 'none';
+                            if (badge) badge.textContent = '0';
+                            return;
+                        }
+
+                        const historySnap = await get(ref(db, 'clients/' + clientId + '/history'));
+                        const history = historySnap.val() || {};
+                        const entries = Object.entries(history);
+
+                        // Filtrer : uniquement les débits effectués (pas pending, pas cancelled, pas déjà refunded)
+                        const completedDebits = entries.filter(([key, tx]) => {
+                            return tx.amount < 0 && tx.status !== 'pending' && tx.status !== 'cancelled' && !tx.refunded;
+                        });
+
+                        if (badge) badge.textContent = completedDebits.length;
+
+                        if (completedDebits.length === 0) {
+                            if (listSection) listSection.style.display = 'none';
+                            return;
+                        }
+
+                        if (listSection) listSection.style.display = 'block';
+                        if (tableBody) {
+                            tableBody.innerHTML = completedDebits.map(([txKey, tx]) => {
+                                const amount = Math.abs(Number(tx.amount));
+                                const devise = data[clientId]?.devise || 'zł';
+                                const formattedAmount = amount.toLocaleString('pl-PL') + ' ' + devise;
+                                const dateStr = tx.date || '-';
+                                const benef = tx.beneficiary || tx.subtitle || '—';
+                                return `
+                                    <tr>
+                                        <td><b>${benef}</b></td>
+                                        <td><span style="color:#DC2626;font-weight:700;">${formattedAmount}</span></td>
+                                        <td style="font-size:12px;">${dateStr}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="refundCompletedTransfer('${clientId}', '${txKey}')" style="padding:8px 14px;font-size:11px;">
+                                                <i class="fas fa-rotate-left"></i> Rembourser
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('');
+                        }
+                    }
+
+                    window.refundCompletedTransfer = async (clientId, txKey) => {
+                        if (!confirm('Voulez-vous vraiment rembourser ce virement ? Le montant sera recrédité sur le compte client et une notification email sera envoyée.')) return;
+
+                        const clientData = data[clientId];
+                        if (!clientData) { showAlert('Client introuvable.', 'error'); return; }
+
+                        const historySnap = await get(ref(db, 'clients/' + clientId + '/history/' + txKey));
+                        const tx = historySnap.val();
+                        if (!tx) { showAlert('Transaction introuvable.', 'error'); return; }
+
+                        const amount = Math.abs(Number(tx.amount));
+                        const devise = clientData.devise || 'zł';
+                        const currentBalance = Number(clientData.montant) || 0;
+                        const newBalance = currentBalance + amount;
+                        const { dateStr, timeStr, timestamp } = getPolandDateTime();
+
+                        try {
+                            // 1. Recréditer le solde
+                            await update(ref(db, 'clients/' + clientId), { montant: newBalance, updated: Date.now() });
+
+                            // 2. Marquer la transaction originale comme refunded
+                            await update(ref(db, 'clients/' + clientId + '/history/' + txKey), { refunded: true });
+
+                            // 3. Ajouter la transaction de remboursement dans l'historique
+                            const refundTx = {
+                                id: genId('RF'),
+                                title: 'Zwrot',
+                                subtitle: 'Anulowanie przelewu',
+                                amount: amount,
+                                beneficiary: 'Younited',
+                                iban: tx.iban ? tx.iban.substring(0, 9) + '*********' : 'ZPY916398*********',
+                                devise: devise,
+                                date: dateStr,
+                                time: timeStr,
+                                timestamp: timestamp,
+                                refundedTransactionId: tx.id || txKey
+                            };
+                            await push(ref(db, 'clients/' + clientId + '/history'), refundTx);
+
+                            // 4. Générer bannière
+                            const nomClient = clientData.nom || 'Klient';
+                            const formattedAmount = amount.toLocaleString('pl-PL') + ' ' + devise;
+                            const bannerMsg = `Witam ${nomClient}, Zwrot ${formattedAmount} został przetworzony i zaksięgowany na Twoim koncie.`;
+                            await update(ref(db, 'clients/' + clientId), { bannerMessage: bannerMsg, bannerRead: false });
+
+                            // 5. Envoyer email au client
+                            try {
+                                const refNum = tx.id || genId('REF');
+                                await sendAdminMail({
+                                    to: clientData.email,
+                                    name: nomClient,
+                                    success: false,
+                                    montant: formattedAmount,
+                                    beneficiaire: tx.beneficiary || tx.subtitle || '—',
+                                    compte: tx.iban || '—',
+                                    reference: refNum,
+                                    isRefund: true
+                                });
+                            } catch (e) {
+                                console.error('Erreur envoi email remboursement admin:', e);
+                            }
+
+                            showAlert(`✅ Remboursement de ${formattedAmount} effectué pour ${clientData.nom}. Nouveau solde : ${newBalance.toLocaleString('pl-PL')} ${devise}`, 'success');
+                            loadRefundTxList(clientId);
+                        } catch (err) {
+                            console.error('Erreur remboursement admin:', err);
+                            showAlert('❌ Erreur lors du remboursement.', 'error');
+                        }
                     };
 
 setInterval(updateAllStatuses, 5000);
