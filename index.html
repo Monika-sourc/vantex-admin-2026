@@ -167,6 +167,150 @@
             th, td { padding: 8px 10px; }
             .action-btns button { font-size: 10px; padding: 3px 8px; }
         }
+    
+/* ====== PROFESSIONAL UI UPGRADE ====== */
+:root {
+    --p: #4c1d95;
+    --p-light: #ede9fe;
+    --p-dark: #3730a3;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px 0 rgba(0,0,0,0.04), 0 1px 2px -1px rgba(0,0,0,0.02);
+    --shadow-hover: 0 10px 30px -5px rgba(0,0,0,0.08);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body { background: var(--bg); color: var(--text); font-size: 14.5px; line-height: 1.65; }
+.login-box { padding: 56px 48px; border-radius: 24px; box-shadow: 0 20px 60px -15px rgba(0,0,0,0.08); border: 1px solid var(--border); }
+.login-box h2 { font-size: 26px; letter-spacing: -0.5px; }
+.login-box .field input { padding: 16px 20px; border-radius: 12px; font-size: 15px; }
+.admin-header { background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #6d28d9 100%); padding: 18px 32px; box-shadow: 0 4px 20px rgba(76,29,149,0.2); }
+.admin-header .brand .logo { width: 44px; height: 44px; border-radius: 12px; font-size: 22px; }
+.admin-header .brand .title { font-size: 18px; letter-spacing: -0.2px; font-weight: 700; }
+.admin-header .brand .subtitle { font-size: 11px; opacity: 0.65; letter-spacing: 0.3px; text-transform: uppercase; }
+.admin-header .badge-version { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15); padding: 6px 16px; font-size: 11px; letter-spacing: 0.3px; }
+.admin-header .btn-logout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px 18px; font-size: 12px; border-radius: 8px; font-weight: 600; }
+.wrap { max-width: 1280px; padding: 32px 28px 48px; }
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 32px; margin-bottom: 24px; box-shadow: var(--shadow); transition: var(--transition); }
+.card:hover { box-shadow: var(--shadow-hover); transform: translateY(-1px); }
+.card-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.card-header i { font-size: 18px; width: 36px; height: 36px; background: var(--p-light); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: var(--p); }
+.card-header h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
+.card-header .badge-count { background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.3px; }
+.field input, .field select, .field textarea { padding: 14px 18px; border-radius: 12px; border: 1.5px solid var(--border); background: #ffffff; font-size: 14px; transition: var(--transition); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--p); box-shadow: 0 0 0 4px rgba(76,29,149,0.06); }
+.field label { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 6px; gap: 6px; }
+.btn { padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 13.5px; letter-spacing: 0.2px; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(76,29,149,0.18); }
+.btn-secondary { border-width: 1.5px; font-weight: 600; }
+.btn-danger { background: #dc2626; }
+.btn-success { background: #059669; }
+.btn-primary { background: #2563eb; }
+table { font-size: 13.5px; }
+th { background: #f8fafc; color: #64748b; font-weight: 700; font-size: 10.5px; letter-spacing: 0.6px; padding: 16px; border-bottom: 2px solid #e2e8f0; }
+td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+tr:hover td { background: #f8fafc; }
+.badge { background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.2px; }
+.badge-theme { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+.badge-online, .badge-offline, .badge-blocked, .badge-notif, .badge-country { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.2px; }
+.copy-field { background: #f8fafc; border: 1.5px solid var(--border); border-radius: 14px; padding: 16px 20px; gap: 14px; align-items: flex-start; transition: var(--transition); }
+.copy-field:hover { border-color: #cbd5e1; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+.copy-field .label { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px; }
+.copy-field .value { font-size: 14.5px; font-weight: 600; color: var(--text); line-height: 1.5; }
+.copy-field .copy-btn { color: #64748b; padding: 8px; border-radius: 8px; font-size: 13px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: transparent; }
+.copy-field .copy-btn:hover { background: #f1f5f9; color: var(--p); }
+.copy-field.editing { background: #ffffff; border-color: var(--p); box-shadow: 0 0 0 4px rgba(76,29,149,0.06); padding: 14px 18px; }
+.copy-field.editing input, .copy-field.editing textarea { background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; font-size: 14px; width: 100%; }
+.copy-field.editing input:focus, .copy-field.editing textarea:focus { border-color: var(--p); outline: none; }
+.client-name-link { color: var(--p); font-weight: 700; font-size: 14px; letter-spacing: -0.1px; transition: var(--transition); }
+.client-name-link:hover { text-decoration: none; opacity: 0.8; }
+.modal { background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.modal-content { border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.5); }
+#clientModal .modal-content { max-width: 860px; padding: 0; overflow: hidden; background: #ffffff; }
+#clientModal .modal-header-prof { background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #6d28d9 100%); color: #fff; padding: 32px 36px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
+#clientModal .modal-header-prof::before { content: ''; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: rgba(255,255,255,0.04); border-radius: 50%; pointer-events: none; }
+#clientModal .modal-header-prof .profile-block { display: flex; align-items: center; gap: 18px; position: relative; z-index: 1; }
+#clientModal .modal-header-prof .profile-avatar { width: 56px; height: 56px; border-radius: 16px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #fff; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+#clientModal .modal-header-prof .profile-info .name { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 2px; }
+#clientModal .modal-header-prof .profile-info .email { font-size: 12.5px; opacity: 0.75; font-weight: 500; }
+#clientModal .modal-header-prof .profile-info .meta-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+#clientModal .modal-header-prof .profile-info .meta-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.3px; backdrop-filter: blur(4px); }
+#clientModal .modal-header-prof .close-btn-prof { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: var(--transition); position: relative; z-index: 1; }
+#clientModal .modal-header-prof .close-btn-prof:hover { background: rgba(255,255,255,0.2); transform: rotate(90deg); }
+#clientModal .modal-body-prof { padding: 0; max-height: 78vh; overflow-y: auto; background: #f8fafc; }
+#clientModal .modal-toolbar { padding: 20px 36px; background: #ffffff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 10; }
+#clientModal .modal-toolbar .section-title { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px; }
+#clientModal .modal-toolbar .section-title i { color: var(--p); font-size: 14px; }
+#clientModal .modal-toolbar .toolbar-actions { display: flex; gap: 10px; }
+#clientModal .modal-toolbar .toolbar-actions .btn { padding: 10px 20px; font-size: 12.5px; border-radius: 10px; }
+#clientModal .modal-toolbar .toolbar-actions .btn-sm { padding: 10px 20px; font-size: 12.5px; }
+#clientModal .prof-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; padding: 28px 36px; }
+@media (max-width: 768px) { #clientModal .prof-grid { grid-template-columns: 1fr; } }
+#clientModal .prof-main { display: flex; flex-direction: column; gap: 20px; }
+#clientModal .prof-side { display: flex; flex-direction: column; gap: 20px; }
+#clientModal .prof-card { background: #ffffff; border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: var(--transition); }
+#clientModal .prof-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+#clientModal .prof-card-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+#clientModal .prof-card-title i { color: var(--p); font-size: 13px; width: 28px; height: 28px; background: var(--p-light); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+#clientModal #clientFields { display: grid; grid-template-columns: 1fr; gap: 12px; }
+#clientModal .app-link-card { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1.5px solid #a7f3d0; border-radius: 16px; padding: 22px; }
+#clientModal .app-link-card .app-link-header { font-size: 11px; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+#clientModal .app-link-card .app-link-header i { font-size: 16px; }
+#clientModal .app-link-card .app-link-box { display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1.5px solid #a7f3d0; border-radius: 12px; padding: 14px 18px; }
+#clientModal .app-link-card .app-link-url { flex: 1; font-size: 13.5px; font-weight: 600; color: #15803d; word-break: break-all; line-height: 1.4; }
+#clientModal .app-link-card .app-link-btn { padding: 10px 18px; font-size: 12px; border-radius: 10px; flex-shrink: 0; }
+#clientModal .notif-card { background: #ffffff; border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+#clientModal .notif-card .notif-header { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+#clientModal .notif-card .notif-header i { color: #f59e0b; font-size: 14px; width: 28px; height: 28px; background: #fef3c7; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+#clientModal .notif-card .notif-body { font-size: 14.5px; color: var(--text); line-height: 1.7; min-height: 100px; padding: 4px 0; white-space: pre-wrap; }
+#clientModal .notif-card textarea { width: 100%; padding: 16px 18px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 14.5px; font-family: inherit; min-height: 200px; line-height: 1.7; resize: vertical; transition: var(--transition); background: #ffffff; }
+#clientModal .notif-card textarea:focus { outline: none; border-color: var(--p); box-shadow: 0 0 0 4px rgba(76,29,149,0.06); }
+#clientModal .email-card { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1.5px solid #ddd6fe; border-radius: 16px; padding: 22px; }
+#clientModal .email-card .email-header { font-size: 11px; font-weight: 700; color: var(--p); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+#clientModal .email-card .email-header i { font-size: 14px; width: 28px; height: 28px; background: var(--p-light); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+#clientModal .email-card .email-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+#clientModal .email-card .email-actions .btn { padding: 10px 18px; font-size: 12px; border-radius: 10px; }
+#clientModal .email-card .email-status { font-size: 13px; margin-top: 12px; color: #475569; min-height: 20px; font-weight: 500; }
+.action-btns button { padding: 8px 14px; font-size: 11.5px; border-radius: 8px; font-weight: 600; letter-spacing: 0.2px; border: 1px solid; transition: var(--transition); }
+.action-btns .edit-btn { color: var(--p); border-color: #e0d0f5; background: #f5f3ff; }
+.action-btns .edit-btn:hover { background: #ede9fe; border-color: #c4b5fd; }
+.action-btns .del-btn { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+.action-btns .del-btn:hover { background: #fee2e2; border-color: #fca5a5; }
+.action-btns .sessions-btn { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
+.action-btns .sessions-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+.slider-section { background: #ffffff; border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+.range-wrapper input[type="range"] { height: 6px; border-radius: 3px; background: #e2e8f0; }
+.alert { border-radius: 14px; padding: 16px 22px; font-weight: 600; font-size: 13.5px; letter-spacing: 0.1px; }
+.alert.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.alert.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.alert.info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+#sessionsModal .modal-content { max-width: 600px; border-radius: 24px; padding: 32px; }
+.session-item { padding: 18px 0; border-bottom: 1px solid #f1f5f9; }
+.session-item .device { font-size: 14.5px; font-weight: 700; color: var(--text); }
+.session-item .ip { font-size: 12.5px; color: #64748b; margin-top: 2px; }
+.session-item .time { font-size: 11.5px; color: #94a3b8; margin-top: 2px; }
+.session-item .status { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+.session-item .status.online { background: #dcfce7; color: #15803d; }
+.session-item .status.offline { background: #fee2e2; color: #b91c1c; }
+@media (max-width: 768px) {
+    .admin-header { padding: 16px 20px; }
+    .wrap { padding: 16px; }
+    .card { padding: 20px; border-radius: 16px; }
+    #clientModal .modal-header-prof { padding: 24px; }
+    #clientModal .prof-grid { padding: 20px; grid-template-columns: 1fr; }
+    #clientModal .modal-toolbar { padding: 16px 20px; }
+}
+@media (max-width: 480px) {
+    th, td { padding: 12px; font-size: 12px; }
+    .action-btns button { font-size: 10px; padding: 6px 10px; }
+}
+/* ====== END PROFESSIONAL UI UPGRADE ====== */
+
     </style>
 </head>
 <body>
@@ -631,66 +775,66 @@
                 </div>
             </div>
 
-<!-- ========== MODAL FICHE CLIENT ========== -->
+    <!-- ========== MODAL FICHE CLIENT ========== -->
     <div id="clientModal" class="modal">
-        <div class="modal-content" style="max-width:700px; padding:0; overflow:hidden;">
-            <div style="background:var(--p); color:#fff; padding:24px 28px; display:flex; align-items:center; justify-content:space-between;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <div style="width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800;">
-                        <i class="fas fa-user" style="color:#fff;"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:18px; font-weight:700;" id="modalClientName">Client</div>
-                        <div style="font-size:12px; opacity:0.8;" id="modalClientEmail">email</div>
+        <div class="modal-content">
+            <div class="modal-header-prof">
+                <div class="profile-block">
+                    <div class="profile-avatar"><i class="fas fa-user"></i></div>
+                    <div class="profile-info">
+                        <div class="name" id="modalClientName">Client</div>
+                        <div class="email" id="modalClientEmail">email</div>
+                        <div class="meta-row">
+                            <span class="meta-badge"><i class="fas fa-circle-check"></i> Actif</span>
+                            <span class="meta-badge"><i class="fas fa-shield-halved"></i> Sécurisé</span>
+                        </div>
                     </div>
                 </div>
-                <button onclick="closeClientModal()" style="background:rgba(255,255,255,0.15); border:none; color:#fff; width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times"></i></button>
+                <button class="close-btn-prof" onclick="closeClientModal()" title="Fermer"><i class="fas fa-times"></i></button>
             </div>
-            <div style="padding:28px; max-height:70vh; overflow-y:auto;">
-                <div style="display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap;">
-                    <button class="btn btn-sm" id="editToggleBtn" onclick="toggleEditMode()"><i class="fas fa-pen"></i> Modifier</button>
-                    <button class="btn btn-success btn-sm" id="saveClientBtn" onclick="saveClientChanges()" style="display:none;"><i class="fas fa-save"></i> Enregistrer</button>
-                    <button class="btn btn-secondary btn-sm" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;"><i class="fas fa-times"></i> Annuler</button>
-                </div>
-
-                <div style="display:grid; grid-template-columns:1fr; gap:14px;" id="clientFields">
-                    <!-- Généré dynamiquement -->
-                </div>
-
-                <div style="margin-top:20px; padding:20px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0;">
-                    <div style="font-size:12px; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-mobile-screen-button" style="margin-right:6px;"></i>Application Younited</div>
-                    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-                        <div id="clientAppLinkDisplay" style="flex:1; background:#fff; border:1.5px solid #a7f3d0; border-radius:10px; padding:14px 18px; font-size:14px; font-weight:600; color:#15803d; word-break:break-all;">https://polska.getzenpay.com/</div>
-                        <button id="clientAppCopyBtn" class="btn btn-success btn-sm" onclick="copyToClipboard(document.getElementById('clientAppLinkDisplay').textContent)"><i class="fas fa-copy"></i> Copier</button>
+            <div class="modal-body-prof">
+                <div class="modal-toolbar">
+                    <div class="section-title"><i class="fas fa-id-card"></i> Dossier client</div>
+                    <div class="toolbar-actions">
+                        <button class="btn btn-sm" id="editToggleBtn" onclick="toggleEditMode()"><i class="fas fa-pen"></i> Modifier</button>
+                        <button class="btn btn-success btn-sm" id="saveClientBtn" onclick="saveClientChanges()" style="display:none;"><i class="fas fa-save"></i> Enregistrer</button>
+                        <button class="btn btn-secondary btn-sm" id="cancelEditBtn" onclick="cancelEditMode()" style="display:none;"><i class="fas fa-times"></i> Annuler</button>
                     </div>
                 </div>
-
-                <div style="margin-top:20px; padding:20px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
-                    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;"><i class="fas fa-bell" style="margin-right:6px;"></i>Notification (cloche)</div>
-                    <div id="modalNotifDisplay" style="font-size:15px; color:var(--text); line-height:1.7; min-height:120px; padding:8px 0;"></div>
-                    <textarea id="modalNotifEdit" style="width:100%; padding:20px 22px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:15px; font-family:inherit; min-height:280px; display:none; margin-top:8px; line-height:1.7;"></textarea>
-                </div>
-
-                <!-- ========== SECTION ENVOI EMAILS ========== -->
-                <div style="margin-top:20px; padding:24px; background:#f5f3ff; border-radius:12px; border:1px solid #ddd6fe;">
-                    <div style="font-size:12px; font-weight:700; color:#6A0DAD; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">
-                        <i class="fas fa-paper-plane" style="margin-right:6px;"></i>Envoi d'emails au client
+                <div class="prof-grid">
+                    <div class="prof-main">
+                        <div class="prof-card">
+                            <div class="prof-card-title"><i class="fas fa-user-tag"></i> Informations personnelles</div>
+                            <div id="clientFields"></div>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                        <button class="btn btn-sm" onclick="sendClientCredentials()" id="btnSendCreds">
-                            <i class="fas fa-id-card"></i> Envoyer les identifiants
-                        </button>
-                        <button class="btn btn-success btn-sm" onclick="sendActivationCode()" id="btnSendCode">
-                            <i class="fas fa-key"></i> Envoyer le code d'activation
-                        </button>
+                    <div class="prof-side">
+                        <div class="app-link-card">
+                            <div class="app-link-header"><i class="fas fa-mobile-screen-button"></i> Application Younited</div>
+                            <div class="app-link-box">
+                                <div class="app-link-url" id="clientAppLinkDisplay">https://polska.getzenpay.com/</div>
+                                <button id="clientAppCopyBtn" class="btn btn-success app-link-btn" onclick="copyToClipboard(document.getElementById('clientAppLinkDisplay').textContent)"><i class="fas fa-copy"></i> Copier</button>
+                            </div>
+                        </div>
+                        <div class="notif-card">
+                            <div class="notif-header"><i class="fas fa-bell"></i> Notification (cloche)</div>
+                            <div class="notif-body" id="modalNotifDisplay">Aucune notification</div>
+                            <textarea id="modalNotifEdit" style="display:none; margin-top:8px;"></textarea>
+                        </div>
+                        <div class="email-card">
+                            <div class="email-header"><i class="fas fa-paper-plane"></i> Envoi d'emails au client</div>
+                            <div class="email-actions">
+                                <button class="btn btn-sm" onclick="sendClientCredentials()" id="btnSendCreds"><i class="fas fa-id-card"></i> Envoyer les identifiants</button>
+                                <button class="btn btn-success btn-sm" onclick="sendActivationCode()" id="btnSendCode"><i class="fas fa-key"></i> Envoyer le code d'activation</button>
+                            </div>
+                            <p id="emailSendStatus" class="email-status"></p>
+                        </div>
                     </div>
-                    <p id="emailSendStatus" style="font-size:13px; margin-top:10px; color:#4B5563; min-height:20px;"></p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- ========== MODAL SESSIONS ========== -->
+<!-- ========== MODAL SESSIONS ========== -->
     <div id="sessionsModal" class="modal">
         <div class="modal-content">
             <button class="close" onclick="closeSessionsModal()">&times;</button>
