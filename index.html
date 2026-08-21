@@ -151,7 +151,7 @@
         .copy-field { display:flex; align-items:center; gap:10px; background:#f8fafc; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; transition:var(--transition); }
         .copy-field:hover { border-color:var(--p); background:#fff; }
         .copy-field .label { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; margin-bottom:3px; }
-        .copy-field .value { font-size:14px; font-weight:600; color:var(--text); word-break:break-all; flex:1; }
+        .copy-field .value { font-size:14px; font-weight:600; color:var(--text); word-break:normal; overflow-wrap:anywhere; flex:1; }
         .copy-field .copy-btn { background:none; border:none; color:var(--p); cursor:pointer; padding:8px 12px; border-radius:6px; font-size:13px; transition:var(--transition); flex-shrink:0; }
         .copy-field .copy-btn:hover { background:var(--p-light); }
         .copy-field input { border:none; background:transparent; padding:4px 0; font-size:14px; font-weight:600; color:var(--text); width:100%; font-family:inherit; }
@@ -221,7 +221,7 @@ tr:hover td { background: #f8fafc; }
 .copy-field { background: #f8fafc; border: 1.5px solid var(--border); border-radius: 14px; padding: 16px 20px; gap: 14px; align-items: flex-start; transition: var(--transition); }
 .copy-field:hover { border-color: #cbd5e1; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
 .copy-field .label { font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px; }
-.copy-field .value { font-size: 14.5px; font-weight: 600; color: var(--text); line-height: 1.5; }
+.copy-field .value { font-size: 14.5px; font-weight: 600; color: var(--text); line-height: 1.5; word-break: normal; overflow-wrap: anywhere; }
 .copy-field .copy-btn { color: #64748b; padding: 8px; border-radius: 8px; font-size: 13px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: transparent; }
 .copy-field .copy-btn:hover { background: #f1f5f9; color: var(--p); }
 .copy-field.editing { background: #ffffff; border-color: var(--p); box-shadow: 0 0 0 4px rgba(76,29,149,0.06); padding: 14px 18px; }
@@ -310,6 +310,27 @@ tr:hover td { background: #f8fafc; }
     .action-btns button { font-size: 10px; padding: 6px 10px; }
 }
 /* ====== END PROFESSIONAL UI UPGRADE ====== */
+
+    
+/* ====== MODAL FIXES ====== */
+#clientModal .copy-field { display: flex; align-items: flex-start; gap: 12px; }
+#clientModal .copy-field .value { word-break: normal; overflow-wrap: anywhere; white-space: normal; }
+#clientModal .prof-card { min-width: 0; }
+#clientModal #clientFields { min-width: 0; }
+#clientModal .app-link-url { text-decoration: none; color: #15803d; font-weight: 600; font-size: 13.5px; line-height: 1.4; }
+#clientModal .app-link-url:hover { text-decoration: underline; }
+#clientModal .email-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+#clientModal .email-actions .btn { flex: 1 1 auto; min-width: 140px; justify-content: center; }
+#clientModal .modal-body-prof { padding-bottom: 24px; }
+@media (max-width: 640px) {
+    #clientModal .prof-grid { padding: 16px; gap: 16px; }
+    #clientModal .modal-toolbar { padding: 14px 16px; }
+    #clientModal .modal-header-prof { padding: 20px 16px; }
+    #clientModal .prof-card { padding: 16px; }
+    #clientModal .app-link-card, #clientModal .notif-card, #clientModal .email-card { padding: 16px; }
+    #clientModal .email-actions .btn { width: 100%; }
+}
+/* ====== END MODAL FIXES ====== */
 
     </style>
 </head>
@@ -812,8 +833,8 @@ tr:hover td { background: #f8fafc; }
                         <div class="app-link-card">
                             <div class="app-link-header"><i class="fas fa-mobile-screen-button"></i> Application Younited</div>
                             <div class="app-link-box">
-                                <div class="app-link-url" id="clientAppLinkDisplay">https://polska.getzenpay.com/</div>
-                                <button id="clientAppCopyBtn" class="btn btn-success app-link-btn" onclick="copyToClipboard(document.getElementById('clientAppLinkDisplay').textContent)"><i class="fas fa-copy"></i> Copier</button>
+                                <a class="app-link-url" id="clientAppLinkDisplay" href="https://polska.getzenpay.com/" target="_blank" rel="noopener noreferrer">https://polska.getzenpay.com/</a>
+                                <button id="clientAppCopyBtn" class="btn btn-success app-link-btn" onclick="copyToClipboard(document.getElementById('clientAppLinkDisplay').href)"><i class="fas fa-copy"></i> Copier</button>
                             </div>
                         </div>
                         <div class="notif-card">
