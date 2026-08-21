@@ -313,15 +313,26 @@ tr:hover td { background: #f8fafc; }
 
     
 /* ====== MODAL FIXES ====== */
+#clientModal .modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+#clientModal .modal-body-prof {
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 32px;
+}
 #clientModal .copy-field { display: flex; align-items: flex-start; gap: 12px; }
 #clientModal .copy-field .value { word-break: normal; overflow-wrap: anywhere; white-space: normal; }
 #clientModal .prof-card { min-width: 0; }
 #clientModal #clientFields { min-width: 0; }
-#clientModal .app-link-url { text-decoration: none; color: #15803d; font-weight: 600; font-size: 13.5px; line-height: 1.4; }
+#clientModal .app-link-box { display: flex; align-items: center; gap: 12px; }
+#clientModal .app-link-url { text-decoration: none; color: #15803d; font-weight: 600; font-size: 13.5px; line-height: 1.4; word-break: normal; overflow-wrap: anywhere; }
 #clientModal .app-link-url:hover { text-decoration: underline; }
 #clientModal .email-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 #clientModal .email-actions .btn { flex: 1 1 auto; min-width: 140px; justify-content: center; }
-#clientModal .modal-body-prof { padding-bottom: 24px; }
 @media (max-width: 640px) {
     #clientModal .prof-grid { padding: 16px; gap: 16px; }
     #clientModal .modal-toolbar { padding: 14px 16px; }
@@ -329,6 +340,8 @@ tr:hover td { background: #f8fafc; }
     #clientModal .prof-card { padding: 16px; }
     #clientModal .app-link-card, #clientModal .notif-card, #clientModal .email-card { padding: 16px; }
     #clientModal .email-actions .btn { width: 100%; }
+    #clientModal .app-link-box { flex-direction: column; align-items: stretch; }
+    #clientModal .app-link-btn { width: 100%; justify-content: center; margin-top: 8px; }
 }
 /* ====== END MODAL FIXES ====== */
 
