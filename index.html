@@ -2177,6 +2177,7 @@ setInterval(updateAllStatuses, 5000);
                         document.getElementById('modalClientEmail').textContent = v.email || '';
                         const appLink = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(id) + '&nom=' + encodeURIComponent(v.nom || '') + '&theme=' + encodeURIComponent(v.theme || 'teal');
                         document.getElementById('clientAppLinkDisplay').textContent = appLink;
+                        document.getElementById('clientAppLinkDisplay').href = appLink;
                         document.getElementById('modalNotifDisplay').textContent = v.notification || 'Aucune notification';
                         document.getElementById('modalNotifEdit').value = v.notification || '';
 
