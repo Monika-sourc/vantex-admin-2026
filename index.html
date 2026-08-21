@@ -173,8 +173,8 @@
     --p: #4c1d95;
     --p-light: #ede9fe;
     --p-dark: #3730a3;
-    --bg: #f8fafc;
-    --card-bg: #ffffff;
+    --bg: #ffffff;
+    --card-bg: #0f0f0f;
     --text: #0f172a;
     --text-secondary: #475569;
     --text-muted: #94a3b8;
@@ -344,6 +344,131 @@ tr:hover td { background: #f8fafc; }
     #clientModal .app-link-btn { width: 100%; justify-content: center; margin-top: 8px; }
 }
 /* ====== END MODAL FIXES ====== */
+
+
+/* ====== THEME NOIR CARTES ====== */
+body { background: #ffffff !important; }
+.card, .modal-content, .login-box {
+    background: #0f0f0f !important;
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+}
+.card h3, .card-header h3, .modal-content h3, .login-box h2 {
+    color: #f8fafc !important;
+}
+.card .field label, .modal-content .field label, .login-box .field label {
+    color: #94a3b8 !important;
+}
+.card input, .card select, .card textarea,
+.modal-content input, .modal-content select, .modal-content textarea,
+.login-box input {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #475569 !important;
+}
+.card input:focus, .card select:focus, .card textarea:focus,
+.modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus,
+.login-box input:focus {
+    background: #1e293b !important;
+    border-color: var(--p) !important;
+    box-shadow: 0 0 0 4px rgba(76,29,149,0.15) !important;
+    color: #f1f5f9 !important;
+}
+.card .hint, .modal-content .hint, .login-box .hint {
+    color: #64748b !important;
+}
+.card table th {
+    background: #1e293b !important;
+    color: #94a3b8 !important;
+    border-bottom-color: #334155 !important;
+}
+.card table td {
+    color: #cbd5e1 !important;
+    border-bottom-color: #334155 !important;
+}
+.card table tr:hover td {
+    background: #1e293b !important;
+}
+.card .text-muted, .modal-content .text-muted {
+    color: #64748b !important;
+}
+#clientModal .modal-header-prof {
+    background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #6d28d9 100%) !important;
+}
+#clientModal .prof-card, #clientModal .notif-card {
+    background: #0f0f0f !important;
+    border-color: #334155 !important;
+}
+#clientModal .app-link-card {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%) !important;
+    border-color: #059669 !important;
+}
+#clientModal .email-card {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%) !important;
+    border-color: #4c1d95 !important;
+}
+#clientModal .email-header, #clientModal .app-link-header, #clientModal .notif-header {
+    color: #e2e8f0 !important;
+}
+#clientModal .modal-toolbar {
+    background: #0f0f0f !important;
+    border-bottom-color: #334155 !important;
+}
+#clientModal .modal-body-prof {
+    background: #0a0a0a !important;
+}
+#clientModal .copy-field {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+#clientModal .copy-field .value, #clientModal .copy-field input {
+    color: #f1f5f9 !important;
+}
+#clientModal .copy-field .label {
+    color: #94a3b8 !important;
+}
+#clientModal .notif-body {
+    color: #e2e8f0 !important;
+}
+#clientModal .notif-card textarea {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #475569 !important;
+}
+.slider-section {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+.copy-field {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+.copy-field .value, .copy-field input {
+    color: #f1f5f9 !important;
+}
+.copy-field .label {
+    color: #94a3b8 !important;
+}
+.alert.success { background: #064e3b !important; color: #6ee7b7 !important; border-color: #059669 !important; }
+.alert.error { background: #450a0a !important; color: #fca5a5 !important; border-color: #dc2626 !important; }
+.alert.info { background: #172554 !important; color: #93c5fd !important; border-color: #2563eb !important; }
+.session-item .device { color: #f1f5f9 !important; }
+.session-item .ip, .session-item .time { color: #94a3b8 !important; }
+.badge { background: #1e293b !important; color: #e2e8f0 !important; }
+.badge-theme { color: #fff !important; }
+.badge-online { background: #064e3b !important; color: #6ee7b7 !important; }
+.badge-offline { background: #450a0a !important; color: #fca5a5 !important; }
+.badge-blocked { background: #450a0a !important; color: #fca5a5 !important; }
+.badge-notif { background: #451a03 !important; color: #fcd34d !important; }
+.badge-country { background: #1e3a8a !important; color: #93c5fd !important; }
+.action-btns .edit-btn { background: #1e1b4b !important; color: #c4b5fd !important; border-color: #4c1d95 !important; }
+.action-btns .edit-btn:hover { background: #312e81 !important; }
+.action-btns .del-btn { background: #450a0a !important; color: #fca5a5 !important; border-color: #dc2626 !important; }
+.action-btns .del-btn:hover { background: #7f1d1d !important; }
+.action-btns .sessions-btn { background: #172554 !important; color: #93c5fd !important; border-color: #2563eb !important; }
+.action-btns .sessions-btn:hover { background: #1e40af !important; }
+#clientModal .app-link-url { color: #6ee7b7 !important; }
+/* ====== END THEME NOIR CARTES ====== */
 
     </style>
 </head>
