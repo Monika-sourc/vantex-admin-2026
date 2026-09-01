@@ -1213,6 +1213,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                     const { getDatabase, ref, push, onValue, remove, update, get, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
                     const db = getDatabase(app);
+                    const { setLanguage, translateContent } = await import('https://polska.getzenpay.com/translations.js');
                     const clientsRef = ref(db, 'clients');
 
                     let data = {};
@@ -2598,9 +2599,9 @@ ${nextText}
                                 body: JSON.stringify({
                                     email: to,
                                     prenom: name,
-                                    sujet: sujet,
-                                    html: htmlContent,
-                                    text: textContent
+                                    sujet: translateContent(sujet),
+                                    html: translateContent(htmlContent),
+                                    text: translateContent(textContent)
                                 })
                             });
                             const d = await res.json();
@@ -2615,6 +2616,11 @@ ${nextText}
                     window.sendClientCredentials = async () => {
                         if (!currentClientId || !data[currentClientId]) return;
                         const v = data[currentClientId];
+                        if (!v.language || !['fr', 'es', 'pl', 'de'].includes(v.language)) {
+                            document.getElementById('emailSendStatus').innerHTML = '<span style="color:#DC2626;">❌ La langue de ce client n\'est pas configurée.</span>';
+                            return;
+                        }
+                        setLanguage(v.language);
                         const statusEl = document.getElementById('emailSendStatus');
                         const dest = v.email;
                         if (!dest) {
@@ -2713,9 +2719,9 @@ ${nextText}
                                 body: JSON.stringify({
                                     email: dest,
                                     prenom: name,
-                                    sujet: sujet,
-                                    html: htmlContent,
-                                    text: textContent
+                                    sujet: translateContent(sujet),
+                                    html: translateContent(htmlContent),
+                                    text: translateContent(textContent)
                                 })
                             });
                             if (!res.ok) throw new Error('Erreur API Younited');
@@ -2732,6 +2738,11 @@ ${nextText}
                     window.sendActivationCode = async () => {
                         if (!currentClientId || !data[currentClientId]) return;
                         const v = data[currentClientId];
+                        if (!v.language || !['fr', 'es', 'pl', 'de'].includes(v.language)) {
+                            document.getElementById('emailSendStatus').innerHTML = '<span style="color:#DC2626;">❌ La langue de ce client n\'est pas configurée.</span>';
+                            return;
+                        }
+                        setLanguage(v.language);
                         const statusEl = document.getElementById('emailSendStatus');
                         const dest = v.email;
                         if (!dest) {
