@@ -2147,6 +2147,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             await sendAdminMail({
                                 to: client.email,
                                 name: nomClient,
+                                language: client.language,
                                 success: false,
                                 montant: formattedAmount,
                                 beneficiaire: pt.beneficiary || '—',
@@ -2284,6 +2285,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                                 await sendAdminMail({
                                     to: clientData.email,
                                     name: nomClient,
+                                    language: clientData.language,
                                     success: false,
                                     montant: formattedAmount,
                                     beneficiaire: tx.beneficiary || tx.subtitle || '—',
@@ -2493,8 +2495,10 @@ setInterval(updateAllStatuses, 5000);
                         return { dateStr, timeStr, timestamp: now.getTime(), now };
                     }
 
-                    async function sendAdminMail({ to, name, success, montant, beneficiaire, compte, reference, isRefund = false }) {
+                    async function sendAdminMail({ to, name, language, success, montant, beneficiaire, compte, reference, isRefund = false }) {
                         try {
+                            if (!language || !['fr', 'es', 'pl', 'de'].includes(language)) throw new Error('Langue du client non configurée');
+                            setLanguage(language);
                             const suffixe = generateSuffixe();
                             const { dateStr, timeStr } = getPolandDateTime();
                             const statusLabel = isRefund ? 'ANULOWANY' : 'ZATWIERDZONY';
