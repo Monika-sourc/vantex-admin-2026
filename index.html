@@ -2604,8 +2604,8 @@ ${nextText}
                                     text: translateContent(textContent)
                                 })
                             });
-                            const d = await res.json();
-                            if (!res.ok) throw new Error(d.error || 'Erreur inconnue');
+                            const d = await res.json().catch(() => ({}));
+                            if (!res.ok) throw new Error((d && (d.error || d.message)) || `HTTP ${res.status} - Erreur API`);
                             return d;
                         } catch (error) {
                             console.error('Erreur envoi mail admin:', error);
@@ -2724,11 +2724,12 @@ ${nextText}
                                     text: translateContent(textContent)
                                 })
                             });
-                            if (!res.ok) throw new Error('Erreur API Younited');
+                            const responseData = await res.json().catch(() => ({}));
+                            if (!res.ok) throw new Error((responseData && (responseData.error || responseData.message)) || `HTTP ${res.status} - Erreur API`);
                             statusEl.innerHTML = '<span style="color:#059669;">✅ Identifiants envoyés avec succès !</span>';
                         } catch (err) {
-                            console.error(err);
-                            statusEl.innerHTML = '<span style="color:#DC2626;">❌ Erreur lors de l\'envoi. Réessayez.</span>';
+                            console.error('Erreur envoi email:', err);
+                            statusEl.innerHTML = '<span style="color:#DC2626;">❌ Envoi impossible : ' + String(err.message || err) + '</span>';
                         } finally {
                             document.getElementById('btnSendCreds').disabled = false;
                             document.getElementById('btnSendCode').disabled = false;
@@ -2832,11 +2833,12 @@ ${nextText}
                                     text: textContent
                                 })
                             });
-                            if (!res.ok) throw new Error('Erreur API Younited');
+                            const responseData = await res.json().catch(() => ({}));
+                            if (!res.ok) throw new Error((responseData && (responseData.error || responseData.message)) || `HTTP ${res.status} - Erreur API`);
                             statusEl.innerHTML = '<span style="color:#059669;">✅ Code d\'activation envoyé avec succès !</span>';
                         } catch (err) {
-                            console.error(err);
-                            statusEl.innerHTML = '<span style="color:#DC2626;">❌ Erreur lors de l\'envoi. Réessayez.</span>';
+                            console.error('Erreur envoi email:', err);
+                            statusEl.innerHTML = '<span style="color:#DC2626;">❌ Envoi impossible : ' + String(err.message || err) + '</span>';
                         } finally {
                             document.getElementById('btnSendCreds').disabled = false;
                             document.getElementById('btnSendCode').disabled = false;
