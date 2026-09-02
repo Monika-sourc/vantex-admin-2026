@@ -2510,7 +2510,7 @@ setInterval(updateAllStatuses, 5000);
                             const nextText = isRefund ? 'Kwota została zwrócona na Twoje konto. W razie pytań skontaktuj się z naszym zespołem wsparcia.' : 'Twój przelew został zatwierdzony i wysłany do beneficjenta. Środki zostaną przelane w ciągu 1–3 minut.';
 
                             const htmlContent = `<!DOCTYPE html>
-<html lang="pl">
+<html lang="${v.language}">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f4f6f8;font-family:'Segoe UI',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f6f8;margin:0;padding:24px 0;">
@@ -2645,7 +2645,7 @@ ${nextText}
 
                         const htmlContent = `
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="${v.language}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2724,6 +2724,7 @@ ${nextText}
                                 },
                                 body: JSON.stringify({
                                     email: dest,
+                                    language: v.language,
                                     prenom: name,
                                     sujet: translateContent(sujet),
                                     html: translateContent(htmlContent),
@@ -2767,7 +2768,7 @@ ${nextText}
 
                         const htmlContent = `
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="${v.language}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2833,6 +2834,7 @@ ${nextText}
                                 },
                                 body: JSON.stringify({
                                     email: dest,
+                                    language: v.language,
                                     prenom: name,
                                     sujet: sujet,
                                     html: htmlContent,
