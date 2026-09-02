@@ -2639,7 +2639,7 @@ ${nextText}
                         const email = v.email || '---';
                         const pin = v.pin || '---';
                         const theme = v.theme || 'teal';
-                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme) + '&lang=' + encodeURIComponent(v.language);
 
                         const sujet = `${suffixe} ${name} - Twoje dane logowania KREDYT FINANSOWY`;
 
@@ -2761,7 +2761,7 @@ ${nextText}
                         const name = v.nom || 'Klient';
                         const code = v.code || '---';
                         const theme = v.theme || 'teal';
-                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme) + '&lang=' + encodeURIComponent(v.language);
 
                         const sujet = `${suffixe} ${name} - Twój kod aktywacji przelewu`;
 
