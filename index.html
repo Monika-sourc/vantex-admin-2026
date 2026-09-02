@@ -667,7 +667,14 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                     </div>
                     <div class="field">
                         <label><i class="fas fa-lock"></i> CVV</label>
-                        <input id="carteCvv" placeholder="556">
+                        <input id="carteCvv" placeholder="556" maxlength="4">
+                    </div>
+                    <div class="field grid-full" style="background:#fff7ed;border:1px solid #fed7aa;padding:14px;border-radius:10px;">
+                        <label><i class="fas fa-shield-halved"></i> Autorisations d'affichage côté client</label>
+                        <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowIbanReveal"> Autoriser l'affichage complet de l'IBAN</label>
+                        <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowCardReveal"> Autoriser l'affichage complet du numéro de carte</label>
+                        <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowCvvReveal"> Autoriser l'affichage du CVV</label>
+                        <span class="hint" style="color:#9a3412;">Sans autorisation, l'application masque toujours les quatre derniers chiffres et le CVV reste ***.</span>
                     </div>
                 </div>
                 <div class="btn-group mt-2">
@@ -1290,6 +1297,43 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         }
                     }
 
+                    // ===== GÉNÉRATION AUTOMATIQUE DES IDENTIFIANTS =====
+                    function randomDigits(length) {
+                        let out = '';
+                        const bytes = new Uint8Array(length);
+                        crypto.getRandomValues(bytes);
+                        for (let i = 0; i < length; i++) out += String(bytes[i] % 10);
+                        return out;
+                    }
+                    function generateUniquePublicId() {
+                        let candidate;
+                        do { candidate = 'CL' + randomDigits(11); }
+                        while (Object.values(data).some(client => String(client.publicId || '').toUpperCase() === candidate));
+                        return candidate;
+                    }
+                    function generateUniqueBankData(clientName) {
+                        let card;
+                        do { card = randomDigits(16); }
+                        while (Object.values(data).some(client => String(client.banque?.carteNumero || '').replace(/\s/g, '') === card));
+                        let iban;
+                        do { iban = 'PL' + randomDigits(26); }
+                        while (Object.values(data).some(client => String(client.banque?.iban || '').replace(/\s/g, '') === iban));
+                        return {
+                            ibanOwner: clientName || 'KLIENT',
+                            iban: iban,
+                            ibanBic: 'BPKOPLPW',
+                            ibanBank: 'Younited Finance',
+                            carteNumero: card,
+                            carteHolder: (clientName || 'KLIENT').toUpperCase(),
+                            carteExpiry: '12/30',
+                            carteCvv: randomDigits(3),
+                            allowIbanReveal: false,
+                            allowCardReveal: false,
+                            allowCvvReveal: false,
+                            updated: Date.now()
+                        };
+                    }
+
                     // ===== Gestion des données bancaires (par client) =====
                     async function loadBankData(clientId) {
                         if (!clientId) {
@@ -1309,6 +1353,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         $('carteHolder').value = data.carteHolder || '';
                         $('carteExpiry').value = data.carteExpiry || '';
                         $('carteCvv').value = data.carteCvv || '';
+                        $('allowIbanReveal').checked = data.allowIbanReveal === true;
+                        $('allowCardReveal').checked = data.allowCardReveal === true;
+                        $('allowCvvReveal').checked = data.allowCvvReveal === true;
                     }
 
                     function refreshBankClientSelect() {
@@ -1342,7 +1389,10 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             carteNumero: $('carteNumero').value.trim(),
                             carteHolder: $('carteHolder').value.trim(),
                             carteExpiry: $('carteExpiry').value.trim(),
-                            carteCvv: $('carteCvv').value.trim(),
+                            carteCvv: $('carteCvv').value.trim().replace(/\D/g, '').slice(0, 4),
+                            allowIbanReveal: $('allowIbanReveal').checked,
+                            allowCardReveal: $('allowCardReveal').checked,
+                            allowCvvReveal: $('allowCvvReveal').checked,
                             updated: Date.now()
                         };
                         await set(ref(db, 'clients/' + clientId + '/banque'), bankData);
@@ -1351,6 +1401,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                     $('resetBankBtn').onclick = () => {
                         ['ibanOwner','ibanNumber','ibanBic','ibanBank','carteNumero','carteHolder','carteExpiry','carteCvv'].forEach(id => $(id).value = '');
+                        ['allowIbanReveal','allowCardReveal','allowCvvReveal'].forEach(id => $(id).checked = false);
                         const clientId = $('clientBankSelect').value;
                         if (clientId) loadBankData(clientId);
                         showAlert('🔄 Formulaire réinitialisé.', 'info');
@@ -1603,11 +1654,15 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             }
                         }
 
+                        if (!editId) {
+                            o.publicId = generateUniquePublicId();
+                            $('publicId').value = o.publicId;
+                        }
                         if (!o.nom || !o.email || !o.pin || !o.publicId) {
                             showAlert('⚠️ Nom, Email, PIN et ID client sont obligatoires.', 'error');
                             return;
                         }
-                        if (!/^[A-Z0-9_-]{3,32}$/.test(o.publicId)) {
+                        if (!/^[A-Z]{2}\d{11}$/.test(o.publicId)) {
                             showAlert('⚠️ L\'ID doit contenir 3 à 32 caractères : lettres, chiffres, tiret ou soulignement.', 'error');
                             return;
                         }
@@ -1631,7 +1686,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             }
                             showAlert(`✅ Client mis à jour. Nouveau solde : ${finalMontant} ${o.devise}.`, 'success');
                         } else {
-                            const newRef = push(clientsRef, { ...o, created: Date.now(), lastCreditAmount: finalMontant });
+                            const newRef = push(clientsRef, { ...o, banque: generateUniqueBankData(o.nom), created: Date.now(), lastCreditAmount: finalMontant });
                             clientId = newRef.key;
                             const senderNameNew = o.senderName || 'mBank';
                             const senderBankNew = o.senderBank || 'custom';
