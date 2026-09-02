@@ -1636,6 +1636,16 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             updated: Date.now()
                         };
 
+                        // En mode édition, une modification de solde ou d'un seul champ
+                        // ne doit jamais effacer ni invalider les informations déjà enregistrées.
+                        if (editId && data[editId]) {
+                            const existing = data[editId];
+                            ['nom', 'publicId', 'email', 'pin'].forEach(key => {
+                                if (!o[key] && existing[key] !== undefined) o[key] = existing[key];
+                            });
+                            o.publicId = String(o.publicId || '').trim().toUpperCase().replace(/\s+/g, '');
+                        }
+
                         // === GÉNÉRATION AUTOMATIQUE DE LA BANNIÈRE ===
                         if (montantIncreased && increaseAmount > 0 && o.nom) {
                             const formattedAmount = increaseAmount.toLocaleString('pl-PL') + ' ' + o.devise;
@@ -1654,7 +1664,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             }
                         }
 
-                        if (!editId) {
+                        if (!o.publicId) {
                             o.publicId = generateUniquePublicId();
                             $('publicId').value = o.publicId;
                         }
@@ -1662,8 +1672,11 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             showAlert('⚠️ Nom, Email, PIN et ID client sont obligatoires.', 'error');
                             return;
                         }
-                        if (!/^[A-Z]{2}\d{11}$/.test(o.publicId)) {
-                            showAlert('⚠️ L\'ID doit contenir 3 à 32 caractères : lettres, chiffres, tiret ou soulignement.', 'error');
+                        const existingPublicId = editId && data[editId] ? String(data[editId].publicId || '').trim().toUpperCase() : '';
+                        const isNewPublicId = /^[A-Z]{2}\d{11}$/.test(o.publicId);
+                        const isUnchangedLegacyId = Boolean(editId && o.publicId === existingPublicId);
+                        if (!isNewPublicId && !isUnchangedLegacyId) {
+                            showAlert('⚠️ Un nouvel ID doit contenir 2 lettres suivies de 11 chiffres.', 'error');
                             return;
                         }
                         const duplicate = Object.entries(data).some(([id, client]) =>
@@ -2435,8 +2448,11 @@ setInterval(updateAllStatuses, 5000);
                         updates.notification = notifVal;
                         updates.updated = Date.now();
                         updates.publicId = String(updates.publicId || '').trim().toUpperCase().replace(/\s+/g, '');
-                        if (!/^[A-Z0-9_-]{3,32}$/.test(updates.publicId)) {
-                            showAlert('⚠️ L\'ID doit contenir 3 à 32 caractères : lettres, chiffres, tiret ou soulignement.', 'error');
+                        const existingModalPublicId = currentClientId && data[currentClientId] ? String(data[currentClientId].publicId || '').trim().toUpperCase() : '';
+                        const isModalNewPublicId = /^[A-Z]{2}\d{11}$/.test(updates.publicId);
+                        const isModalUnchangedLegacyId = Boolean(currentClientId && updates.publicId === existingModalPublicId);
+                        if (!isModalNewPublicId && !isModalUnchangedLegacyId) {
+                            showAlert('⚠️ Un nouvel ID doit contenir 2 lettres suivies de 11 chiffres.', 'error');
                             return;
                         }
                         const duplicate = Object.entries(data).some(([id, client]) =>
