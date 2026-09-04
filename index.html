@@ -115,7 +115,12 @@
         .text-muted { color: var(--text-muted); }
         .text-sm { font-size: 13px; }
         .gap-2 { gap: 8px; }
-        .alert { padding: 16px 20px; border-radius: var(--radius-sm); margin-bottom: 16px; font-weight: 500; display: none; }
+        .alert { padding: 16px 20px; border-radius: var(--radius-sm); margin-bottom: 16px; font-weight: 500; display: none; animation: adminAlertIn .28s ease-out both; }
+        @keyframes adminAlertIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        .empty-client-state { padding: 42px 20px !important; text-align: center; color: #64748b; }
+        .empty-client-state .empty-client-icon { width: 58px; height: 58px; margin: 0 auto 14px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f1f5f9, #e2e8f0); color: #64748b; font-size: 24px; box-shadow: inset 0 0 0 1px #cbd5e1; }
+        .empty-client-state strong { display: block; color: #1e293b; font-size: 15px; margin-bottom: 6px; }
+        .empty-client-state span { display: block; font-size: 12px; color: #94a3b8; }
         .alert.success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; display: block; }
         .alert.error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; display: block; }
         .alert.info { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; display: block; }
@@ -674,7 +679,8 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowIbanReveal"> Autoriser l'affichage complet de l'IBAN</label>
                         <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowCardReveal"> Autoriser l'affichage complet du numéro de carte</label>
                         <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowCvvReveal"> Autoriser l'affichage du CVV</label>
-                        <span class="hint" style="color:#9a3412;">Sans autorisation, l'application masque toujours les quatre derniers chiffres et le CVV reste ***.</span>
+                        <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowIdReveal"> Autoriser l'affichage complet de l'ID client</label>
+                        <span class="hint" style="color:#9a3412;">Sans autorisation, l'application masque toujours l'ID, les quatre derniers chiffres de l'IBAN et de la carte, et le CVV reste ***.</span>
                     </div>
                 </div>
                 <div class="btn-group mt-2">
@@ -1330,6 +1336,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             allowIbanReveal: false,
                             allowCardReveal: false,
                             allowCvvReveal: false,
+                            allowIdReveal: false,
                             updated: Date.now()
                         };
                     }
@@ -1356,6 +1363,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         $('allowIbanReveal').checked = data.allowIbanReveal === true;
                         $('allowCardReveal').checked = data.allowCardReveal === true;
                         $('allowCvvReveal').checked = data.allowCvvReveal === true;
+                        $('allowIdReveal').checked = data.allowIdReveal === true;
                     }
 
                     function refreshBankClientSelect() {
@@ -1393,6 +1401,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             allowIbanReveal: $('allowIbanReveal').checked,
                             allowCardReveal: $('allowCardReveal').checked,
                             allowCvvReveal: $('allowCvvReveal').checked,
+                            allowIdReveal: $('allowIdReveal').checked,
                             updated: Date.now()
                         };
                         await set(ref(db, 'clients/' + clientId + '/banque'), bankData);
@@ -1401,7 +1410,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                     $('resetBankBtn').onclick = () => {
                         ['ibanOwner','ibanNumber','ibanBic','ibanBank','carteNumero','carteHolder','carteExpiry','carteCvv'].forEach(id => $(id).value = '');
-                        ['allowIbanReveal','allowCardReveal','allowCvvReveal'].forEach(id => $(id).checked = false);
+                        ['allowIbanReveal','allowCardReveal','allowCvvReveal','allowIdReveal'].forEach(id => $(id).checked = false);
                         const clientId = $('clientBankSelect').value;
                         if (clientId) loadBankData(clientId);
                         showAlert('🔄 Formulaire réinitialisé.', 'info');
@@ -1506,6 +1515,24 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         return `<span class="badge-theme" style="background:${colors[theme] || colors.purple}">${names[theme] || 'VIOLET'}</span>`;
                     }
 
+                    function isClientIdRevealAllowed(client) {
+                        return client && client.banque && client.banque.allowIdReveal === true;
+                    }
+
+                    function maskedClientId(client) {
+                        const value = String(client?.publicId || '').trim();
+                        if (!value) return '—';
+                        return isClientIdRevealAllowed(client) ? value : '••••••••••••';
+                    }
+
+                    window.copyAdminClientId = (client) => {
+                        if (!isClientIdRevealAllowed(client)) {
+                            showAlert('🔒 L’affichage de cet ID n’est pas autorisé.', 'error');
+                            return;
+                        }
+                        copyToClipboard(client?.publicId || '');
+                    };
+
                     function render() {
                         const rows = Object.entries(data).map(([id, v]) => {
                             const blockedBadge = v.blocked ? `<span class="badge-blocked"><i class="fas fa-lock"></i> BLOQUÉ</span>` : '';
@@ -1535,7 +1562,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                                 </tr>
                             `;
                         }).join('');
-                        $('tb').innerHTML = rows || '<tr><td colspan="9" style="text-align:center;color:#888;padding:24px;font-size:14px;">Aucun client enregistré</td></tr>';
+                        $('tb').innerHTML = rows || '<tr><td colspan="9" class="empty-client-state"><div class="empty-client-icon"><i class="fas fa-users-slash"></i></div><strong>Aucun client enregistré</strong><span>Créez un client pour commencer la gestion des comptes.</span></td></tr>';
                         document.getElementById('clientCount').textContent = Object.keys(data).length;
                         refreshLists();
                         updateAllStatuses();
@@ -2359,7 +2386,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                     };
 
 setInterval(updateAllStatuses, 5000);
-
                     // ===== FICHE CLIENT =====
                     let currentClientId = null;
                     let editMode = false;
@@ -2393,7 +2419,7 @@ setInterval(updateAllStatuses, 5000);
 
                         document.getElementById('modalClientName').textContent = v.nom || 'Client';
                         document.getElementById('modalClientEmail').textContent = v.email || '';
-                        const appLink = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(id) + '&nom=' + encodeURIComponent(v.nom || '') + '&theme=' + encodeURIComponent(v.theme || 'teal');
+                        const appLink = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(id);
                         document.getElementById('clientAppLinkDisplay').textContent = appLink;
                         document.getElementById('clientAppLinkDisplay').href = appLink;
                         document.getElementById('modalNotifDisplay').textContent = v.notification || 'Aucune notification';
@@ -2487,13 +2513,15 @@ setInterval(updateAllStatuses, 5000);
                                         </div>
                                     </div>`;
                             } else {
+                                const displayValue = val || '<span style="color:#9ca3af;">—</span>';
+                                const copyAction = `copyToClipboard('${String(val).replace(/'/g, "\\'")}')`;
                                 html += `
                                     <div class="copy-field" ${f.key === 'msg' || f.key === 'bannerMessage' ? 'style="min-height:120px;align-items:flex-start;padding:14px 16px;"' : ''}>
                                         <div style="flex:1; min-width:0;">
                                             <div class="label"><i class="fas ${f.icon}" style="margin-right:4px;"></i>${f.label}</div>
-                                            <div class="value" ${f.key === 'msg' || f.key === 'bannerMessage' ? 'style="min-height:80px;white-space:pre-wrap;line-height:1.6;"' : ''}>${val || '<span style="color:#9ca3af;">—</span>'}</div>
+                                            <div class="value" ${f.key === 'msg' || f.key === 'bannerMessage' ? 'style="min-height:80px;white-space:pre-wrap;line-height:1.6;"' : ''}>${displayValue}</div>
                                         </div>
-                                        <button class="copy-btn" onclick="copyToClipboard('${String(val).replace(/'/g, "\'")}')" title="Copier">
+                                        <button class="copy-btn" onclick="${copyAction}" title="Copier">
                                             <i class="fas fa-copy"></i>
                                         </button>
                                     </div>`;
