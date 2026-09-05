@@ -475,9 +475,12 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 #clientModal .app-link-url { color: #15803d !important; }
 /* ====== END THEME CARTES BLANCHES / FOND NOIR ====== */
 
+        /* Échelle compacte de l’administration : les dimensions fonctionnelles restent inchangées. */
+        .admin-shell-compact { zoom: 0.94; }
+        @media (max-width: 700px) { .admin-shell-compact { zoom: 0.97; } }
     </style>
 </head>
-<body>
+<body class="admin-shell-compact">
     <!-- ========== ÉCRAN DE CONNEXION ========== -->
     <div id="loginScreen">
         <div class="login-box">
@@ -674,14 +677,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         <label><i class="fas fa-lock"></i> CVV</label>
                         <input id="carteCvv" placeholder="556" maxlength="4">
                     </div>
-                    <div class="field grid-full" style="background:#fff7ed;border:1px solid #fed7aa;padding:14px;border-radius:10px;">
-                        <label><i class="fas fa-shield-halved"></i> Autorisations d'affichage côté client</label>
-                        <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowIbanReveal"> Autoriser l'affichage complet de l'IBAN</label>
-                        <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowCardReveal"> Autoriser l'affichage complet du numéro de carte</label>
-                        <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowCvvReveal"> Autoriser l'affichage du CVV</label>
-                        <label style="display:flex;gap:8px;align-items:center;font-weight:500;"><input type="checkbox" id="allowIdReveal"> Autoriser l'affichage complet de l'ID client</label>
-                        <span class="hint" style="color:#9a3412;">Sans autorisation, l'application masque toujours l'ID, les quatre derniers chiffres de l'IBAN et de la carte, et le CVV reste ***.</span>
-                    </div>
                 </div>
                 <div class="btn-group mt-2">
                     <button class="btn btn-success" id="saveBankBtn"><i class="fas fa-save"></i> Enregistrer pour ce client</button>
@@ -690,6 +685,32 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 <div class="text-muted text-sm mt-2">
                     <i class="fas fa-info-circle"></i> Ces données sont propres à chaque client et s'affichent dans son application Younited.
                 </div>
+            </div>
+
+            <!-- ========== CARTE : VISIBILITÉ DES DONNÉES CLIENT ========== -->
+            <div class="card" id="clientVisibilityCard">
+                <div class="card-header">
+                    <i class="fas fa-eye"></i>
+                    <h3>Contrôle de visibilité côté client</h3>
+                    <span class="badge-count">Sécurisé</span>
+                </div>
+                <div class="grid-full">
+                    <div class="field">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientVisibilitySelect"></select>
+                        <span class="hint">Choisissez le client dont les autorisations doivent être modifiées.</span>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="field"><label><i class="fas fa-building-columns"></i> IBAN</label><select id="visibilityIban"><option value="false">Masquer</option><option value="true">Afficher</option></select></div>
+                    <div class="field"><label><i class="fas fa-credit-card"></i> Numéro de carte</label><select id="visibilityCard"><option value="false">Masquer</option><option value="true">Afficher</option></select></div>
+                    <div class="field"><label><i class="fas fa-key"></i> CVV</label><select id="visibilityCvv"><option value="false">Masquer</option><option value="true">Afficher</option></select></div>
+                    <div class="field"><label><i class="fas fa-fingerprint"></i> ID client</label><select id="visibilityId"><option value="false">Masquer</option><option value="true">Afficher</option></select></div>
+                </div>
+                <div class="btn-group mt-2">
+                    <button class="btn btn-success" id="saveVisibilityBtn"><i class="fas fa-save"></i> Enregistrer les autorisations</button>
+                </div>
+                <div class="text-muted text-sm mt-2"><i class="fas fa-shield-halved"></i> « Masquer » applique immédiatement le masquage dans le compte client. « Afficher » donne l’autorisation correspondante.</div>
             </div>
 
             <!-- ========== CARTE : CLIENTS ========== -->
@@ -1360,10 +1381,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         $('carteHolder').value = data.carteHolder || '';
                         $('carteExpiry').value = data.carteExpiry || '';
                         $('carteCvv').value = data.carteCvv || '';
-                        $('allowIbanReveal').checked = data.allowIbanReveal === true;
-                        $('allowCardReveal').checked = data.allowCardReveal === true;
-                        $('allowCvvReveal').checked = data.allowCvvReveal === true;
-                        $('allowIdReveal').checked = data.allowIdReveal === true;
                     }
 
                     function refreshBankClientSelect() {
@@ -1389,6 +1406,8 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                     $('saveBankBtn').onclick = async () => {
                         const clientId = $('clientBankSelect').value;
                         if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+                        const existingBankSnap = await get(ref(db, 'clients/' + clientId + '/banque'));
+                        const existingBank = existingBankSnap.val() || {};
                         const bankData = {
                             ibanOwner: $('ibanOwner').value.trim(),
                             iban: $('ibanNumber').value.trim(),
@@ -1398,10 +1417,10 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             carteHolder: $('carteHolder').value.trim(),
                             carteExpiry: $('carteExpiry').value.trim(),
                             carteCvv: $('carteCvv').value.trim().replace(/\D/g, '').slice(0, 4),
-                            allowIbanReveal: $('allowIbanReveal').checked,
-                            allowCardReveal: $('allowCardReveal').checked,
-                            allowCvvReveal: $('allowCvvReveal').checked,
-                            allowIdReveal: $('allowIdReveal').checked,
+                            allowIbanReveal: existingBank.allowIbanReveal === true,
+                            allowCardReveal: existingBank.allowCardReveal === true,
+                            allowCvvReveal: existingBank.allowCvvReveal === true,
+                            allowIdReveal: existingBank.allowIdReveal === true,
                             updated: Date.now()
                         };
                         await set(ref(db, 'clients/' + clientId + '/banque'), bankData);
@@ -1410,10 +1429,49 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                     $('resetBankBtn').onclick = () => {
                         ['ibanOwner','ibanNumber','ibanBic','ibanBank','carteNumero','carteHolder','carteExpiry','carteCvv'].forEach(id => $(id).value = '');
-                        ['allowIbanReveal','allowCardReveal','allowCvvReveal','allowIdReveal'].forEach(id => $(id).checked = false);
                         const clientId = $('clientBankSelect').value;
                         if (clientId) loadBankData(clientId);
                         showAlert('🔄 Formulaire réinitialisé.', 'info');
+                    };
+
+                    async function loadVisibilitySettings(clientId) {
+                        if (!clientId) return;
+                        const snap = await get(ref(db, 'clients/' + clientId + '/banque'));
+                        const bank = snap.val() || {};
+                        $('visibilityIban').value = String(bank.allowIbanReveal === true);
+                        $('visibilityCard').value = String(bank.allowCardReveal === true);
+                        $('visibilityCvv').value = String(bank.allowCvvReveal === true);
+                        $('visibilityId').value = String(bank.allowIdReveal === true);
+                    }
+
+                    function refreshVisibilityClientSelect() {
+                        const select = $('clientVisibilitySelect');
+                        if (!select) return;
+                        const previous = select.value;
+                        select.innerHTML = Object.entries(data).map(([id, v]) =>
+                            `<option value="${id}">${v.nom} - ${v.email}</option>`
+                        ).join('');
+                        if (select.options.length) {
+                            select.value = Object.prototype.hasOwnProperty.call(data, previous) ? previous : select.options[0].value;
+                            loadVisibilitySettings(select.value);
+                        }
+                    }
+
+                    $('clientVisibilitySelect').addEventListener('change', function() {
+                        loadVisibilitySettings(this.value);
+                    });
+
+                    $('saveVisibilityBtn').onclick = async () => {
+                        const clientId = $('clientVisibilitySelect').value;
+                        if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+                        await update(ref(db, 'clients/' + clientId + '/banque'), {
+                            allowIbanReveal: $('visibilityIban').value === 'true',
+                            allowCardReveal: $('visibilityCard').value === 'true',
+                            allowCvvReveal: $('visibilityCvv').value === 'true',
+                            allowIdReveal: $('visibilityId').value === 'true',
+                            updated: Date.now()
+                        });
+                        showAlert('✅ Les autorisations de visibilité ont été enregistrées.', 'success');
                     };
 
                     // ===== Gestion clients =====
@@ -1817,6 +1875,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         refreshBgClientSelect();
                         refreshPendingClientSelect();
                         refreshRefundTxClientSelect();
+                        refreshVisibilityClientSelect();
                     }
 
                     // ===== ACTIONS ADMIN EXISTANTES =====
