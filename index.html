@@ -124,6 +124,15 @@
         .alert.success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; display: block; }
         .alert.error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; display: block; }
         .alert.info { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; display: block; }
+        .admin-action-modal { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(15,23,42,.42); backdrop-filter: blur(3px); }
+        .admin-action-modal.open { display: flex; animation: adminModalIn .18s ease-out; }
+        .admin-action-dialog { width: min(420px, 100%); background: #fff; border: 1px solid #dbe4f0; border-radius: 18px; box-shadow: 0 18px 55px rgba(15,23,42,.22); padding: 25px; text-align: center; }
+        .admin-action-icon { width: 50px; height: 50px; margin: 0 auto 13px; display: grid; place-items: center; border-radius: 50%; background: #dcfce7; color: #15803d; font-size: 22px; }
+        .admin-action-dialog h3 { margin: 0 0 8px; color: #172033; font-size: 18px; }
+        .admin-action-client { margin: 0 0 7px; color: #334155; font-weight: 700; font-size: 14px; }
+        .admin-action-text { margin: 0 0 20px; color: #64748b; line-height: 1.55; font-size: 13px; }
+        .admin-action-ok { min-width: 110px; border: 0; border-radius: 9px; padding: 10px 18px; background: #172033; color: #fff; font-weight: 700; cursor: pointer; }
+        @keyframes adminModalIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
         .slider-section { background: #FAFBFC; padding: 20px 22px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-top: 8px; }
         .slider-section label { font-weight: 600; font-size: 13px; color: var(--text-secondary); }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
@@ -475,9 +484,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 #clientModal .app-link-url { color: #15803d !important; }
 /* ====== END THEME CARTES BLANCHES / FOND NOIR ====== */
 
-        /* Échelle compacte de l’administration : les dimensions fonctionnelles restent inchangées. */
-        .admin-shell-compact { zoom: 0.94; }
-        @media (max-width: 700px) { .admin-shell-compact { zoom: 0.97; } }
+        /* Échelle demandée : interface admin affichée à 50 %, sans modifier les données ni les fonctionnalités. */
+        .admin-shell-compact { zoom: 0.5; }
+        @media (max-width: 700px) { .admin-shell-compact { zoom: 0.5; } }
     </style>
 </head>
 <body class="admin-shell-compact">
@@ -512,6 +521,15 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
         </header>
         <div class="wrap">
             <div id="alertMessage" class="alert"></div>
+            <div id="adminActionModal" class="admin-action-modal" role="dialog" aria-modal="true" aria-labelledby="adminActionTitle">
+                <div class="admin-action-dialog">
+                    <div class="admin-action-icon"><i class="fas fa-check"></i></div>
+                    <h3 id="adminActionTitle">Action effectuée</h3>
+                    <p id="adminActionClient" class="admin-action-client"></p>
+                    <p id="adminActionText" class="admin-action-text"></p>
+                    <button id="adminActionOk" class="admin-action-ok" type="button">OK</button>
+                </div>
+            </div>
 
             <!-- ========== CARTE : CRÉER / MODIFIER ========== -->
             <div class="card">
@@ -1301,7 +1319,34 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         }
                     });
 
+                    function getActionClientName() {
+                        const selectors = ['clientVisibilitySelect', 'clientBankSelect', 'clientAccess', 'clientAction', 'clientOutSelect', 'clientRefundSelect', 'clientPendingSelect'];
+                        for (const id of selectors) {
+                            const select = document.getElementById(id);
+                            const client = select && data[select.value];
+                            if (client && client.nom) return client.nom;
+                        }
+                        const nameInput = document.getElementById('nom');
+                        return nameInput && nameInput.value.trim() ? nameInput.value.trim() : 'Client sélectionné';
+                    }
+
+                    function closeAdminActionModal() {
+                        const modal = document.getElementById('adminActionModal');
+                        if (modal) modal.classList.remove('open');
+                    }
+
+                    document.getElementById('adminActionOk').addEventListener('click', closeAdminActionModal);
+                    document.getElementById('adminActionModal').addEventListener('click', event => {
+                        if (event.target.id === 'adminActionModal') closeAdminActionModal();
+                    });
+
                     function showAlert(message, type = 'success') {
+                        if ((type === 'success' || type === 'info') && document.getElementById('adminActionModal')) {
+                            document.getElementById('adminActionClient').textContent = 'Client : ' + getActionClientName();
+                            document.getElementById('adminActionText').textContent = String(message).replace(/^[✅🔄🔒🔓📧📋🗑️💾\s]+/, '');
+                            document.getElementById('adminActionModal').classList.add('open');
+                            return;
+                        }
                         const el = document.getElementById('alertMessage');
                         el.textContent = message;
                         el.className = 'alert ' + type;
