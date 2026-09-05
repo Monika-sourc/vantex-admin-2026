@@ -731,6 +731,42 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 <div class="text-muted text-sm mt-2"><i class="fas fa-shield-halved"></i> « Masquer » applique immédiatement le masquage dans le compte client. « Afficher » donne l’autorisation correspondante.</div>
             </div>
 
+            <!-- ========== CARTE : AJOUT D'ARGENT PAR VIREMENT ========== -->
+            <div class="card" id="adminCreditTransferCard">
+                <div class="card-header">
+                    <i class="fas fa-circle-plus"></i>
+                    <h3>Ajouter de l'argent par virement</h3>
+                    <span class="badge-count">Crédit client</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="creditClientSelect"></select>
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-money-bill-transfer"></i> Montant à envoyer</label>
+                        <input id="creditTransferAmount" type="number" min="0.01" step="0.01" placeholder="5000">
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-coins"></i> Devise</label>
+                        <select id="creditTransferCurrency"><option value="zł">zł - Zloty polonais</option><option value="€">€ - Euro</option><option value="$">$ - Dollar américain</option><option value="₪">₪ - Shekel israélien</option></select>
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-building-columns"></i> Banque de l'expéditeur</label>
+                        <select id="creditBankSelect"><option value="custom">-- Saisie manuelle --</option></select>
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-pen"></i> Nom de la banque</label>
+                        <input id="creditBankManual" placeholder="Nom de la banque" autocomplete="off">
+                    </div>
+                </div>
+                <div class="btn-group mt-2">
+                    <button class="btn btn-success" id="sendCreditTransferBtn"><i class="fas fa-paper-plane"></i> Envoyer et créditer le compte</button>
+                    <button class="btn btn-secondary" id="resetCreditTransferBtn"><i class="fas fa-rotate-right"></i> Réinitialiser</button>
+                </div>
+                <div class="text-muted text-sm mt-2"><i class="fas fa-circle-info"></i> Le montant sera ajouté au solde du client et enregistré automatiquement dans son historique comme virement reçu.</div>
+            </div>
+            
             <!-- ========== CARTE : CLIENTS ========== -->
             <div class="card">
                 <div class="card-header">
@@ -1546,6 +1582,69 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         showAlert('✅ Les autorisations de visibilité ont été enregistrées.', 'success', clientId);
                     };
 
+                    function refreshCreditClientSelect() {
+                        const select = $('creditClientSelect');
+                        if (!select) return;
+                        const previous = select.value;
+                        select.innerHTML = Object.entries(data).map(([id, v]) => `<option value="${id}">${v.nom} - ${v.email}</option>`).join('');
+                        if (select.options.length && Object.prototype.hasOwnProperty.call(data, previous)) select.value = previous;
+                    }
+
+                    const creditBankSelect = $('creditBankSelect');
+                    const creditBankManual = $('creditBankManual');
+                    if (creditBankSelect) {
+                        POLISH_BANKS.forEach(bank => {
+                            const option = document.createElement('option');
+                            option.value = bank.code;
+                            option.textContent = bank.name;
+                            creditBankSelect.appendChild(option);
+                        });
+                        creditBankSelect.addEventListener('change', () => {
+                            const bank = POLISH_BANKS.find(item => item.code === creditBankSelect.value);
+                            creditBankManual.value = bank ? bank.name : '';
+                            creditBankManual.disabled = Boolean(bank);
+                        });
+                    }
+
+                    $('sendCreditTransferBtn').onclick = async () => {
+                        const clientId = $('creditClientSelect').value;
+                        const amount = Number($('creditTransferAmount').value);
+                        const currency = $('creditTransferCurrency').value;
+                        const bankCode = $('creditBankSelect').value;
+                        const bank = POLISH_BANKS.find(item => item.code === bankCode);
+                        const bankName = (bank ? bank.name : $('creditBankManual').value.trim());
+                        if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
+                        if (!amount || amount <= 0) { showAlert('⚠️ Veuillez saisir un montant supérieur à zéro.', 'error'); return; }
+                        if (!bankName) { showAlert('⚠️ Veuillez sélectionner une banque ou saisir son nom manuellement.', 'error'); return; }
+                        const clientSnap = await get(ref(db, 'clients/' + clientId));
+                        const client = clientSnap.val();
+                        if (!client) { showAlert('⚠️ Client introuvable.', 'error'); return; }
+                        const currentBalance = Number(client.montant) || 0;
+                        const newBalance = currentBalance + amount;
+                        const formatted = amount.toLocaleString('pl-PL') + ' ' + currency;
+                        const bannerMessage = `Witam ${client.nom || 'Kliencie'}, otrzymano przelew ${formatted} z banku ${bankName}. Środki zostały zaksięgowane na Twoim koncie.`;
+                        await update(ref(db, 'clients/' + clientId), {
+                            montant: newBalance,
+                            devise: currency,
+                            lastCreditAmount: amount,
+                            lastCreditBank: bankName,
+                            bannerMessage,
+                            bannerRead: false,
+                            updated: Date.now()
+                        });
+                        await addCreditTransaction(clientId, amount, currency, bankName, bankCode);
+                        showAlert('✅ Virement de ' + formatted + ' envoyé et crédité sur le compte client.', 'success', clientId);
+                        $('creditTransferAmount').value = '';
+                    };
+
+                    $('resetCreditTransferBtn').onclick = () => {
+                        $('creditTransferAmount').value = '';
+                        $('creditBankSelect').value = 'custom';
+                        $('creditBankManual').value = '';
+                        $('creditBankManual').disabled = false;
+                        showAlert('🔄 Formulaire de virement réinitialisé.', 'info', $('creditClientSelect').value);
+                    };
+
                     // ===== Gestion clients =====
                     const pctInput = $('pct');
                     const pvDisplay = document.getElementById('pvDisplay');
@@ -1949,6 +2048,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         refreshPendingClientSelect();
                         refreshRefundTxClientSelect();
                         refreshVisibilityClientSelect();
+                        refreshCreditClientSelect();
                     }
 
                     // ===== ACTIONS ADMIN EXISTANTES =====
