@@ -1164,7 +1164,12 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
         async function checkSession() {
             const cookieSession = (document.cookie.match(/(?:^|; )vantex_admin_session=([^;]+)/) || [])[1];
-            const session = localStorage.getItem('vantex_admin_session') || (cookieSession ? decodeURIComponent(cookieSession) : '');
+            let session = '';
+            try { session = localStorage.getItem('vantex_admin_session') || ''; } catch (e) {}
+            if (!session) { try { session = sessionStorage.getItem('vantex_admin_session') || ''; } catch (e) {} }
+            if (!session && cookieSession) {
+                try { session = decodeURIComponent(cookieSession); } catch (e) { session = ''; }
+            }
             if (session) {
                 try {
                     const parsed = JSON.parse(session);
@@ -1173,10 +1178,12 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         showAdmin();
                         return;
                     } else {
-                        localStorage.removeItem('vantex_admin_session');
+                        try { localStorage.removeItem('vantex_admin_session'); } catch (e) {}
+                        try { sessionStorage.removeItem('vantex_admin_session'); } catch (e) {}
                     }
                 } catch {
-                    localStorage.removeItem('vantex_admin_session');
+                    try { localStorage.removeItem('vantex_admin_session'); } catch (e) {}
+                    try { sessionStorage.removeItem('vantex_admin_session'); } catch (e) {}
                 }
             }
             loginScreen.classList.remove('hidden');
@@ -1202,7 +1209,8 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
             const enteredHash = await hashPassword(entered);
             if (enteredHash === PASSWORD_HASH) {
                 const sessionValue = JSON.stringify({ timestamp: Date.now() });
-                localStorage.setItem('vantex_admin_session', sessionValue);
+                try { localStorage.setItem('vantex_admin_session', sessionValue); } catch (e) {}
+                try { sessionStorage.setItem('vantex_admin_session', sessionValue); } catch (e) {}
                 document.cookie = 'vantex_admin_session=' + encodeURIComponent(sessionValue) + '; Max-Age=86400; Path=/; SameSite=Lax';
                 loginError.style.display = 'none';
                 showAdmin();
@@ -1219,7 +1227,8 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
         });
 
         logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('vantex_admin_session');
+            try { localStorage.removeItem('vantex_admin_session'); } catch (e) {}
+            try { sessionStorage.removeItem('vantex_admin_session'); } catch (e) {}
             document.cookie = 'vantex_admin_session=; Max-Age=0; Path=/; SameSite=Lax';
             loginScreen.classList.remove('hidden');
             adminApp.classList.remove('visible');
@@ -2141,6 +2150,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                     window.forceDisconnect = async () => {
                         if (!currentClientIdForSessions) return;
+                        rememberActionClient(currentClientIdForSessions);
                         if (!confirm('⚠️ Voulez-vous vraiment déconnecter tous les appareils de ce client ?')) return;
 
                         const snap = await get(ref(db, 'clients/' + currentClientIdForSessions + '/sessions'));
