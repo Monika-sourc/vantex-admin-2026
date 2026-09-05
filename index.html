@@ -1338,8 +1338,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         if (clientId && data[clientId]) lastActionClientId = clientId;
                     }
 
-                    function getActionClientName() {
+                    function getActionClientName(explicitClientId = null) {
                         const nameInput = document.getElementById('nom');
+                        if (explicitClientId && data[explicitClientId]?.nom) return data[explicitClientId].nom;
                         if (!editId && nameInput && nameInput.value.trim()) return nameInput.value.trim();
                         if (lastActionClientId && data[lastActionClientId]?.nom) return data[lastActionClientId].nom;
                         const selectors = ['clientVisibilitySelect', 'clientBankSelect', 'clientAccess', 'clientAction', 'clientOutSelect', 'clientRefundSelect', 'clientPendingSelect'];
@@ -1366,9 +1367,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         if (event.target.id === 'adminActionModal') closeAdminActionModal();
                     });
 
-                    function showAlert(message, type = 'success') {
+                    function showAlert(message, type = 'success', explicitClientId = null) {
                         if ((type === 'success' || type === 'info') && document.getElementById('adminActionModal')) {
-                            document.getElementById('adminActionClient').textContent = 'Client : ' + getActionClientName();
+                            document.getElementById('adminActionClient').textContent = 'Client : ' + getActionClientName(explicitClientId);
                             document.getElementById('adminActionText').textContent = String(message).replace(/^[✅🔄🔒🔓📧📋🗑️💾\s]+/, '');
                             document.getElementById('adminActionModal').classList.add('open');
                             return;
@@ -1495,7 +1496,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             updated: Date.now()
                         };
                         await set(ref(db, 'clients/' + clientId + '/banque'), bankData);
-                        showAlert('✅ Données bancaires mises à jour pour ce client.', 'success');
+                        showAlert('✅ Données bancaires mises à jour pour ce client.', 'success', clientId);
                     };
 
                     $('resetBankBtn').onclick = () => {
@@ -1542,7 +1543,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             allowIdReveal: $('visibilityId').value === 'true',
                             updated: Date.now()
                         });
-                        showAlert('✅ Les autorisations de visibilité ont été enregistrées.', 'success');
+                        showAlert('✅ Les autorisations de visibilité ont été enregistrées.', 'success', clientId);
                     };
 
                     // ===== Gestion clients =====
@@ -1911,8 +1912,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                     window.delClient = (id) => {
                         if (confirm('⚠️ Supprimer ce client ? Il ne pourra plus se connecter.')) {
+                            rememberActionClient(id);
+                            showAlert('🗑️ Client supprimé.', 'info', id);
                             remove(ref(db, 'clients/' + id));
-                            showAlert('🗑️ Client supprimé.', 'info');
                         }
                     };
 
@@ -1932,7 +1934,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         const bgColor = document.getElementById('bgColorSelect').value;
                         if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
                         await update(ref(db, 'clients/' + clientId), { bgColor: bgColor, updated: Date.now() });
-                        showAlert('✅ Couleur d\'arrière-plan appliquée au client.', 'success');
+                        showAlert('✅ Couleur d\'arrière-plan appliquée au client.', 'success', clientId);
                     };
 
                     function refreshLists() {
@@ -1954,13 +1956,13 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         const id = $('clientAccess').value;
                         if (!id) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
                         update(ref(db, 'clients/' + id), { blocked: true, updated: Date.now() });
-                        showAlert('🔒 Accès bloqué avec succès.', 'success');
+                        showAlert('🔒 Accès bloqué avec succès.', 'success', id);
                     };
                     $('unblockBtn').onclick = () => {
                         const id = $('clientAccess').value;
                         if (!id) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
                         update(ref(db, 'clients/' + id), { blocked: false, updated: Date.now() });
-                        showAlert('🔓 Accès débloqué.', 'success');
+                        showAlert('🔓 Accès débloqué.', 'success', id);
                     };
 
                     $('actionBtn').onclick = () => {
@@ -2023,7 +2025,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         try {
                             await update(ref(db, 'clients/' + clientId), { montant: newBalance, updated: Date.now() });
                             await push(ref(db, 'clients/' + clientId + '/history'), tx);
-                            showAlert('✅ Virement sortant de ' + amount.toLocaleString('pl-PL') + ' ' + (clientData.devise || 'zł') + ' exécuté avec succès pour ' + benef + '. Nouveau solde : ' + newBalance.toLocaleString('pl-PL') + ' ' + (clientData.devise || 'zł'), 'success');
+                            showAlert('✅ Virement sortant de ' + amount.toLocaleString('pl-PL') + ' ' + (clientData.devise || 'zł') + ' exécuté avec succès pour ' + benef + '. Nouveau solde : ' + newBalance.toLocaleString('pl-PL') + ' ' + (clientData.devise || 'zł'), 'success', clientId);
                             $('outBenefName').value = '';
                             $('outIban').value = '';
                             $('outAmount').value = '';
@@ -2086,7 +2088,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             const bannerMsg = `Witam ${nom}, Zwrot ${formattedAmount} został przetworzony i zaksięgowany na Twoim koncie.`;
                             await update(ref(db, 'clients/' + clientId), { bannerMessage: bannerMsg, bannerRead: false });
 
-                            showAlert(`✅ Remboursement de ${amount.toLocaleString('pl-PL')} ${devise} effectué pour ${clientData.nom}. Nouveau solde : ${newBalance.toLocaleString('pl-PL')} ${devise}`, 'success');
+                            showAlert(`✅ Remboursement de ${amount.toLocaleString('pl-PL')} ${devise} effectué pour ${clientData.nom}. Nouveau solde : ${newBalance.toLocaleString('pl-PL')} ${devise}`, 'success', clientId);
 
                             // Reset formulaire
                             $('refundAmount').value = '';
@@ -2161,7 +2163,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                                 updates['clients/' + currentClientIdForSessions + '/sessions/' + key + '/connected'] = false;
                             });
                             await update(ref(db), updates);
-                            showAlert('🔌 Tous les appareils ont été déconnectés.', 'success');
+                            showAlert('🔌 Tous les appareils ont été déconnectés.', 'success', currentClientIdForSessions);
                             await loadSessions(currentClientIdForSessions);
                             updateAllStatuses();
                         }
@@ -2258,7 +2260,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             enabled: mode === 'on',
                             updated: Date.now()
                         });
-                        showAlert(mode === 'on' ? '✅ Mode virement en attente activé.' : '✅ Mode virement en attente désactivé.', 'success');
+                        showAlert(mode === 'on' ? '✅ Mode virement en attente activé.' : '✅ Mode virement en attente désactivé.', 'success', clientId);
                     };
 
                     window.approvePendingTransfer = async (clientId, ptId) => {
@@ -2311,7 +2313,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             console.error('Erreur envoi email approbation:', e);
                         }
 
-                        showAlert('✅ Virement approuvé. Le client a été notifié par email.', 'success');
+                        showAlert('✅ Virement approuvé. Le client a été notifié par email.', 'success', clientId);
                         loadPendingData(clientId);
                     };
 
@@ -2370,7 +2372,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             console.error('Erreur envoi email annulation:', e);
                         }
 
-                        showAlert('✅ Virement annulé. Le solde a été recrédité et le client a été notifié par email.', 'info');
+                        showAlert('✅ Virement annulé. Le solde a été recrédité et le client a été notifié par email.', 'info', clientId);
                         loadPendingData(clientId);
                     };
 
@@ -2508,7 +2510,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                                 console.error('Erreur envoi email remboursement admin:', e);
                             }
 
-                            showAlert(`✅ Remboursement de ${formattedAmount} effectué pour ${clientData.nom}. Nouveau solde : ${newBalance.toLocaleString('pl-PL')} ${devise}`, 'success');
+                            showAlert(`✅ Remboursement de ${formattedAmount} effectué pour ${clientData.nom}. Nouveau solde : ${newBalance.toLocaleString('pl-PL')} ${devise}`, 'success', currentClientId);
                             loadRefundTxList(clientId);
                         } catch (err) {
                             console.error('Erreur remboursement admin:', err);
@@ -2628,7 +2630,7 @@ setInterval(updateAllStatuses, 5000);
                         document.getElementById('modalNotifDisplay').style.display = 'block';
                         document.getElementById('modalNotifEdit').style.display = 'none';
                         updateEditButtons();
-                        showAlert('✅ Modifications enregistrées avec succès.', 'success');
+                        showAlert('✅ Modifications enregistrées avec succès.', 'success', currentClientId);
                     };
 
                     function renderClientFields(v, editing) {
