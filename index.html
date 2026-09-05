@@ -484,9 +484,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 #clientModal .app-link-url { color: #15803d !important; }
 /* ====== END THEME CARTES BLANCHES / FOND NOIR ====== */
 
-        /* Échelle demandée : interface admin affichée à 50 %, sans modifier les données ni les fonctionnalités. */
-        .admin-shell-compact { zoom: 0.5; }
-        @media (max-width: 700px) { .admin-shell-compact { zoom: 0.5; } }
+        /* Échelle compacte lisible : interface réduite mais confortable à utiliser. */
+        .admin-shell-compact { zoom: 0.75; }
+        @media (max-width: 700px) { .admin-shell-compact { zoom: 0.75; } }
     </style>
 </head>
 <body class="admin-shell-compact">
@@ -1163,10 +1163,12 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
         }
 
         async function checkSession() {
-            const session = localStorage.getItem('vantex_admin_session');
+            const cookieSession = (document.cookie.match(/(?:^|; )vantex_admin_session=([^;]+)/) || [])[1];
+            const session = localStorage.getItem('vantex_admin_session') || (cookieSession ? decodeURIComponent(cookieSession) : '');
             if (session) {
                 try {
-                    const { timestamp } = JSON.parse(session);
+                    const parsed = JSON.parse(session);
+                    const timestamp = parsed.timestamp;
                     if (Date.now() - timestamp < SESSION_DURATION) {
                         showAdmin();
                         return;
@@ -1199,7 +1201,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
             }
             const enteredHash = await hashPassword(entered);
             if (enteredHash === PASSWORD_HASH) {
-                localStorage.setItem('vantex_admin_session', JSON.stringify({ timestamp: Date.now() }));
+                const sessionValue = JSON.stringify({ timestamp: Date.now() });
+                localStorage.setItem('vantex_admin_session', sessionValue);
+                document.cookie = 'vantex_admin_session=' + encodeURIComponent(sessionValue) + '; Max-Age=86400; Path=/; SameSite=Lax';
                 loginError.style.display = 'none';
                 showAdmin();
             } else {
@@ -1216,6 +1220,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('vantex_admin_session');
+            document.cookie = 'vantex_admin_session=; Max-Age=0; Path=/; SameSite=Lax';
             loginScreen.classList.remove('hidden');
             adminApp.classList.remove('visible');
             passwordInput.value = '';
@@ -1319,16 +1324,28 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         }
                     });
 
+                    let lastActionClientId = null;
+                    function rememberActionClient(clientId) {
+                        if (clientId && data[clientId]) lastActionClientId = clientId;
+                    }
+
                     function getActionClientName() {
+                        const nameInput = document.getElementById('nom');
+                        if (!editId && nameInput && nameInput.value.trim()) return nameInput.value.trim();
+                        if (lastActionClientId && data[lastActionClientId]?.nom) return data[lastActionClientId].nom;
                         const selectors = ['clientVisibilitySelect', 'clientBankSelect', 'clientAccess', 'clientAction', 'clientOutSelect', 'clientRefundSelect', 'clientPendingSelect'];
                         for (const id of selectors) {
                             const select = document.getElementById(id);
                             const client = select && data[select.value];
                             if (client && client.nom) return client.nom;
                         }
-                        const nameInput = document.getElementById('nom');
                         return nameInput && nameInput.value.trim() ? nameInput.value.trim() : 'Client sélectionné';
                     }
+
+                    ['clientVisibilitySelect', 'clientBankSelect', 'clientAccess', 'clientAction', 'clientOutSelect', 'clientRefundSelect', 'clientPendingSelect', 'clientBgSelect'].forEach(id => {
+                        const select = document.getElementById(id);
+                        if (select) select.addEventListener('change', () => rememberActionClient(select.value));
+                    });
 
                     function closeAdminActionModal() {
                         const modal = document.getElementById('adminActionModal');
@@ -2517,6 +2534,7 @@ setInterval(updateAllStatuses, 5000);
 
                     window.openClientModal = async (id) => {
                         currentClientId = id;
+                        rememberActionClient(id);
                         editMode = false;
                         const v = data[id];
                         if (!v) return;
