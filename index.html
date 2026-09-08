@@ -594,7 +594,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             <option value="green">Vert</option>
                             <option value="black">Noir</option>
                             <option value="white">Blanc</option>
-                            <option value="professional-split">Bleu professionnel + gris</option>
                         </select>
                     </div>
                     <div class="field">
@@ -912,6 +911,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             <option value="charcoal">Anthracite élégant</option>
                             <option value="amber">Ambre cuivré premium</option>
                             <option value="ivory">Ivoire classique</option>
+                            <option value="professional-split">Bleu professionnel + gris</option>
                         </select>
                     </div>
                 </div>
@@ -1730,8 +1730,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             orange: '#F97316',
                             green: '#22C55E',
                             black: '#111827',
-                            white: '#374151',
-                            'professional-split': '#2563EB'
+                            white: '#374151'
                         };
                         const names = {
                             purple: 'VIOLET',
@@ -1741,8 +1740,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             orange: 'ORANGE',
                             green: 'VERT',
                             black: 'NOIR',
-                            white: 'BLANC',
-                            'professional-split': 'BLEU + GRIS'
+                            white: 'BLANC'
                         };
                         return `<span class="badge-theme" style="background:${colors[theme] || colors.purple}">${names[theme] || 'VIOLET'}</span>`;
                     }
