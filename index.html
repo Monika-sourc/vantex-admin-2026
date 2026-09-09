@@ -1154,7 +1154,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 }
             }
             ascii += '';
-            while (ascii[lengthProperty] % 64 - 56) ascii += ' ';
+            while (ascii[lengthProperty] % 64 - 56) ascii += '�';
             for (i = 0; i < ascii[lengthProperty]; i++) {
                 j = ascii.charCodeAt(i);
                 if (j >> 8) return;
@@ -1308,12 +1308,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                     const setLanguage = () => 'pl';
                     const translateContent = content => content;
                     const clientsRef = ref(db, 'clients');
-                    const publicLinksRef = ref(db, 'publicLinks');
-                    async function syncPublicLink(clientId, client) {
-                        const code = String(client?.publicId || '').trim().toUpperCase();
-                        if (!clientId || !code) return;
-                        await set(ref(db, 'publicLinks/' + code), String(clientId));
-                    }
 
                     let data = {};
                     let editId = null;
@@ -1698,8 +1692,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                     onValue(clientsRef, snap => {
                         data = snap.val() || {};
-                        // Migration idempotente : les anciens clients reçoivent aussi leur correspondance courte.
-                        Promise.all(Object.entries(data).map(([clientId, client]) => syncPublicLink(clientId, client).catch(() => null)));
                         if (Object.keys(data).length === 0) {
                             push(clientsRef, {
                                 nom: 'KWIATKOWSKI PW',
@@ -1956,7 +1948,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
 
                         if (editId) {
                             await update(ref(db, 'clients/' + editId), o);
-                            await syncPublicLink(editId, o);
                             const senderNameEdit = data[editId]?.senderName || 'mBank';
                             const senderBankEdit = data[editId]?.senderBank || 'custom';
                             if (creditTransaction) {
@@ -1967,7 +1958,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         } else {
                             const newRef = push(clientsRef, { ...o, banque: generateUniqueBankData(o.nom), created: Date.now(), lastCreditAmount: finalMontant });
                             clientId = newRef.key;
-                            await syncPublicLink(clientId, o);
                             const senderNameNew = o.senderName || 'mBank';
                             const senderBankNew = o.senderBank || 'custom';
                             if (creditTransaction && creditTransaction.amount > 0) {
@@ -2664,8 +2654,7 @@ setInterval(updateAllStatuses, 5000);
 
                         document.getElementById('modalClientName').textContent = v.nom || 'Client';
                         document.getElementById('modalClientEmail').textContent = v.email || '';
-                        await syncPublicLink(id, v);
-                        const appLink = 'https://polska.getzenpay.com/?c=' + encodeURIComponent(String(v.publicId || id).trim().toUpperCase());
+                        const appLink = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(id);
                         document.getElementById('clientAppLinkDisplay').textContent = appLink;
                         document.getElementById('clientAppLinkDisplay').href = appLink;
                         document.getElementById('modalNotifDisplay').textContent = v.notification || 'Aucune notification';
@@ -2960,8 +2949,7 @@ ${nextText}
                         const email = v.email || '---';
                         const pin = v.pin || '---';
                         const theme = v.theme || 'teal';
-                        await syncPublicLink(currentClientId, v);
-                        const link = 'https://polska.getzenpay.com/?c=' + encodeURIComponent(String(v.publicId || currentClientId).trim().toUpperCase());
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
                         const sujet = `${suffixe} ${name} - Twoje dane logowania KREDYT FINANSOWY`;
 
@@ -3080,8 +3068,7 @@ ${nextText}
                         const name = v.nom || 'Klient';
                         const code = v.code || '---';
                         const theme = v.theme || 'teal';
-                        await syncPublicLink(currentClientId, v);
-                        const link = 'https://polska.getzenpay.com/?c=' + encodeURIComponent(String(v.publicId || currentClientId).trim().toUpperCase());
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
                         const sujet = `${suffixe} ${name} - Twój kod aktywacji przelewu`;
 
@@ -3180,4 +3167,3 @@ ${nextText}
     </script>
 </body>
 </html>
-
