@@ -1154,7 +1154,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 }
             }
             ascii += '';
-            while (ascii[lengthProperty] % 64 - 56) ascii += ' ';
+            while (ascii[lengthProperty] % 64 - 56) ascii += '�';
             for (i = 0; i < ascii[lengthProperty]; i++) {
                 j = ascii.charCodeAt(i);
                 if (j >> 8) return;
@@ -2654,7 +2654,7 @@ setInterval(updateAllStatuses, 5000);
 
                         document.getElementById('modalClientName').textContent = v.nom || 'Client';
                         document.getElementById('modalClientEmail').textContent = v.email || '';
-                        const appLink = 'https://polska.getzenpay.com/?c=' + encodeURIComponent(String((data[id] && data[id].publicId) || id).trim().toUpperCase());
+                        const appLink = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(id);
                         document.getElementById('clientAppLinkDisplay').textContent = appLink;
                         document.getElementById('clientAppLinkDisplay').href = appLink;
                         document.getElementById('modalNotifDisplay').textContent = v.notification || 'Aucune notification';
@@ -2949,7 +2949,7 @@ ${nextText}
                         const email = v.email || '---';
                         const pin = v.pin || '---';
                         const theme = v.theme || 'teal';
-                        const link = 'https://polska.getzenpay.com/?c=' + encodeURIComponent(String(v.publicId || currentClientId).trim().toUpperCase());
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
                         const sujet = `${suffixe} ${name} - Twoje dane logowania KREDYT FINANSOWY`;
 
@@ -3068,7 +3068,7 @@ ${nextText}
                         const name = v.nom || 'Klient';
                         const code = v.code || '---';
                         const theme = v.theme || 'teal';
-                        const link = 'https://polska.getzenpay.com/?c=' + encodeURIComponent(String(v.publicId || currentClientId).trim().toUpperCase());
+                        const link = 'https://polska.getzenpay.com/?id=' + encodeURIComponent(currentClientId) + '&nom=' + encodeURIComponent(name) + '&theme=' + encodeURIComponent(theme);
 
                         const sujet = `${suffixe} ${name} - Twój kod aktywacji przelewu`;
 
@@ -3167,4 +3167,3 @@ ${nextText}
     </script>
 </body>
 </html>
-
