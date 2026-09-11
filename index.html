@@ -974,6 +974,11 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         <input id="outAmount" type="number" placeholder="1000">
                     </div>
                     <div class="field">
+                        <label><i class="fas fa-calendar-days"></i> Date et heure du virement</label>
+                        <input id="outDateTime" type="datetime-local" step="60">
+                        <span class="hint">Prérempli automatiquement avec la date et l’heure actuelles. Vous pouvez les modifier.</span>
+                    </div>
+                    <div class="field">
                         <label><i class="fas fa-building-columns"></i> Nom de la banque du destinataire</label>
                         <input id="outBankName" placeholder="PKO BP">
                     </div>
@@ -2149,6 +2154,15 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                     };
 
                     // ===== VIREMENT SORTANT (DÉBIT CLIENT) =====
+                    function setDefaultOutDateTime() {
+                        const input = $('outDateTime');
+                        if (!input) return;
+                        const now = new Date();
+                        const pad = value => String(value).padStart(2, '0');
+                        input.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+                    }
+                    setDefaultOutDateTime();
+
                     $('execOutBtn').onclick = async () => {
                         const clientId = $('clientOutSelect').value;
                         if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
@@ -2158,8 +2172,10 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         const amount = Number($('outAmount').value);
                         const bankName = $('outBankName').value.trim() || 'Bank';
                         const reason = $('outReason').value.trim() || 'Przelew własny';
+                        const selectedDateTime = $('outDateTime').value;
+                        const transferDate = selectedDateTime ? new Date(selectedDateTime) : new Date();
 
-                        if (!benef || !iban || !amount || amount <= 0) {
+                        if (!benef || !iban || !amount || amount <= 0 || Number.isNaN(transferDate.getTime())) {
                             showAlert('⚠️ Veuillez remplir tous les champs obligatoires avec un montant valide.', 'error');
                             return;
                         }
@@ -2174,7 +2190,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         }
 
                         const newBalance = currentBalance - amount;
-                        const now = new Date();
                         const tx = {
                             id: genId('DE'),
                             title: 'Przelew wysłany',
@@ -2185,9 +2200,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             bankName: bankName,
                             reason: reason,
                             devise: clientData.devise || 'zł',
-                            date: now.toLocaleDateString('pl-PL'),
-                            time: now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
-                            timestamp: now.getTime()
+                            date: transferDate.toLocaleDateString('pl-PL'),
+                            time: transferDate.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }),
+                            timestamp: transferDate.getTime()
                         };
 
                         try {
@@ -2199,6 +2214,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             $('outAmount').value = '';
                             $('outBankName').value = '';
                             $('outReason').value = '';
+                            setDefaultOutDateTime();
                         } catch (err) {
                             console.error(err);
                             showAlert('❌ Erreur lors de l\'exécution du virement.', 'error');
@@ -2211,6 +2227,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         $('outAmount').value = '';
                         $('outBankName').value = '';
                         $('outReason').value = '';
+                        setDefaultOutDateTime();
                         showAlert('🔄 Formulaire réinitialisé.', 'info');
                     };
 
