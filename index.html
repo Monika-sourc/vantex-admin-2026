@@ -812,6 +812,11 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         <label><i class="fas fa-pen"></i> Nom de la banque</label>
                         <input id="creditBankManual" placeholder="Nom de la banque" autocomplete="off">
                     </div>
+                    <div class="field grid-full">
+                        <label><i class="fas fa-calendar-days"></i> Date et heure du virement</label>
+                        <input id="creditDateTime" type="datetime-local" step="60">
+                        <span class="hint">Prérempli automatiquement avec la date et l’heure actuelles. Vous pouvez les modifier.</span>
+                    </div>
                 </div>
                 <div class="btn-group mt-2">
                     <button class="btn btn-success" id="sendCreditTransferBtn"><i class="fas fa-paper-plane"></i> Envoyer et créditer le compte</button>
@@ -974,17 +979,17 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         <input id="outAmount" type="number" placeholder="1000">
                     </div>
                     <div class="field">
-                        <label><i class="fas fa-calendar-days"></i> Date et heure du virement</label>
-                        <input id="outDateTime" type="datetime-local" step="60">
-                        <span class="hint">Prérempli automatiquement avec la date et l’heure actuelles. Vous pouvez les modifier.</span>
-                    </div>
-                    <div class="field">
                         <label><i class="fas fa-building-columns"></i> Nom de la banque du destinataire</label>
                         <input id="outBankName" placeholder="PKO BP">
                     </div>
                     <div class="field">
                         <label><i class="fas fa-message"></i> Motif / Titre</label>
                         <input id="outReason" placeholder="Przelew własny">
+                    </div>
+                    <div class="field grid-full">
+                        <label><i class="fas fa-calendar-days"></i> Date et heure du virement</label>
+                        <input id="outDateTime" type="datetime-local" step="60">
+                        <span class="hint">Prérempli automatiquement avec la date et l’heure actuelles. Vous pouvez les modifier.</span>
                     </div>
                 </div>
                 <div class="btn-group mt-2">
@@ -1663,6 +1668,15 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         if (select.options.length && Object.prototype.hasOwnProperty.call(data, previous)) select.value = previous;
                     }
 
+                    function setDefaultCreditDateTime() {
+                        const input = $('creditDateTime');
+                        if (!input) return;
+                        const now = new Date();
+                        const pad = value => String(value).padStart(2, '0');
+                        input.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+                    }
+                    setDefaultCreditDateTime();
+
                     const creditBankSelect = $('creditBankSelect');
                     const creditBankManual = $('creditBankManual');
                     if (creditBankSelect) {
@@ -1686,9 +1700,12 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         const bankCode = $('creditBankSelect').value;
                         const bank = POLISH_BANKS.find(item => item.code === bankCode);
                         const bankName = (bank ? bank.name : $('creditBankManual').value.trim());
+                        const selectedDateTime = $('creditDateTime').value;
+                        const transferDate = selectedDateTime ? new Date(selectedDateTime) : new Date();
                         if (!clientId) { showAlert('⚠️ Veuillez sélectionner un client.', 'error'); return; }
                         if (!amount || amount <= 0) { showAlert('⚠️ Veuillez saisir un montant supérieur à zéro.', 'error'); return; }
                         if (!bankName) { showAlert('⚠️ Veuillez sélectionner une banque ou saisir son nom manuellement.', 'error'); return; }
+                        if (Number.isNaN(transferDate.getTime())) { showAlert('⚠️ Veuillez choisir une date et une heure valides.', 'error'); return; }
                         const clientSnap = await get(ref(db, 'clients/' + clientId));
                         const client = clientSnap.val();
                         if (!client) { showAlert('⚠️ Client introuvable.', 'error'); return; }
@@ -1705,9 +1722,10 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             bannerRead: false,
                             updated: Date.now()
                         });
-                        await addCreditTransaction(clientId, amount, currency, bankName, bankCode);
+                        await addCreditTransaction(clientId, amount, currency, bankName, bankCode, transferDate);
                         showAlert('✅ Virement de ' + formatted + ' envoyé et crédité sur le compte client.', 'success', clientId);
                         $('creditTransferAmount').value = '';
+                        setDefaultCreditDateTime();
                     };
 
                     $('resetCreditTransferBtn').onclick = () => {
@@ -1715,6 +1733,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         $('creditBankSelect').value = 'custom';
                         $('creditBankManual').value = '';
                         $('creditBankManual').disabled = false;
+                        setDefaultCreditDateTime();
                         showAlert('🔄 Formulaire de virement réinitialisé.', 'info', $('creditClientSelect').value);
                     };
 
@@ -1732,9 +1751,9 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         return prefix + Math.floor(1000000000 + Math.random() * 9000000);
                     }
 
-                    async function addCreditTransaction(clientId, amount, devise = 'zł', senderName = 'mBank', senderBank = 'custom') {
+                    async function addCreditTransaction(clientId, amount, devise = 'zł', senderName = 'mBank', senderBank = 'custom', transferDate = new Date()) {
                         if (amount <= 0) return;
-                        const now = new Date();
+                        const now = transferDate instanceof Date ? transferDate : new Date(transferDate);
                         const tx = {
                             id: genId('CR'),
                             title: 'Przelew otrzymany',
