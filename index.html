@@ -382,6 +382,37 @@ tr:hover td { background: #f8fafc; }
 /* ====== END MODAL FIXES ====== */
 
 
+/* ====== EN-TÊTES VERTS POUR TOUTES LES CARTES ADMIN ====== */
+.wrap > .card > .card-header {
+    margin: -28px -24px 24px;
+    padding: 16px 24px;
+    min-height: 62px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #047857 0%, #059669 52%, #10b981 100%);
+    border-bottom: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.18);
+}
+.wrap > .card > .card-header h3,
+.wrap > .card > .card-header i,
+.wrap > .card > .card-header .badge-count {
+    color: #ffffff;
+}
+.wrap > .card > .card-header h3 {
+    font-size: 19px;
+    line-height: 1.25;
+    letter-spacing: -0.1px;
+}
+.wrap > .card > .card-header i {
+    background: rgba(255,255,255,0.16);
+}
+.wrap > .card > .card-header .badge-count {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.28);
+}
+/* ====== FIN EN-TÊTES VERTS ====== */
+
+
 
 
 
@@ -789,33 +820,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 <div class="text-muted text-sm mt-2"><i class="fas fa-circle-info"></i> Le montant sera ajouté au solde du client et enregistré automatiquement dans son historique comme virement reçu.</div>
             </div>
             
-            <!-- ========== CARTE : CLIENTS ========== -->
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-users"></i>
-                    <h3>Clients enregistrés</h3>
-                    <span class="badge-count" id="clientCount">0</span>
-                </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Client / ID</th>
-                                <th>PIN</th>
-                                <th>Montant</th>
-                                <th>Statut</th>
-                                <th>Pays</th>
-                                <th>Thème</th>
-                                <th>Code Act.</th>
-                                <th>%</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tb"></tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- ========== CARTE : GESTION ACCÈS ========== -->
             <div class="card">
                 <div class="card-header">
@@ -1047,6 +1051,33 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 </div>
                 <div class="text-muted text-sm mt-2">
                     <i class="fas fa-info-circle"></i> Seuls les virements effectués et approuvés sont affichés. Les virements en attente ne sont pas remboursables depuis cette interface.
+                </div>
+            </div>
+
+            <!-- ========== CARTE : CLIENTS (EN BAS DE PAGE) ========== -->
+            <div class="card" id="clientsListCard">
+                <div class="card-header">
+                    <i class="fas fa-users"></i>
+                    <h3>Clients enregistrés</h3>
+                    <span class="badge-count" id="clientCount">0</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Client / ID</th>
+                                <th>PIN</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                                <th>Pays</th>
+                                <th>Thème</th>
+                                <th>Code Act.</th>
+                                <th>%</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb"></tbody>
+                    </table>
                 </div>
             </div>
 
