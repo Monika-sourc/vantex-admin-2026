@@ -825,78 +825,6 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 <div class="text-muted text-sm mt-2"><i class="fas fa-circle-info"></i> Le montant sera ajouté au solde du client et enregistré automatiquement dans son historique comme virement reçu.</div>
             </div>
             
-            <!-- ========== CARTE : GESTION ACCÈS ========== -->
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-shield-halved"></i>
-                    <h3>Gestion des accès</h3>
-                </div>
-                <div class="grid-2">
-                    <div class="field">
-                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
-                        <select id="clientAccess"></select>
-                    </div>
-                    <div class="field">
-                        <label>Action</label>
-                        <div class="btn-group" style="flex-direction:column; gap:8px;">
-                            <button class="btn btn-danger btn-block" id="blockBtn"><i class="fas fa-lock"></i> Bloquer l'accès</button>
-                            <button class="btn btn-success btn-block" id="unblockBtn"><i class="fas fa-lock-open"></i> Débloquer l'accès</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ========== CARTE : VIREMENTS EN ATTENTE ========== -->
-            <div class="card">
-                <div class="card-header">
-                    <i class="fas fa-clock"></i>
-                    <h3>Virements en attente d'approbation</h3>
-                    <span class="badge-count" id="pendingBadge">0</span>
-                </div>
-                <div class="grid-2">
-                    <div class="field grid-full">
-                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
-                        <select id="clientPendingSelect"></select>
-                    </div>
-                    <div class="field grid-full">
-                        <label><i class="fas fa-toggle-on"></i> Mode virement en attente</label>
-                        <select id="pendingModeSelect">
-                            <option value="off">Désactivé</option>
-                            <option value="on">Activé</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <button class="btn btn-primary btn-block" id="applyPendingBtn"><i class="fas fa-play"></i> Appliquer le mode</button>
-                </div>
-                <div id="pendingListSection" style="display:none; margin-top:20px;">
-                    <div class="card-header" style="margin-bottom:12px; padding:0;">
-                        <i class="fas fa-list"></i>
-                        <h3 style="font-size:15px;">Liste des virements en attente</h3>
-                        <span class="badge-count" id="pendingCountBadge">0</span>
-                    </div>
-                    <div class="table-wrap">
-                        <table style="min-width:600px;">
-                            <thead>
-                                <tr>
-                                    <th>Réf.</th>
-                                    <th>Montant</th>
-                                    <th>Bénéficiaire</th>
-                                    <th>IBAN</th>
-                                    <th>Banque</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pendingTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="text-muted text-sm mt-2">
-                    <i class="fas fa-info-circle"></i> Activez le mode pour que les virements du client nécessitent une approbation. Chaque virement doit être approuvé ou annulé individuellement.
-                </div>
-            </div>
-
             <!-- ========== CARTE : ACTIONS AVANCÉES ========== -->
             <div class="card">
                 <div class="card-header">
@@ -1064,6 +992,57 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 </div>
             </div>
 
+            <!-- ========== CARTE : VIREMENTS EN ATTENTE (AVANT LA LISTE CLIENTS) ========== -->
+            <div class="card" id="pendingTransfersCard">
+                <div class="card-header">
+                    <i class="fas fa-clock"></i>
+                    <h3>Virements en attente d'approbation</h3>
+                    <span class="badge-count" id="pendingBadge">0</span>
+                </div>
+                <div class="grid-2">
+                    <div class="field grid-full">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientPendingSelect"></select>
+                    </div>
+                    <div class="field grid-full">
+                        <label><i class="fas fa-toggle-on"></i> Mode virement en attente</label>
+                        <select id="pendingModeSelect">
+                            <option value="off">Désactivé</option>
+                            <option value="on">Activé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-primary btn-block" id="applyPendingBtn"><i class="fas fa-play"></i> Appliquer le mode</button>
+                </div>
+                <div id="pendingListSection" style="display:none; margin-top:20px;">
+                    <div class="card-header" style="margin-bottom:12px; padding:0;">
+                        <i class="fas fa-list"></i>
+                        <h3 style="font-size:15px;">Liste des virements en attente</h3>
+                        <span class="badge-count" id="pendingCountBadge">0</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table style="min-width:600px;">
+                            <thead>
+                                <tr>
+                                    <th>Réf.</th>
+                                    <th>Montant</th>
+                                    <th>Bénéficiaire</th>
+                                    <th>IBAN</th>
+                                    <th>Banque</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-muted text-sm mt-2">
+                    <i class="fas fa-info-circle"></i> Activez le mode pour que les virements du client nécessitent une approbation. Chaque virement doit être approuvé ou annulé individuellement.
+                </div>
+            </div>
+
             <!-- ========== CARTE : CLIENTS (EN BAS DE PAGE) ========== -->
             <div class="card" id="clientsListCard">
                 <div class="card-header">
@@ -1088,6 +1067,27 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                         </thead>
                         <tbody id="tb"></tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- ========== CARTE : GESTION ACCÈS (TOUT EN BAS) ========== -->
+            <div class="card" id="clientAccessCard">
+                <div class="card-header">
+                    <i class="fas fa-shield-halved"></i>
+                    <h3>Gestion des accès</h3>
+                </div>
+                <div class="grid-2">
+                    <div class="field">
+                        <label><i class="fas fa-user-check"></i> Sélectionner un client</label>
+                        <select id="clientAccess"></select>
+                    </div>
+                    <div class="field">
+                        <label>Action</label>
+                        <div class="btn-group" style="flex-direction:column; gap:8px;">
+                            <button class="btn btn-danger btn-block" id="blockBtn"><i class="fas fa-lock"></i> Bloquer l'accès</button>
+                            <button class="btn btn-success btn-block" id="unblockBtn"><i class="fas fa-lock-open"></i> Débloquer l'accès</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
