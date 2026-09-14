@@ -540,6 +540,26 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
         /* Échelle compacte lisible : interface réduite mais confortable à utiliser. */
         .admin-shell-compact { zoom: 0.75; }
         @media (max-width: 700px) { .admin-shell-compact { zoom: 0.75; } }
+        /* ====== FICHE CLIENT PLEIN ÉCRAN ====== */
+        #clientModal { padding: 0; align-items: stretch; justify-content: stretch; zoom: 1; }
+        #clientModal.active { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; padding: 0 !important; }
+        #clientModal .modal-content { position: fixed; inset: 0; margin: 0; width: 100vw; max-width: none; height: 100vh; max-height: none; border-radius: 0; border: 0; }
+        #clientModal .modal-header-prof { flex: 0 0 auto; min-height: 112px; padding: 24px 5vw; }
+        #clientModal .modal-body-prof { height: auto; max-height: none; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+        #clientModal .modal-toolbar { padding-left: 5vw; padding-right: 5vw; }
+        #clientModal .prof-grid { max-width: 1500px; margin: 0 auto; padding: 32px 5vw 48px; }
+        #clientModal .prof-card, #clientModal .client-transfers-card, #clientModal .app-link-card, #clientModal .notif-card, #clientModal .email-card { min-width: 0; }
+        @media (max-width: 640px) {
+            #clientModal .modal-header-prof { min-height: 96px; padding: 16px; }
+            #clientModal .modal-header-prof .profile-block { gap: 12px; }
+            #clientModal .modal-header-prof .profile-avatar { width: 48px; height: 48px; font-size: 19px; }
+            #clientModal .modal-header-prof .profile-info .name { font-size: 17px; }
+            #clientModal .modal-header-prof .profile-info .email { font-size: 11px; max-width: 62vw; overflow-wrap: anywhere; }
+            #clientModal .modal-header-prof .profile-info .meta-row { gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+            #clientModal .modal-header-prof .profile-info .meta-badge { font-size: 9px; padding: 2px 7px; }
+            #clientModal .modal-toolbar { padding: 14px 16px; }
+            #clientModal .prof-grid { padding: 20px 16px 36px; }
+        }
         /* ====== GESTION UNIFIÉE DES ACTIONS CLIENT ====== */
         .unified-manager { border: 1px solid #dbe4f0; background: linear-gradient(145deg,#ffffff,#f8fafc); }
         .unified-manager .manager-selector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
@@ -2892,11 +2912,15 @@ setInterval(updateAllStatuses, 5000);
                         updateEditButtons();
 
                         document.getElementById('clientModal').classList.add('active');
+                        document.body.classList.add('client-modal-open');
+                        document.body.style.overflow = 'hidden';
                         loadClientModalTransfers(id);
                     };
 
                     window.closeClientModal = () => {
                         document.getElementById('clientModal').classList.remove('active');
+                        document.body.classList.remove('client-modal-open');
+                        document.body.style.overflow = '';
                         currentClientId = null;
                         editMode = false;
                     };
