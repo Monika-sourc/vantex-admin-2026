@@ -540,6 +540,16 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
         /* Échelle compacte lisible : interface réduite mais confortable à utiliser. */
         .admin-shell-compact { zoom: 0.75; }
         @media (max-width: 700px) { .admin-shell-compact { zoom: 0.75; } }
+        /* ====== GESTION UNIFIÉE DES ACTIONS CLIENT ====== */
+        .unified-manager { border: 1px solid #dbe4f0; background: linear-gradient(145deg,#ffffff,#f8fafc); }
+        .unified-manager .manager-selector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+        .unified-manager .manager-panel { min-height: 120px; }
+        .unified-manager .managed-card { margin-bottom: 0; box-shadow: none; border-color: #e2e8f0; }
+        .unified-manager .managed-card > .card-header { display: none; }
+        .unified-manager .managed-card > .grid-full:first-of-type { margin-top: 0; }
+        .unified-manager .manager-empty { border: 1px dashed #cbd5e1; border-radius: 12px; padding: 34px 20px; text-align: center; color: #64748b; background: #f8fafc; }
+        .unified-manager .manager-empty i { display: block; font-size: 26px; color: var(--p); margin-bottom: 8px; }
+        @media (max-width: 768px) { .unified-manager .manager-selector-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body class="admin-shell-compact">
@@ -697,6 +707,37 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                 </div>
                 <div class="text-muted text-sm mt-2">
                     <i class="fas fa-lightbulb"></i> 💡 Pour augmenter : laissez "Montant initial" vide et remplissez "Ajouter au montant".
+                </div>
+            </div>
+
+            <!-- ========== CARTE UNIFIÉE : GESTION PAR CLIENT ========== -->
+            <div class="card unified-manager" id="unifiedClientManager">
+                <div class="card-header">
+                    <i class="fas fa-sliders"></i>
+                    <h3>Gestion du compte client</h3>
+                    <span class="badge-count">Modification en temps réel</span>
+                </div>
+                <div class="manager-selector-grid">
+                    <div class="field">
+                        <label><i class="fas fa-user-check"></i> Sélectionner l'accès client <span style="color:#DC2626;">· requis</span></label>
+                        <select id="unifiedClientSelect"><option value="">Liste de vos comptes clients</option></select>
+                    </div>
+                    <div class="field">
+                        <label><i class="fas fa-list-check"></i> Action à effectuer <span style="color:#DC2626;">· requis</span></label>
+                        <select id="unifiedOptionSelect">
+                            <option value="">Choisissez une action</option>
+                            <option value="bank">Données bancaires</option>
+                            <option value="visibility">Visibilité des données</option>
+                            <option value="credit">Ajouter de l'argent par virement</option>
+                            <option value="advanced">Actions avancées</option>
+                            <option value="background">Couleur d'arrière-plan</option>
+                            <option value="outgoing">Virement sortant</option>
+                            <option value="refund">Remboursement client</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="unifiedManagerPanel" class="manager-panel">
+                    <div class="manager-empty"><i class="fas fa-arrow-up-right-dots"></i><strong>Choisissez un client et une action</strong><br><span>La carte correspondante s'affichera ici pour effectuer la modification.</span></div>
                 </div>
             </div>
 
@@ -1486,6 +1527,7 @@ body { background: #0a0a0a !important; color: #e2e8f0 !important; }
                             document.getElementById('adminActionClient').textContent = 'Client : ' + getActionClientName(explicitClientId);
                             document.getElementById('adminActionText').textContent = String(message).replace(/^[✅🔄🔒🔓📧📋🗑️💾\s]+/, '');
                             document.getElementById('adminActionModal').classList.add('open');
+                            if (type === 'success') window.dispatchEvent(new CustomEvent('unifiedActionSuccess'));
                             return;
                         }
                         const el = document.getElementById('alertMessage');
@@ -3351,6 +3393,69 @@ ${nextText}
                     alert('Erreur de connexion à Firebase. Vérifiez votre connexion internet.');
                 });
         }
+    </script>
+    <script>
+      /* Panneau unifié : les anciennes cartes et leurs identifiants restent inchangés. */
+      (() => {
+        const manager = document.getElementById('unifiedClientManager');
+        const panel = document.getElementById('unifiedManagerPanel');
+        const clientSelect = document.getElementById('unifiedClientSelect');
+        const optionSelect = document.getElementById('unifiedOptionSelect');
+        if (!manager || !panel || !clientSelect || !optionSelect) return;
+        const definitions = {
+          bank: 'clientBankSelect', visibility: 'clientVisibilitySelect', credit: 'creditClientSelect',
+          advanced: 'clientAction', background: 'clientBgSelect', outgoing: 'clientOutSelect', refund: 'clientRefundSelect'
+        };
+        const cards = {};
+        Object.entries(definitions).forEach(([key, selectId]) => {
+          const select = document.getElementById(selectId);
+          const card = select && select.closest('.card');
+          if (card) { cards[key] = card; card.classList.add('managed-card'); card.style.display = 'none'; }
+        });
+        const empty = panel.innerHTML;
+        let lastOptions = '';
+        function syncClients() {
+          const source = Object.values(definitions).map(id => document.getElementById(id)).find(s => s && s.options.length > 0);
+          if (!source) return;
+          const options = source.innerHTML;
+          if (options === lastOptions) return;
+          const oldValue = clientSelect.value;
+          clientSelect.innerHTML = '<option value="">Liste de vos comptes clients</option>' + options;
+          if ([...clientSelect.options].some(o => o.value === oldValue)) clientSelect.value = oldValue;
+          lastOptions = options;
+        }
+        function syncSelectedClient() {
+          const value = clientSelect.value;
+          const key = optionSelect.value;
+          Object.values(definitions).forEach(id => {
+            const select = document.getElementById(id);
+            if (select && [...select.options].some(o => o.value === value)) {
+              select.value = value;
+              if (select === document.getElementById(definitions[key])) select.dispatchEvent(new Event('change', {bubbles:true}));
+            }
+          });
+        }
+        function showCard() {
+          Object.values(cards).forEach(card => { card.style.display = 'none'; });
+          const key = optionSelect.value;
+          if (!key || !clientSelect.value || !cards[key]) { panel.innerHTML = empty; return; }
+          panel.innerHTML = '';
+          panel.appendChild(cards[key]);
+          cards[key].style.display = 'block';
+          syncSelectedClient();
+        }
+        clientSelect.addEventListener('change', showCard);
+        optionSelect.addEventListener('change', showCard);
+        window.addEventListener('unifiedActionSuccess', () => {
+          setTimeout(() => {
+            optionSelect.value = '';
+            showCard();
+          }, 250);
+        });
+        const observer = new MutationObserver(syncClients);
+        Object.values(definitions).forEach(id => { const select = document.getElementById(id); if (select) observer.observe(select, {childList:true}); });
+        syncClients();
+      })();
     </script>
 </body>
 </html>
